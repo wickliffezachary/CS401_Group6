@@ -9,7 +9,7 @@ Attendees:
   Aidan Tirado
   Zachary Wickliffe
   
-Decisions/Tasks:
+Decisions/Tasks (Main person):
   Assigned tasks:
   Use_cases- Jaishnoor
   Sequence- Zach
