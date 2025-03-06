@@ -2,15 +2,15 @@ Here are the use cases for our Banking System Application which consists of 3 ma
 <br><br>
 
 ATM Use Case: <br>
-![Atm Use Case Diagram](../ATM_usecases.png)
+![Atm Use Case Diagram](../requirements/ATM_usecases.png)
 
 <br><br>
 
 Teller Use Case: <br>
-![Teller Use Case Diagram](../Teller_usecases.jpg)
+![Teller Use Case Diagram](../requirements/Teller_usecases.jpg)
 
 <br><br>
 
 Central Use Case: <br>
-![Central Use Case Diagram](../Central_usecases.jpg)
+![Central Use Case Diagram](../requirements/Central_usecases.jpg)
  
