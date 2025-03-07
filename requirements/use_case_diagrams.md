@@ -7,7 +7,7 @@ ATM Use Case: <br>
 <br><br>
 
 Teller Use Case: <br>
-![Teller Use Case Diagram](../requirements/Teller_usecases.jpg)
+![Teller Use Case Diagram](../requirements/Teller_usecase.jpg)
 
 <br><br>
 
