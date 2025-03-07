@@ -4,10 +4,10 @@ Time:
 12:30
 
 Attendees:
-  Jaishnoor Kaur
-  Nechar KC
-  Aidan Tirado
-  Zachary Wickliffe
+ - Jaishnoor Kaur
+ - Nechar KC
+ - Aidan Tirado
+ - Zachary Wickliffe
   
 Decisions/Tasks (Main person):
   Assigned tasks:
