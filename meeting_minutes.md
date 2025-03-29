@@ -42,3 +42,17 @@ TBD
 
  
 ### Meeting 3/20
+
+### Meeting 3/28
+
+Time:
+1:00 
+
+End:
+2:30
+
+
+### Meeting 3/29
+
+Time:
+1:00
