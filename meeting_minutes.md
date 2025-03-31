@@ -43,25 +43,59 @@ TBD
  
 ### Meeting 3/20
 
+Time:
+12:15
+
+End: 
+12:45
+
+Attendees:
+ - Jaishnoor Kaur
+ - Nechar KC
+ - Zachary Wickliffe
+
+Discussion:
+Regrouping
+
+Next Meeting:
+TBD
+
 ### Meeting 3/28
 
 Time:
 1:00 
 
 End:
-3:00
+3:01
 
+Attendees:
+ - Jaishnoor Kaur
+ - Aidan Tirado
+ - Zachary Wickliffe
+
+Discussed:
+
+Next Meeting: 
+3/29 at 1300
 
 ### Meeting 3/29
 
 Time:
-1:00
+1:06
 
 End:
+2:58
 
-2:50
+Attendees:
+ - Jaishnoor Kaur
+ - Nechar KC
+ - Aidan Tirado
+ - Zachary Wickliffe
 
+Discussed:
 
+Next Meeting: 
+3/31 at 1300
 
 ### Meeting 3/31
 
@@ -77,11 +111,16 @@ Attendees:
  - Aidan Tirado
  - Zachary Wickliffe
 
+Discussed: 
+- ATM & Teller module second pass
+- Fleshed out class specifics
+- Finishing details, remaining bits, and timeouts etc. 
+
 Tasks:
 
 UML class diagrams: Jaishnoor & Aidan
 
-Use Case diagrams: Harven/Nechar
+Use Cases + diagrams: Harven/Nechar
 
 Sequence: Zach
 
