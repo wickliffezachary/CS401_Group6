@@ -58,4 +58,30 @@ Time:
 1:00
 
 End:
+
 2:50
+
+
+
+### Meeting 3/31
+
+Start:
+1:00
+
+End:
+2:20
+
+Attendees:
+ - Jaishnoor Kaur
+ - Nechar KC
+ - Aidan Tirado
+ - Zachary Wickliffe
+
+Tasks:
+
+UML class diagrams: Jaishnoor & Aidan
+
+Use Case diagrams: Harven/Nechar
+
+Sequence: Zach
+
