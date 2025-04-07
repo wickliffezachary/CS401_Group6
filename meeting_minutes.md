@@ -74,6 +74,7 @@ Attendees:
  - Zachary Wickliffe
 
 Discussed:
+- Design whiteboarding: ATM and Teller first pass
 
 Next Meeting: 
 3/29 at 1300
@@ -93,6 +94,11 @@ Attendees:
  - Zachary Wickliffe
 
 Discussed:
+- Design whiteboarding:
+- BankAccount,
+- CustomerAccount,
+- data storage,
+- central module
 
 Next Meeting: 
 3/31 at 1300
@@ -116,7 +122,7 @@ Discussed:
 - Fleshed out class specifics
 - Finishing details, remaining bits, and timeouts etc. 
 
-Tasks:
+Tasks (main assignee):
 
 UML class diagrams: Jaishnoor & Aidan
 
