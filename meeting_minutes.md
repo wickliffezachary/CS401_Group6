@@ -130,3 +130,26 @@ Use Cases + diagrams: Harven/Nechar
 
 Sequence: Zach
 
+Next meeting: TBD/ Intermittently via Discord
+
+### Meeting 1/10
+
+Start:
+12:15
+
+End:
+1:00
+
+Attendees:
+ - Jaishnoor Kaur
+ - Harven dhanota
+ - Aidan Tirado
+ - Zachary Wickliffe
+ - Nechar KC
+
+Discussed:
+- finalised presentation
+  - finalised slide division
+  - finalised use case to include
+ 
+Next Meeting: TBD 
