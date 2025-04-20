@@ -1,5 +1,6 @@
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class Message implements Serializable{
 	enum Type {INVALID,LOGINREQATM, LOGOUTREQATM, LOGINOK, LOGOUTOK, WITHDRAWDONE, WITHDRAWREQ,
 		WITHDRAWREQACCEPTED,DEPOSITREQACCEPTED, EXITBADONE, EXITCADONE, REFILLATM,
@@ -14,13 +15,14 @@ public class Message implements Serializable{
  private final String from;
  private final String to;
 
- public Message() {
-     this.data = "Invalid Message Object";
-     this.type = Type.INVALID;
-     this.id = ++count;
-     this.from="Sender";
-     this.to="Receiver";
- }
+//if a non-default constructor exists then java will not auto-create a default constructor
+// private Message() {
+//     this.data = "Invalid Message Object";
+//     this.type = Type.INVALID;
+//     this.id = ++count;
+//     this.from="Sender";
+//     this.to="Receiver";
+// }
  public Message(String f, String t, String d, Type ty) {
      this.data = d;
      this.type = ty;
