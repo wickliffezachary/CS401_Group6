@@ -23,12 +23,13 @@ public class Message implements Serializable{
 //     this.from="Sender";
 //     this.to="Receiver";
 // }
- public Message(String f, String t, String d, Type ty) {
-     this.data = d;
-     this.type = ty;
-     this.id = ++count;
-     this.from=f;
-     this.to=t;
+ public Message(String from, String to, String data, Type type) {
+	 this.id = ++count;
+	 this.from=from;
+     this.to=to;
+	 this.data = data;
+     this.type = type;
+     
  }
  public String getData() {
      return this.data;
