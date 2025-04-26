@@ -1,17 +1,20 @@
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 
 public class Server {
+	
+	//determine where accounts will be stored
+	static File accountListFolder;
 
 	public static void main(String[] args) {
 		ServerSocket server = null;
-		
+		//set the location when the server starts, this will be passed to all threads
+		accountListFolder = new File(System.getProperty("user.dir"));
 		System.out.println("Server Started");
 		
 		try {
@@ -36,7 +39,7 @@ public class Server {
 
 				// create a new thread object
 				ClientHandler clientSock
-					= new ClientHandler(client);
+					= new ClientHandler(client, accountListFolder);
 
 				// This thread will handle the client
 				// separately
@@ -65,13 +68,16 @@ public class Server {
 		private final Socket clientSocket;
 		private final ObjectInputStream objectInputStream;
         private final ObjectOutputStream objectOutputStream;
+        //folder where accounts are stored for file i/o
+        private final File accountListFolder;
 
 		//Thread constructor to handle socket
-		public ClientHandler(Socket socket) throws IOException
+		public ClientHandler(Socket socket, File folder) throws IOException
 		{
 			this.clientSocket = socket;
 			this.objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 			this.objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+			this.accountListFolder = folder;
 		}
 		
 		public void run() {
@@ -121,7 +127,9 @@ public class Server {
 		        	//below this is where commands for logged in users go
 		        	
 		        	
-		        	
+		        	if(message.getType() == Message.Type.) {
+		        		
+		        	}
 		        	
 		        	
 		        	
@@ -149,12 +157,44 @@ public class Server {
 			
 		}
 		
-		//helper function for sending messages
+		//helpers for clienthandler
+		
+		//send messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
 			objectOutputStream.flush();
 		}
 		
+		//called whenever an action occurs that modifies an account
+		private void addTransactionHistory(String account, String action, String details) {
+			//TODO: implement
+			//write(Date.getTime() + " Account " + account + " " + action + " " + details);
+		}
+		
+		
+		private void CreateBankAccount() {
+			
+		}
+		private void DeleteBankAccount() {
+			
+		}
+		private void Withdraw() {
+			
+		}
+		private void deposit() {
+			
+		}
+		
 	}
 
+
+	//helpers for server
+	private void dailyUpkeep() {
+		//a seperate thread should run this once a day 
+	}
+	private void monthlyUpdate() {
+		//a seperate thread should run this once a month
+		//used for things like interest, etc.
+	}
+	
 }
