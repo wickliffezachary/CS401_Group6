@@ -9,12 +9,21 @@ import java.net.Socket;
 public class Server {
 	
 	//determine where accounts will be stored
-	static File accountListFolder;
+	//these will be created at server start if they don't exist.
+	//they are accessible by the clienthandler class.
+	private final static File directory = new File(System.getProperty("user.dir/data/"));
+    private final static File customerAccounts = new File(directory, "customerAccounts/");
+    private final static File bankAccounts = new File(directory, "bankAccounts/");
+    private final static File otherFiles = new File(directory, "otherFiles/");
 
 	public static void main(String[] args) {
 		ServerSocket server = null;
-		//set the location when the server starts, this will be passed to all threads
-		accountListFolder = new File(System.getProperty("user.dir"));
+		
+		directory.mkdir();
+		customerAccounts.mkdir();
+		bankAccounts.mkdir();
+		otherFiles.mkdir();
+		
 		System.out.println("Server Started");
 		
 		try {
@@ -39,7 +48,7 @@ public class Server {
 
 				// create a new thread object
 				ClientHandler clientSock
-					= new ClientHandler(client, accountListFolder);
+					= new ClientHandler(client);
 
 				// This thread will handle the client
 				// separately
@@ -68,19 +77,21 @@ public class Server {
 		private final Socket clientSocket;
 		private final ObjectInputStream objectInputStream;
         private final ObjectOutputStream objectOutputStream;
-        //folder where accounts are stored for file i/o
-        private final File accountListFolder;
+
+        
 
 		//Thread constructor to handle socket
-		public ClientHandler(Socket socket, File folder) throws IOException
+		public ClientHandler(Socket socket) throws IOException
 		{
 			this.clientSocket = socket;
 			this.objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 			this.objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-			this.accountListFolder = folder;
+
 		}
 		
 		public void run() {
+			
+			directory.mkdir();
 			
 			//variables to hold data to change
 			Message message;
@@ -127,9 +138,9 @@ public class Server {
 		        	//below this is where commands for logged in users go
 		        	
 		        	
-		        	if(message.getType() == Message.Type.) {
-		        		
-		        	}
+//		        	if(message.getType() == Message.Type.) {
+//		        		
+//		        	}
 		        	
 		        	
 		        	

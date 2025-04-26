@@ -6,7 +6,7 @@ public class Message implements Serializable{
 		WITHDRAWREQACCEPTED,DEPOSITREQACCEPTED, EXITBADONE, EXITCADONE, REFILLATM,
 		DEPOSITDONE, DEPOSITREQ, ADDUSEREQ, ADDUSERDONE, REMOVEUSER, REMOVEUSERDONE, ADDCUSTOMERREQ,
 		ADDCUSTOMERDONE, ACCESSBAREQ, ACCESSBAREQGRANTED, ACCESSCAREQ, ACCESSCAREQGRANTED, CREATEBACCREQ,
-		 CREATEBACCDONE, DELBAREQ, DELBADONE, CHANGECUSTOMERINFOREQ, CHAMGECUSTOMERINFODONE, EXITBA,
+		 CREATEBACCDONE, DELBAREQ, DELBADONE, CHANGECUSTOMERINFOREQ, CHANGECUSTOMERINFODONE, EXITBA,
 		 EXITCA, LOGINREQTELLER, LOGOUTREQTELLER, ERROR, GETREQ}
  private static int count = 0;
  private final int id;
@@ -46,4 +46,13 @@ public class Message implements Serializable{
  public String getTo() {
 	 return this.to;
  }
+ public String toString() {
+	    return "Message{" +
+	           "id=" + id +
+	           ", from='" + from + '\'' +
+	           ", to='" + to + '\'' +
+	           ", type=" + type +
+	           ", data='" + data + '\'' +
+	           '}';
+	}
 }
