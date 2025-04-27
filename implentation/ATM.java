@@ -39,26 +39,29 @@ public class ATM {
 		objectOutputStream.flush();
 	}
 	
-	//helper to read in a message then send it to the gui to update
-	private void parseRecMessage() throws IOException {
-		try {
-			//read in message
-			Message temp = (Message) objectInputStream.readObject();
-			//pass message to gui so gui can update accordingly
-			listener.receivedMessage(temp);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
+	// //helper to read in a message then send it to the gui to update
+	// private void parseRecMessage() throws IOException {
+	// 	try {
+	// 		//read in message
+	// 		Message temp = (Message) objectInputStream.readObject();
+	// 		//pass message to gui so gui can update accordingly
+	// 		listener.receivedMessage(temp);
+	// 	} catch (ClassNotFoundException e) {
+	// 		e.printStackTrace();
+	// 	}
+	// }
 	
 	//login method
 	public void login() throws IOException {
+		//receive custname, phno, pswd from gui 
+		String fname,lname,phno,pswd;
+		//assunimg we have those
+		String login_creds="uname="+fname+lname+phno+",pswd="+pswd;
 		//send message to server
-		sendMessage(new Message("ATM", "Server", "Requesting Login", Message.Type.LOGINREQATM));
-		
-		//this will wait for a response and update the gui
-		parseRecMessage();
-		
+		sendMessage(new Message("ATM", "Server", login_creds, Message.Type.LOGINREQATM));
+		//wait for server response message
+		//if loginok type message, trigger gui by also sending data (list of bank accounts of customer) of message 
+		//elif logindenied type message, trigger gui to display error
 	}
 	public void logout() {
 
