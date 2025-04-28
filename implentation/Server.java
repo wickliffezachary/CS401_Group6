@@ -1,9 +1,11 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 
 public class Server {
@@ -11,18 +13,22 @@ public class Server {
 	//determine where accounts will be stored
 	//these will be created at server start if they don't exist.
 	//they are accessible by the clienthandler class.
-	private final static File directory = new File(System.getProperty("user.dir/data/"));
-    private final static File customerAccounts = new File(directory, "customerAccounts/");
-    private final static File bankAccounts = new File(directory, "bankAccounts/");
-    private final static File otherFiles = new File(directory, "otherFiles/");
+	private final static File directory = new File(System.getProperty("user.dir"));
+    private final static File customerAccounts = new File(directory, "data/customerAccounts/");
+    private final static File bankAccounts = new File(directory, "data/bankAccounts/");
+    private final static File otherFiles = new File(directory, "data/otherFiles/");
 
 	public static void main(String[] args) {
+		
+		
+		
 		ServerSocket server = null;
 		
-		directory.mkdir();
-		customerAccounts.mkdir();
-		bankAccounts.mkdir();
-		otherFiles.mkdir();
+		//attempts to create directory where files go and outputs status
+		System.out.println("customer Directory: " + ((customerAccounts.mkdirs()) ? "Created" : "Exists"));
+		System.out.println("Bank Accounts Directory: " + ((bankAccounts.mkdirs()) ? "Created" : "Exists"));
+		System.out.println("other Directory: " + ((otherFiles.mkdirs()) ? "Created" : "Exists"));
+
 		
 		System.out.println("Server Started");
 		
@@ -91,11 +97,12 @@ public class Server {
 		
 		public void run() {
 			
-			directory.mkdir();
+			
 			
 			//variables to hold data to change
 			Message message;
 			Boolean LOGGEDIN = false;
+			Boolean isTeller = false;
 			String User = "";			//TODO: change this to be based on customer data
 	        try {
 				//while the connection is still receiving messages
@@ -113,8 +120,10 @@ public class Server {
 		        	
 		        	//if the user isn't logged in yet but is making a request to
 		        	if(!LOGGEDIN && (message.getType() == Message.Type.LOGINREQATM || message.getType() == Message.Type.LOGINREQTELLER)) {
-		        		//log them in
-		        		LOGGEDIN = true;
+		        		
+		        		//attempt to log in
+		        		LOGGEDIN = login(message);
+		        				        		
 		        		User = message.getData();
 		        		//respond that the login was successful
 		        		sendMessage(
@@ -135,12 +144,28 @@ public class Server {
 			        }
 	
 		        	
+		        	//The next valid atm requests are select account and exit
+		        	//The next valid commands for teller are
+		        	
+		        	
+		        	
+		        	
+		        	
+		        	
+		        	
 		        	//below this is where commands for logged in users go
 		        	
 		        	
-//		        	if(message.getType() == Message.Type.) {
-//		        		
-//		        	}
+		        	switch(message.getType().name()) {
+			        	case "WITHDRAWREQ":break;
+			        	
+			        	case "DEPOSITREQ":break;
+			        	
+			        	default: /*invalid command*/
+			        		sendMessage(
+		        				new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+			        					break;
+		        	}
 		        	
 		        	
 		        	
@@ -165,6 +190,7 @@ public class Server {
 				e.printStackTrace();
 			}
 	        
+	        
 			
 		}
 		
@@ -182,6 +208,46 @@ public class Server {
 			//write(Date.getTime() + " Account " + account + " " + action + " " + details);
 		}
 		
+		
+		//login function synchronized to prevent duplicate logins
+		private synchronized Boolean login(Message msg) throws FileNotFoundException {
+			//account data will be sent as "user,pass" so split it
+			String args[] = msg.getData().split(",");
+			//get the list of customer accounts
+			File[] list = customerAccounts.listFiles();
+			//determine if account is valid
+			boolean found = false;
+			//compare each file in the list
+			for (File file : list) {
+				//dont include folders
+				if (file.isFile()) {
+					//if the file is found in the list
+					if(file.getName().equals(args[1])) {
+						//create a scanner to move through the file
+						Scanner scanner = new Scanner(file);
+						//since the password is located on the 4th line we need to move past the first 3
+						for(int i=0; i<3; i++) {
+							scanner.nextLine();
+						}
+						//check to see if the password is correct
+						if(scanner.nextLine().equals(args[2])) {
+							//if it is then the login is valid
+							found = true;
+						}
+						else {
+							//otherwise its invalid
+							found = false;
+						}
+						
+						scanner.close();
+						return found;
+
+					}
+				}
+			}//for
+			//if the file isn't found then the account doesn't exist so no login
+			return found;
+		}//login
 		
 		private void CreateBankAccount() {
 			
