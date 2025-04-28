@@ -72,10 +72,14 @@ public class ATM {
 		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQATM));
 		//wait for server ok or not?
 	}
+
+	//must be on own thread
 	public void autoLogout() {
 	
 	}
-	public void selectAccount(String accnum) {
+	
+	public void selectAccount(String accnum) //accnum supplied when user action triggers gui event which calls this
+	{
 		sendMessage(new Message(me, "Server", accnum, Message.Type.ENTERBAREQ));
 		//wait for server response message
 		//if ENTERBAREQGRANTED type message, trigger gui 
@@ -89,12 +93,26 @@ public class ATM {
 		}
 		*/
 	}
-	public void exitAccount() {
-
+	public void exitAccount(String accnum) {
+		sendMessage(new Message(me, "Server", accnum, Message.Type.EXITBAREQ));
+		//Message serverresp = parseRecMessage;
+		// if (serveresp.getType()==Message.Type.EXITBAREQGRANTED){
+		// 	//trigger next GUI screen
+		// }
+		// else if (serveresp.getType()==Message.Type.EXITBAREQDENIED){
+		// 	//???????????
+		// }
 	}
 
-	public void withdraw() {
-
+	public void withdraw(double amt) {
+		if(amt>getCurrReserve()){
+		//trigger gui error
+		}
+		else{
+		sendMessage(new Message(me, "Server", amt, Message.Type.ATMWITHDRAWREQ));
+			//wait for server resp
+			//...
+		}
 	}
 	public void viewBalance() {
 
