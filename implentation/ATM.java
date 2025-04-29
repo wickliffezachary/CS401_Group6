@@ -44,7 +44,7 @@ public class ATM {
 	
 	//helper to read in a message 
 	private Message parseRecMessage() throws IOException {
-		Message temp;
+		Message temp = null;
 		try {
 			//read in message
 			temp = (Message) objectInputStream.readObject();
@@ -68,7 +68,7 @@ public class ATM {
 	}
 
 	//logout method
-	public void logout() {
+	public void logout() throws IOException {
 		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQATM));
 		//wait for server ok or not?
 	}
@@ -78,50 +78,50 @@ public class ATM {
 	
 	}
 	
-	public void selectAccount(String accnum) //accnum supplied when user action triggers gui event which calls this
+	public void selectAccount(String accnum) throws IOException //accnum supplied when user action triggers gui event which calls this
 	{
-		sendMessage(new Message(me, "Server", accnum, Message.Type.ENTERBAREQ));
+		sendMessage(new Message(me, "Server", accnum, Message.Type.ACCESSBAREQ));
 		//wait for server response message
 		//if ENTERBAREQGRANTED type message, trigger gui 
 		//elif ENTERBAREQDENIED type message, trigger gui to display error
 		Message serverresp = parseRecMessage();
-		if (serveresp.getType()==Message.Type.ENTERBAREQGRANTED){
+		if (serverresp.getType()==Message.Type.ACCESSBAREQGRANTED){
 			//trigger next GUI screen
 		}
-		else if (serveresp.getType()==Message.Type.ENTERBAREQDENIED){
+		else if (serverresp.getType()==Message.Type.ACCESSBAREQDENIED){
 			//trigger error popup on GUI
 		}
 	}
 	
-	public void exitAccount(String accnum) {
+	public void exitAccount(String accnum) throws IOException {
 		sendMessage(new Message(me, "Server", accnum, Message.Type.EXITBAREQ));
-		Message serverresp = parseRecMessage;
-		if (serveresp.getType()==Message.Type.EXITBAREQGRANTED){
+		Message serverresp = parseRecMessage();
+		if (serverresp.getType()==Message.Type.EXITBAREQGRANTED){
 			//trigger next GUI screen
 		}
-		else if (serveresp.getType()==Message.Type.EXITBAREQDENIED){
+		else if (serverresp.getType()==Message.Type.EXITBAREQDENIED){
 			//???????????
 		}
 	}
 
 	//todo
-	public void withdraw(double amt) {
+	public void withdraw(double amt) throws IOException {
 		if(amt>getCurrReserve()){
 		//trigger gui error
 		}
 		else{
-		sendMessage(new Message(me, "Server", amt, Message.Type.WITHDRAWREQ));
+		sendMessage(new Message(me, "Server", String.valueOf(amt) , Message.Type.WITHDRAWREQ));
 			//wait for server resp
 			//...
 		
 		}
 	}
 	
-	public void viewBalance(String accnum) {
+	public void viewBalance(String accnum) throws IOException {
 		sendMessage(new Message(me, "Server", accnum+",Balance", Message.Type.GETREQ));
 		//wait for data from server
-		Message serverresp = parseRecMessage;
-		if (serveresp.getType()==Message.Type.GETREQGRANTED){
+		Message serverresp = parseRecMessage();
+		if (serverresp.getType()==Message.Type.GETREQGRANTED){
 		//send curr bal to GUI
 		}
 		else{
@@ -129,11 +129,11 @@ public class ATM {
 		}
 	}
 	
-	public void viewTransactionHistory() {
-		sendMessage(new Message(me, "Server", accnum+",History", Message.Type.GETREQ));
+	public void viewTransactionHistory(String accnum) throws IOException {
+		sendMessage(new Message(me, "Server", accnum + ",History", Message.Type.GETREQ));
 		//wait for data from server
-		Message serverresp = parseRecMessage;
-		if (serveresp.getType()==Message.Type.GETREQGRANTED){
+		Message serverresp = parseRecMessage();
+		if (serverresp.getType()==Message.Type.GETREQGRANTED){
 		//send transaction history to GUI
 		}
 		else{
@@ -141,14 +141,14 @@ public class ATM {
 		}
 	}
 	
-	public void deposit(double amt) {
-		sendMessage(new Message(me, "Server", amt, Message.Type.DEPOSITREQ));
+	public void deposit(double amt) throws IOException {
+		sendMessage(new Message(me, "Server", String.valueOf(amt), Message.Type.DEPOSITREQ));
 		//wait for server confirmation
-		Message serverresp = parseRecMessage;
-		if (serveresp.getType()==Message.Type.DEPOSITDONE){
+		Message serverresp = parseRecMessage();
+		if (serverresp.getType()==Message.Type.DEPOSITDONE){
 		//send transaction history to GUI
 		}
-		else if (serveresp.getType()==Message.Type.ERROR){
+		else if (serverresp.getType()==Message.Type.ERROR){
 		//errr popup on GUI
 		}
 	}
@@ -158,8 +158,8 @@ public class ATM {
 	}
 
 	//triggered by a separate thread which is always listening for server's refill message
-	public void updateCurrReserve(double recfill_amt)//refill_amt sent by server
+	public void updateCurrReserve(double refill_amt)//refill_amt sent by server
 	{
-		this.cashInMachine=refill_amt;
+		this.cashInMachine = refill_amt;
 	}
 }
