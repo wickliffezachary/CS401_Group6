@@ -84,49 +84,82 @@ public class ATM {
 		//wait for server response message
 		//if ENTERBAREQGRANTED type message, trigger gui 
 		//elif ENTERBAREQDENIED type message, trigger gui to display error
-		/*Message serverresp = parseRecMessage;
+		Message serverresp = parseRecMessage();
 		if (serveresp.getType()==Message.Type.ENTERBAREQGRANTED){
 			//trigger next GUI screen
 		}
 		else if (serveresp.getType()==Message.Type.ENTERBAREQDENIED){
 			//trigger error popup on GUI
 		}
-		*/
 	}
+	
 	public void exitAccount(String accnum) {
 		sendMessage(new Message(me, "Server", accnum, Message.Type.EXITBAREQ));
-		//Message serverresp = parseRecMessage;
-		// if (serveresp.getType()==Message.Type.EXITBAREQGRANTED){
-		// 	//trigger next GUI screen
-		// }
-		// else if (serveresp.getType()==Message.Type.EXITBAREQDENIED){
-		// 	//???????????
-		// }
+		Message serverresp = parseRecMessage;
+		if (serveresp.getType()==Message.Type.EXITBAREQGRANTED){
+			//trigger next GUI screen
+		}
+		else if (serveresp.getType()==Message.Type.EXITBAREQDENIED){
+			//???????????
+		}
 	}
 
+	//todo
 	public void withdraw(double amt) {
 		if(amt>getCurrReserve()){
 		//trigger gui error
 		}
 		else{
-		sendMessage(new Message(me, "Server", amt, Message.Type.ATMWITHDRAWREQ));
+		sendMessage(new Message(me, "Server", amt, Message.Type.WITHDRAWREQ));
 			//wait for server resp
 			//...
+		
 		}
 	}
-	public void viewBalance() {
-
+	
+	public void viewBalance(String accnum) {
+		sendMessage(new Message(me, "Server", accnum+",Balance", Message.Type.GETREQ));
+		//wait for data from server
+		Message serverresp = parseRecMessage;
+		if (serveresp.getType()==Message.Type.GETREQGRANTED){
+		//send curr bal to GUI
+		}
+		else{
+		//errr popup on GUI
+		}
 	}
+	
 	public void viewTransactionHistory() {
-
+		sendMessage(new Message(me, "Server", accnum+",History", Message.Type.GETREQ));
+		//wait for data from server
+		Message serverresp = parseRecMessage;
+		if (serveresp.getType()==Message.Type.GETREQGRANTED){
+		//send transaction history to GUI
+		}
+		else{
+		//errr popup on GUI
+		}
 	}
-	public void deposit() {
-
+	
+	public void deposit(double amt) {
+		sendMessage(new Message(me, "Server", amt, Message.Type.DEPOSITREQ));
+		//wait for server confirmation
+		Message serverresp = parseRecMessage;
+		if (serveresp.getType()==Message.Type.DEPOSITDONE){
+		//send transaction history to GUI
+		}
+		else if (serveresp.getType()==Message.Type.ERROR){
+		//errr popup on GUI
+		}
 	}
-	public void getCurrReserve() {
-
+	
+	public double getCurrReserve() {
+		return this.cashInMachine;
 	}
-	public void updateCurrReserve() {
 
+	//triggered by a separate thread which is always listening for server's refill message
+	public void updateCurrReserve(double recfill_amt)//refill_amt sent by server
+	{
+		this.cashInMachine=refill_amt;
 	}
 }
