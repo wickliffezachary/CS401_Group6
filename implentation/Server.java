@@ -102,8 +102,9 @@ public class Server {
 			
 			//variables to hold data to change
 			Message message;
-			Boolean LOGGEDIN = false;
-			Boolean isTeller = false;
+			Boolean LOGGEDIN = false;	//determines if you are currently accessing a Customer Account
+			Boolean VERIFIED = false;	//determines if the client has verified its identity
+			Boolean isTeller = false;	//determines if the client is an atm or teller
 			String User = "";			//TODO: change this to be based on customer data
 	        try {
 				//while the connection is still receiving messages
@@ -119,27 +120,44 @@ public class Server {
 		        			//display any extra info sent with the message
 		        			+ "with data \"" + message.getData() + "\"");
 		        	
-		        	//if the user isn't logged in yet but is making a request to
-		        	if(!LOGGEDIN && (message.getType() == Message.Type.LOGINREQATM || message.getType() == Message.Type.LOGINREQTELLER)) {
+		        	//when the client connects it should first send a connection request to verify if it is an atm or teller
+		        	if(!VERIFIED && (message.getType() == Message.Type.LOGINREQATM || message.getType() == Message.Type.LOGINREQTELLER)) {
+		        		//if the login was for a teller then flow will adjust accordingly
+	        			if(message.getType() == Message.Type.LOGINREQTELLER) {
+	        				isTeller = true;
+	        			}
+	        			sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.LOGINOK));
+	        			VERIFIED = true;
+		        	}
+		        	//the client MUST send the first log in message otherwise they cant attempt to access login functions
+		        	if(!VERIFIED) {
+		        		//tell them its not valid
+		        		sendMessage(
+		        				new Message(
+		        						"Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+		        		//go back to waiting for new message
+		        		continue;
+			        }
+		        	
+		        	
+		        	//once the client is connected it should attempt to access a customer account before being able to access more functionality
+		        	if(!LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
 		        		
 		        		//attempt to log in
 		        		LOGGEDIN = login(message);
 		        		//if login was successful
 		        		if(LOGGEDIN == true) {
-		        			//if the login was for a teller then flow will adjust accordingly
-		        			if(message.getType() == Message.Type.LOGINREQTELLER) {
-		        				isTeller = true;
-		        			}
+		        			
 		        			//set the current user to the username of the account
 		        			User = message.getData().split(",")[0];
 			        		//respond that the login was successful
 			        		sendMessage(
 			        				new Message(
-			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.LOGINOK));
+			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSCAREQGRANTED));
 		        		}
 		        		else{
 		        			sendMessage(
-			        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.INVALID));
+			        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSCAREQDENIED));
 		        		}
 		        		
 		        		//go back to waiting for new message
@@ -243,7 +261,7 @@ public class Server {
 				//dont include folders
 				if (file.isFile()) {
 					//if the file is found in the list
-					if(file.getName().equals(args[0])) {
+					if(file.getName().equals(args[0] + ".txt")) {
 						//create a scanner to move through the file
 						Scanner scanner = new Scanner(file);
 						//if the access indicator on line 1 is 1 then the file is currently in use and login is not allowed
