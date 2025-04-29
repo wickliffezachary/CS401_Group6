@@ -13,7 +13,7 @@ public class Server {
 	//determine where accounts will be stored
 	//these will be created at server start if they don't exist.
 	//they are accessible by the clienthandler class.
-	private final static File directory = new File(System.getProperty("user.dir"));
+	private final static File directory = new File(System.getProperty("user.dir"));	//should probably be stored somewhere like user.home that isn't pushable to git for "security"
     private final static File customerAccounts = new File(directory, "data/customerAccounts/");
     private final static File bankAccounts = new File(directory, "data/bankAccounts/");
     private final static File otherFiles = new File(directory, "data/otherFiles/");
@@ -123,12 +123,24 @@ public class Server {
 		        		
 		        		//attempt to log in
 		        		LOGGEDIN = login(message);
-		        				        		
-		        		User = message.getData();
-		        		//respond that the login was successful
-		        		sendMessage(
-		        				new Message(
-		        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.LOGINOK));
+		        		//if login was successful
+		        		if(LOGGEDIN == true) {
+		        			//if the login was for a teller then flow will adjust accordingly
+		        			if(message.getType() == Message.Type.LOGINREQTELLER) {
+		        				isTeller = true;
+		        			}
+		        			//set the current user to the username of the account
+		        			User = message.getData().split(",")[0];
+			        		//respond that the login was successful
+			        		sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.LOGINOK));
+		        		}
+		        		else{
+		        			sendMessage(
+			        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.INVALID));
+		        		}
+		        		
 		        		//go back to waiting for new message
 		        		continue;
 		        	}	
@@ -222,15 +234,21 @@ public class Server {
 				//dont include folders
 				if (file.isFile()) {
 					//if the file is found in the list
-					if(file.getName().equals(args[1])) {
+					if(file.getName().equals(args[0])) {
 						//create a scanner to move through the file
 						Scanner scanner = new Scanner(file);
-						//since the password is located on the 4th line we need to move past the first 3
+						//if the access indicator on line 1 is 1 then the file is currently in use and login is not allowed
+						if(scanner.nextLine().equals("1")) {
+							scanner.close();
+							return false;
+						}
+						//if the file is not being accessed
+						//since the password is located on the 5th line we need to move past the next 3 lines
 						for(int i=0; i<3; i++) {
 							scanner.nextLine();
 						}
 						//check to see if the password is correct
-						if(scanner.nextLine().equals(args[2])) {
+						if(scanner.nextLine().equals(args[1])) {
 							//if it is then the login is valid
 							found = true;
 						}
