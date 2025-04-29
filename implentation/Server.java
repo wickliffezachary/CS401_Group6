@@ -102,10 +102,11 @@ public class Server {
 			
 			//variables to hold data to change
 			Message message;
-			Boolean LOGGEDIN = false;	//determines if you are currently accessing a Customer Account
-			Boolean VERIFIED = false;	//determines if the client has verified its identity
-			Boolean isTeller = false;	//determines if the client is an atm or teller
-			String User = "";			//TODO: change this to be based on customer data
+			Boolean AccessingBankAccount = false;
+			Boolean LOGGEDIN = false;			//determines if you are currently accessing a Customer Account
+			Boolean VERIFIED = false;			//determines if the client has verified its identity
+			Boolean isTeller = false;			//determines if the client is an atm or teller
+			String User = "";					//TODO: change this to be based on customer data
 	        try {
 				//while the connection is still receiving messages
 		        while((message = (Message) objectInputStream.readObject()) != null) {
@@ -175,7 +176,7 @@ public class Server {
 		        		continue;
 		        	}	
 			        
-		        	//if a message is sent but they are not logged in just throw back an error
+		        	//if a message is sent but they are not logged in just throw back an error because its not correct
 		        	if(!LOGGEDIN) {
 		        		//tell them its not valid
 		        		sendMessage(
@@ -194,7 +195,7 @@ public class Server {
 		        	
 		        	//below this is where commands for logged in users go
 		        	
-		        	//to prevent invalid messages from being sent
+		        	//to prevent invalid commands like a an atm trying to create accounts
 		        	//only allow commands based on whether they are a teller or atm
 		        	
 		        	//commands allowed for Tellers
@@ -212,6 +213,25 @@ public class Server {
 		        	}
 		        	//commands allowed for ATMS
 		        	else {
+		        		
+		        		//atm will only be able to select a bank account to make transactions from or logout
+		        		
+		        		if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
+		        			//TODO: login to bank account
+		        		}
+		        		//atm should only be able to log out of CA (handled before) or log into BA
+		        		//otherwise invalid
+			        	if(!AccessingBankAccount) {
+			        		//tell them its not valid
+			        		sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), "Login to Bank Account to access money transfers", Message.Type.INVALID));
+			        		//go back to waiting for new message
+			        		continue;
+				        }		        		
+		        		
+		        		
+		        		
 		        		switch(message.getType().name()) {
 			        	case "WITHDRAWREQ":break;
 			        	
