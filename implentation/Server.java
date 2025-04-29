@@ -1,10 +1,11 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 
@@ -155,6 +156,14 @@ public class Server {
 		        		continue;
 			        }
 	
+		        	//if they are logged in then see if they want to log out first
+		        	
+		        	if(message.getType() == Message.Type.LOGOUTREQATM || message.getType() == Message.Type.LOGOUTREQTELLER) {
+		        		if(message.getType() == Message.Type.LOGINREQTELLER) {
+	        				isTeller = true;
+	        			}
+		        	}
+		        	
 		        	
 		        	//The next valid atm requests are select account and exit
 		        	//The next valid commands for teller are
@@ -222,7 +231,7 @@ public class Server {
 		
 		
 		//login function synchronized to prevent duplicate logins
-		private synchronized Boolean login(Message msg) throws FileNotFoundException {
+		private synchronized Boolean login(Message msg) throws IOException {
 			//account data will be sent as "user,pass" so split it
 			String args[] = msg.getData().split(",");
 			//get the list of customer accounts
@@ -250,6 +259,15 @@ public class Server {
 						//check to see if the password is correct
 						if(scanner.nextLine().equals(args[1])) {
 							//if it is then the login is valid
+							
+							//update file access indicator in file
+							//first store entire file in string
+							String info = new String(Files.readAllBytes(Paths.get(file.toString())));
+							//replace the first char and append the rest of the string back
+							info = "1" + info.substring(1);
+							//write the file back out
+							Files.write(Paths.get(file.toString()), info.getBytes());
+							
 							found = true;
 						}
 						else {
