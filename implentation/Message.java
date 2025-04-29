@@ -9,9 +9,9 @@ public class Message implements Serializable{
 		LOGINREQATM,LOGINREQTELLER, LOGINOK, LOGINDENIED, 	//atm/teller account login messages
 		LOGOUTREQATM, LOGOUTREQTELLER, LOGOUTOK,			//atm/teller account logout messages
 		ACCESSCAREQ, ACCESSCAREQGRANTED, ACCESSCAREQDENIED, //Customer account login messages
-		EXITCA, EXITCADONE, 								//Customer account logout messages
+		EXITCAREQ, EXITCAREQGRANTED, EXITCAREQDENIED,		//Customer account logout messages
 		ACCESSBAREQ, ACCESSBAREQGRANTED, ACCESSBAREQDENIED, //Bank account login messages
-		EXITBA, EXITBADONE, 								//Bank account logout messages
+		EXITBAREQ, EXITBAREQGRANTED, EXITBAREQDENIED,		//Bank account logout messages
 		
 		//withdraw and desposit messages
 		WITHDRAWREQ, WITHDRAWREQACCEPTED, WITHDRAWDONE, 	//withdraw messages
@@ -29,7 +29,7 @@ public class Message implements Serializable{
 		DELBAREQ, DELBADONE, 								//close bank account messages
 		
 		//getting and modifying account messages
-		GETCUSTOMERINFOREQ, GETCUSTOMERINFOREQGRANTED,		//get customer info message
+		GETREQ, GETREQGRANTED,								//get customer info message
 		CHANGECUSTOMERINFOREQ, CHANGECUSTOMERINFODONE, 		//change customer info message
 		
 		//is this one necessary?
