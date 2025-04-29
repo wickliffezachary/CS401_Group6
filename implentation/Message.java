@@ -2,12 +2,39 @@ import java.io.Serializable;
 
 @SuppressWarnings("serial")
 public class Message implements Serializable{
-	enum Type {INVALID,LOGINREQATM, LOGOUTREQATM, LOGINOK, LOGINDENIED, LOGOUTOK, WITHDRAWDONE, WITHDRAWREQ,
-		WITHDRAWREQACCEPTED,DEPOSITREQACCEPTED, EXITBADONE, EXITCADONE, REFILLATM,
-		DEPOSITDONE, DEPOSITREQ, ADDUSEREQ, ADDUSERDONE, REMOVEUSER, REMOVEUSERDONE, ADDCUSTOMERREQ,
-		ADDCUSTOMERDONE, ACCESSBAREQ, ACCESSBAREQGRANTED, ACCESSCAREQ, ACCESSCAREQGRANTED, CREATEBACCREQ,
-		 CREATEBACCDONE, DELBAREQ, DELBADONE, CHANGECUSTOMERINFOREQ, CHANGECUSTOMERINFODONE, EXITBA,
-		 EXITCA, LOGINREQTELLER, LOGOUTREQTELLER, ERROR, GETREQ, GETREQGRANTED}
+	enum Type {
+		INVALID, ERROR,										//error messages
+		
+		//login and out messages
+		LOGINREQATM,LOGINREQTELLER, LOGINOK, LOGINDENIED, 	//atm/teller account login messages
+		LOGOUTREQATM, LOGOUTREQTELLER, LOGOUTOK,			//atm/teller account logout messages
+		ACCESSCAREQ, ACCESSCAREQGRANTED, ACCESSCAREQDENIED, //Customer account login messages
+		EXITCA, EXITCADONE, 								//Customer account logout messages
+		ACCESSBAREQ, ACCESSBAREQGRANTED, ACCESSBAREQDENIED, //Bank account login messages
+		EXITBA, EXITBADONE, 								//Bank account logout messages
+		
+		//withdraw and desposit messages
+		WITHDRAWREQ, WITHDRAWREQACCEPTED, WITHDRAWDONE, 	//withdraw messages
+		DEPOSITREQ, DEPOSITREQACCEPTED, DEPOSITDONE,		//deposit messages
+		
+		//linking bank accounts and customer accounts messages
+		ADDUSERREQ, ADDUSERDONE, 							//link Bank account to Customer account messages
+		ADDCUSTOMERREQ, ADDCUSTOMERDONE, 					//is this different from the one above?
+		REMOVEUSERREQ, REMOVEUSERDONE, 						//unlink BA to CA messages
+		
+		//creating and deleting account messages
+		CREATCBACCREQ, CREATECACCDONE, 						//create customer account messages
+		DELCAREQ, DELCADONE, 								//close customer account messages
+		CREATEBACCREQ, CREATEBACCDONE, 						//create bank account messages
+		DELBAREQ, DELBADONE, 								//close bank account messages
+		
+		//getting and modifying account messages
+		GETCUSTOMERINFOREQ, GETCUSTOMERINFOREQGRANTED,		//get customer info message
+		CHANGECUSTOMERINFOREQ, CHANGECUSTOMERINFODONE, 		//change customer info message
+		
+		//is this one necessary?
+		REFILLATM
+		}
  private static int count = 0;
  private final int id;
  private final String data;
