@@ -23,6 +23,7 @@ public class ATM {
     	private ATMListener listener;
 	private static int ct=0;
 	private String me;
+	private boolean loggedinuser;
 	
     //when an atm is created connect it to the server and listener
 	public ATM(String host, int port, ATMListener listener) throws IOException {
@@ -32,6 +33,7 @@ public class ATM {
 	        this.objectInputStream = new ObjectInputStream(socket.getInputStream());
 	        ct+=1;
 		this.me="ATM"+ct;
+		this.loggedinuser=false;
 	}
 
 	//helper function for sending messages to server
@@ -57,20 +59,29 @@ public class ATM {
 	}
 	
 	//login method
+	//todo
 	public void login(String fname, String lname,String phno, String pswd) throws IOException {
 		//received custname, phno, pswd from gui 
 		String login_creds="uname="+fname+lname+phno+",pswd="+pswd;
 		//send message to server
 		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINREQATM));
 		//wait for server response message
-		//if loginok type message, trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+		//if loginok type message, 
+		loggedinuser=true;
+		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+		//and spawn gui thread for autologout
 		//elif logindenied type message, trigger gui to display error
 	}
 
 	//logout method
+	//todo
 	public void logout() throws IOException {
 		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQATM));
 		//wait for server ok or not?
+		//if logoutok type message, 
+		loggedinuser=false;
+		//kill autologout timer thread
+		//send gui to login page
 	}
 
 	//must be on own thread
@@ -161,5 +172,46 @@ public class ATM {
 	public void updateCurrReserve(double refill_amt)//refill_amt sent by server
 	{
 		this.cashInMachine = refill_amt;
+	}
+
+	
+	public void testlogin(String fname, String lname,String phno, String pswd) throws IOException {
+		//received custname, phno, pswd from gui 
+		String login_creds="uname="+fname+lname+phno+",pswd="+pswd;
+		//send message to server
+		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINREQATM));
+		//wait for server response message
+		Message serverresp = parseRecMessage();
+		if (serverresp.getType()==Message.Type.LOGINOK){
+		//if loginok type message, 
+		loggedinuser=true;
+		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+		System.out.println("loggedin)
+		}
+		else if (serverresp.getType()==Message.Type.LOGINDENIED){
+		System.out.println("Incorrect creds");
+		}
+		else{
+		System.out.println("some error, check more");
+		}
+		//and spawn gui thread for autologout
+		//elif logindenied type message, trigger gui to display error
+	}
+	public void testlogout() throws IOException {
+		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQATM));
+		//wait for server ok or not?
+		Message serverresp = parseRecMessage();
+		if (serverresp.getType()==Message.Type.LOGOUTOK){
+		//if logoutok type message, 
+		loggedinuser=false;
+		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+		System.out.println("loggedout)
+		}
+		else {
+		System.out.println("some error, check more");
+		}
+		
+		//kill autologout timer thread
+		//send gui to login page
 	}
 }
