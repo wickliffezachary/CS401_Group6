@@ -131,13 +131,24 @@ public class Server {
 		        	}
 		        	//the client MUST send the first log in message otherwise they cant attempt to access login functions
 		        	if(!VERIFIED) {
-		        		//tell them its not valid
-		        		sendMessage(
-		        				new Message(
-		        						"Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+		        		//tell them its not valid if they dont properly connect the client
+		        		sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
 		        		//go back to waiting for new message
 		        		continue;
 			        }
+		        	
+		        	
+		        	//a verified client should be able to quit as a first options
+		        	//this should be called when the client is exiting
+		        	if(message.getType() == Message.Type.LOGOUTREQATM || message.getType() == Message.Type.LOGOUTREQTELLER) {
+		        		if(message.getType() == Message.Type.LOGOUTREQTELLER) {
+	        				isTeller = false;
+	        			}
+		        		//if a user is currently being accessed then it needs to be logged out
+		        		if(LOGGEDIN) {
+		        			//TODO: logout CA
+		        		}
+		        	}
 		        	
 		        	
 		        	//once the client is connected it should attempt to access a customer account before being able to access more functionality
@@ -174,28 +185,21 @@ public class Server {
 		        		continue;
 			        }
 	
+
 		        	//if they are logged in then see if they want to log out first
-		        	
-		        	if(message.getType() == Message.Type.LOGOUTREQATM || message.getType() == Message.Type.LOGOUTREQTELLER) {
-		        		if(message.getType() == Message.Type.LOGINREQTELLER) {
-	        				isTeller = true;
-	        			}
+		        	if(message.getType() == Message.Type.EXITCAREQ ) {
+		        		//TODO: Logout CA
 		        	}
-		        	
-		        	
-		        	//The next valid atm requests are select account and exit
-		        	//The next valid commands for teller are
-		        	
-		        	
-		        	
-		        	
-		        	
 		        	
 		        	
 		        	//below this is where commands for logged in users go
 		        	
+		        	//to prevent invalid messages from being sent
+		        	//only allow commands based on whether they are a teller or atm
 		        	
-		        	switch(message.getType().name()) {
+		        	//commands allowed for Tellers
+		        	if(isTeller) {
+		        		switch(message.getType().name()) {
 			        	case "WITHDRAWREQ":break;
 			        	
 			        	case "DEPOSITREQ":break;
@@ -204,7 +208,24 @@ public class Server {
 			        		sendMessage(
 		        				new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
 			        					break;
+		        		}
 		        	}
+		        	//commands allowed for ATMS
+		        	else {
+		        		switch(message.getType().name()) {
+			        	case "WITHDRAWREQ":break;
+			        	
+			        	case "DEPOSITREQ":break;
+			        	
+			        	default: /*invalid command*/
+			        		sendMessage(
+		        				new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+			        					break;
+		        		}
+		        	}
+		        	
+		        	
+		        	
 		        	
 		        	
 		        	
