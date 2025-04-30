@@ -91,6 +91,8 @@ public class ATM {
 	
 	public void selectAccount(String accnum) throws IOException //accnum supplied when user action triggers gui event which calls this
 	{
+		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+		//or should these only be in server?????
 		sendMessage(new Message(me, "Server", accnum, Message.Type.ACCESSBAREQ));
 		//wait for server response message
 		//if ENTERBAREQGRANTED type message, trigger gui 
@@ -105,18 +107,20 @@ public class ATM {
 	}
 	
 	public void exitAccount(String accnum) throws IOException {
+		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+		//should there be a check for user in BA??
 		sendMessage(new Message(me, "Server", accnum, Message.Type.EXITBAREQ));
 		Message serverresp = parseRecMessage();
 		if (serverresp.getType()==Message.Type.EXITBAREQGRANTED){
 			//trigger next GUI screen
 		}
 		else if (serverresp.getType()==Message.Type.EXITBAREQDENIED){
-			//???????????
+			//smth
 		}
 	}
 
-	//todo
 	public void withdraw(double amt) throws IOException {
+		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
 		if(amt>getCurrReserve()){
 		//trigger gui error
 		}
@@ -124,11 +128,25 @@ public class ATM {
 		sendMessage(new Message(me, "Server", String.valueOf(amt) , Message.Type.WITHDRAWREQ));
 			//wait for server resp
 			//...
-		
+		Message serverresp = parseRecMessage();
+		if (serverresp.getType()==Message.Type.WITHDRAWREQDONE){
+			//imagine cash given out
+			updateCurrReserve(getCurrReserve()-amt);
+		}
+		// if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
+		// 	//and only permanently updates it after client confirms withdrawal???????????/
+		// 	//imagine cash given out of machine
+		// 	//decrease reserves
+		// 	updateCurrReserve(getCurrReserve()-amt);
+		// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
+		// }
+		else{
+		//gui err popup
 		}
 	}
 	
 	public void viewBalance(String accnum) throws IOException {
+		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
 		sendMessage(new Message(me, "Server", accnum+",Balance", Message.Type.GETREQ));
 		//wait for data from server
 		Message serverresp = parseRecMessage();
@@ -141,6 +159,7 @@ public class ATM {
 	}
 	
 	public void viewTransactionHistory(String accnum) throws IOException {
+		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
 		sendMessage(new Message(me, "Server", accnum + ",History", Message.Type.GETREQ));
 		//wait for data from server
 		Message serverresp = parseRecMessage();
@@ -153,6 +172,7 @@ public class ATM {
 	}
 	
 	public void deposit(double amt) throws IOException {
+		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
 		sendMessage(new Message(me, "Server", String.valueOf(amt), Message.Type.DEPOSITREQ));
 		//wait for server confirmation
 		Message serverresp = parseRecMessage();
