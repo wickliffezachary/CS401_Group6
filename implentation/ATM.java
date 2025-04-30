@@ -129,16 +129,20 @@ public class ATM {
 			//wait for server resp
 			//...
 		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
-			//and only permanently updates it after client confirms withdrawal???????????/
-			//imagine cash given out of machine
-			//decrease reserves
+		if (serverresp.getType()==Message.Type.WITHDRAWREQDONE){
+			//imagine cash given out
 			updateCurrReserve(getCurrReserve()-amt);
-			sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
 		}
-			else{
-			//gui err popup
-			}
+		// if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
+		// 	//and only permanently updates it after client confirms withdrawal???????????/
+		// 	//imagine cash given out of machine
+		// 	//decrease reserves
+		// 	updateCurrReserve(getCurrReserve()-amt);
+		// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
+		// }
+		else{
+		//gui err popup
+		}
 	}
 	
 	public void viewBalance(String accnum) throws IOException {
