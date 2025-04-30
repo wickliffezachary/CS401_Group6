@@ -89,6 +89,10 @@ public class ATM {
 	
 	}
 	
+	public boolean isLoggedInUser() {
+		return loggedinuser;
+	}
+	
 	public void selectAccount(String accnum) throws IOException //accnum supplied when user action triggers gui event which calls this
 	{
 		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
@@ -129,7 +133,7 @@ public class ATM {
 			//wait for server resp
 			//...
 		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.WITHDRAWREQDONE){
+		if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){
 			//imagine cash given out
 			updateCurrReserve(getCurrReserve()-amt);
 		}
@@ -140,8 +144,11 @@ public class ATM {
 		// 	updateCurrReserve(getCurrReserve()-amt);
 		// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
 		// }
+	
 		else{
-		//gui err popup
+			//gui err popup
+		}
+
 		}
 	}
 	
@@ -206,7 +213,7 @@ public class ATM {
 		//if loginok type message, 
 		loggedinuser=true;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedin)
+		System.out.println("loggedin");
 		}
 		else if (serverresp.getType()==Message.Type.LOGINDENIED){
 		System.out.println("Incorrect creds");
@@ -225,7 +232,7 @@ public class ATM {
 		//if logoutok type message, 
 		loggedinuser=false;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedout)
+		System.out.println("loggedout");
 		}
 		else {
 		System.out.println("some error, check more");

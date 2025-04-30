@@ -14,7 +14,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	//when the gui is created it should instantiate an atm
 	public ATMGUI() {
 		try {
-			atm = new ATM("xxxx", 1234, this);
+			atm = new ATM("localhost", 1234, this);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

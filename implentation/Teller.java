@@ -71,7 +71,7 @@ public class Teller {
 		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
 		//wait for server ok or not??????
 		//if logoutok type message, 
-		loggedinuteller=false;
+		loggedinteller=false;
 		//send gui to login page
 		//else err
 	}
@@ -129,14 +129,14 @@ public class Teller {
 		//received custname, phno, pswd from gui 
 		String login_creds="uname="+tellerid+",pswd="+pswd;
 		//send message to server
-		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINRETELLER));
+		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINREQTELLER));
 		//wait for server response message
 		Message serverresp = parseRecMessage();
 		if (serverresp.getType()==Message.Type.LOGINOK){
 		//if loginok type message, 
 		loggedinteller=true;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedin)
+		System.out.println("loggedin");
 		}
 		else if (serverresp.getType()==Message.Type.LOGINDENIED){
 		System.out.println("Incorrect creds");
@@ -155,7 +155,7 @@ public class Teller {
 		//if logoutok type message, 
 		loggedinteller=false;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedout)
+		System.out.println("loggedout");
 		}
 		else {
 		System.out.println("some error, check more");
