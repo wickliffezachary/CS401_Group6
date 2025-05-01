@@ -109,7 +109,6 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			
 			
 			currPanel = promptLoginPanel;
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -317,8 +316,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		private JButton backButton;
 		
 		public DepositPanel() {
-			amountField = new JTextField();
+			amountField = new JTextField(16);
 			amountField.setMaximumSize(amountField.getPreferredSize());
+			
 			buttonPanel = new JPanel();
 			buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 			sendButton = new JButton("Send");
@@ -377,13 +377,13 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	}
 	
 	private class WithdrawPanel extends JPanel{
-		private JFormattedTextField amountField;
+		private JTextField amountField;
 		private JPanel buttonPanel;
 		private JButton sendButton;
 		private JButton backButton;
 		
 		public WithdrawPanel() {
-			amountField = new JFormattedTextField();
+			amountField = new JTextField(16);
 			amountField.setMaximumSize(amountField.getPreferredSize());
 			buttonPanel = new JPanel();
 			buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
@@ -549,27 +549,34 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			viewCurrentBalanceButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					
+					switchPanel(currentBalancePanel);
 				}});
 			viewTransactionHistoryButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					
+					switchPanel(transactionHistoryPanel);
 				}});
 			depositButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-						
+					switchPanel(depositPanel);
 				}});
 			withdrawButton.addActionListener(new ActionListener() {
 				@Override
-				public void actionPerformed(ActionEvent e) {	
+				public void actionPerformed(ActionEvent e) {
+					switchPanel(withdrawPanel);
 				}});
 			
 			exitButton = new JButton("Exit");
 			exitButton.addActionListener(new ActionListener() {
 				@Override
-				public void actionPerformed(ActionEvent e) {	
+				public void actionPerformed(ActionEvent e) {
+					try {
+						atm.exitAccount(accountName.getText());
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}});
 			
 			this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -667,14 +674,14 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			nameBox.add(new JLabel("Last Name:"));
 			nameBox.add(lastNameField);
 			
-			phoneNumberField = new JTextField();
+			phoneNumberField = new JTextField(10);
 			phoneNumberField.setMaximumSize(firstNameField.getPreferredSize());
 			phoneBox = new JPanel();
 			phoneBox.setLayout(new BoxLayout(phoneBox, BoxLayout.X_AXIS));
 			phoneBox.add(new JLabel("Phone Number:"));
 			phoneBox.add(phoneNumberField);
 			
-			passwordField = new JTextField();
+			passwordField = new JTextField(16);
 			passwordField.setMaximumSize(firstNameField.getPreferredSize());
 			passwordBox = new JPanel();
 			passwordBox.setLayout(new BoxLayout(passwordBox, BoxLayout.X_AXIS));
