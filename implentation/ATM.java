@@ -186,7 +186,7 @@ public class ATM {
 		//if loginok type message, 
 		loggedinuser=true;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedin)
+		System.out.println("loggedin");
 		}
 		else if (serverresp.getType()==Message.Type.LOGINDENIED){
 		System.out.println("Incorrect creds");
@@ -205,7 +205,7 @@ public class ATM {
 		//if logoutok type message, 
 		loggedinuser=false;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedout)
+		System.out.println("loggedout");
 		}
 		else {
 		System.out.println("some error, check more");
