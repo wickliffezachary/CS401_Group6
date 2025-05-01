@@ -20,7 +20,7 @@ public class ATM {
 	private Socket socket = null;
    	private ObjectInputStream objectInputStream = null;
    	private ObjectOutputStream objectOutputStream = null;
-    	private ATMListener listener;
+    private ATMListener listener;
 	private static int ct=0;
 	private String me;
 	private boolean loggedinuser;
@@ -29,9 +29,9 @@ public class ATM {
 	public ATM(String host, int port, ATMListener listener) throws IOException {
 		this.listener = listener;
 		this.socket = new Socket(host, port);
-	        this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-	        this.objectInputStream = new ObjectInputStream(socket.getInputStream());
-	        ct+=1;
+        this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        this.objectInputStream = new ObjectInputStream(socket.getInputStream());
+        ct+=1;
 		this.me="ATM"+ct;
 		this.loggedinuser=false;
 	}
@@ -125,23 +125,24 @@ public class ATM {
 		//trigger gui error
 		}
 		else{
-		sendMessage(new Message(me, "Server", String.valueOf(amt) , Message.Type.WITHDRAWREQ));
-			//wait for server resp
-			//...
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.WITHDRAWREQDONE){
-			//imagine cash given out
-			updateCurrReserve(getCurrReserve()-amt);
-		}
-		// if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
-		// 	//and only permanently updates it after client confirms withdrawal???????????/
-		// 	//imagine cash given out of machine
-		// 	//decrease reserves
-		// 	updateCurrReserve(getCurrReserve()-amt);
-		// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
-		// }
-		else{
-		//gui err popup
+			sendMessage(new Message(me, "Server", String.valueOf(amt) , Message.Type.WITHDRAWREQ));
+				//wait for server resp
+				//...
+			Message serverresp = parseRecMessage();
+			if (serverresp.getType()==Message.Type.WITHDRAWDONE){
+				//imagine cash given out
+				updateCurrReserve(getCurrReserve()-amt);
+			}
+			// if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
+			// 	//and only permanently updates it after client confirms withdrawal???????????/
+			// 	//imagine cash given out of machine
+			// 	//decrease reserves
+			// 	updateCurrReserve(getCurrReserve()-amt);
+			// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
+			// }
+			else{
+			//gui err popup
+			}
 		}
 	}
 	
@@ -203,16 +204,16 @@ public class ATM {
 		//wait for server response message
 		Message serverresp = parseRecMessage();
 		if (serverresp.getType()==Message.Type.LOGINOK){
-		//if loginok type message, 
-		loggedinuser=true;
-		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedin)
+			//if loginok type message, 
+			loggedinuser=true;
+			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+			System.out.println("loggedin");
 		}
 		else if (serverresp.getType()==Message.Type.LOGINDENIED){
-		System.out.println("Incorrect creds");
+			System.out.println("Incorrect creds");
 		}
 		else{
-		System.out.println("some error, check more");
+			System.out.println("some error, check more");
 		}
 		//and spawn gui thread for autologout
 		//elif logindenied type message, trigger gui to display error
@@ -222,13 +223,13 @@ public class ATM {
 		//wait for server ok or not?
 		Message serverresp = parseRecMessage();
 		if (serverresp.getType()==Message.Type.LOGOUTOK){
-		//if logoutok type message, 
-		loggedinuser=false;
-		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedout)
+			//if logoutok type message, 
+			loggedinuser=false;
+			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+			System.out.println("loggedout");
 		}
 		else {
-		System.out.println("some error, check more");
+			System.out.println("some error, check more");
 		}
 		
 		//kill autologout timer thread

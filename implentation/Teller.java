@@ -72,7 +72,7 @@ public class Teller {
 		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
 		//wait for server ok or not??????
 		//if logoutok type message, 
-		loggedinuteller=false;
+		this.loggedinteller=false;
 		//send gui to login page
 		//else err
 	}
