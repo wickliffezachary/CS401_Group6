@@ -20,20 +20,20 @@ public class ATM {
 	private Socket socket = null;
    	private ObjectInputStream objectInputStream = null;
    	private ObjectOutputStream objectOutputStream = null;
-    	private ATMListener listener;
-	private static int ct=0;
+    private ATMListener listener;
+	private static int count = 0;
 	private String me;
-	private boolean loggedinuser;
+	private boolean loggedInUser;
 	
     //when an atm is created connect it to the server and listener
 	public ATM(String host, int port, ATMListener listener) throws IOException {
 		this.listener = listener;
 		this.socket = new Socket(host, port);
-	        this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-	        this.objectInputStream = new ObjectInputStream(socket.getInputStream());
-	        ct+=1;
-		this.me="ATM"+ct;
-		this.loggedinuser=false;
+	    this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+		this.objectInputStream = new ObjectInputStream(socket.getInputStream());
+	    count += 1;
+		this.me = "ATM" + count;
+		this.loggedInUser = false;
 	}
 
 	//helper function for sending messages to server
@@ -52,22 +52,22 @@ public class ATM {
 			temp = (Message) objectInputStream.readObject();
 			// //pass message to gui so gui can update accordingly
 			// listener.receivedMessage(temp);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+		} catch (ClassNotFoundException error) {
+			error.printStackTrace();
 		}
 		return temp;
 	}
 	
 	//login method
 	//todo
-	public void login(String fname, String lname,String phno, String pswd) throws IOException {
-		//received custname, phno, pswd from gui 
-		String login_creds="uname="+fname+lname+phno+",pswd="+pswd;
+	public void login(String firstName, String lastName,String phoneNumber, String password) throws IOException {
+		//received customer name, phone number, password from gui 
+		String loginCreds = "username=" + firstName + lastName + phoneNumber + ",password=" + password;
 		//send message to server
-		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINREQATM));
+		sendMessage(new Message(me, "Server", loginCreds, Message.Type.LOGINREQATM));
 		//wait for server response message
 		//if loginok type message, 
-		loggedinuser=true;
+		loggedInUser=true;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
 		//and spawn gui thread for autologout
 		//elif logindenied type message, trigger gui to display error
@@ -76,10 +76,10 @@ public class ATM {
 	//logout method
 	//todo
 	public void logout() throws IOException {
-		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQATM));
+		sendMessage(new Message(me, "Server", "Requesting Logout", Message.Type.LOGOUTREQATM));
 		//wait for server ok or not?
 		//if logoutok type message, 
-		loggedinuser=false;
+		loggedInUser=false;
 		//kill autologout timer thread
 		//send gui to login page
 	}
@@ -89,98 +89,99 @@ public class ATM {
 	
 	}
 	
-	public void selectAccount(String accnum) throws IOException //accnum supplied when user action triggers gui event which calls this
+	public void selectAccount(String accNum) throws IOException //accnum supplied when user action triggers gui event which calls this
 	{
-		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+		if(!loggedInUser) {return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
 		//or should these only be in server?????
-		sendMessage(new Message(me, "Server", accnum, Message.Type.ACCESSBAREQ));
+		sendMessage(new Message(me, "Server", accNum, Message.Type.ACCESSBAREQ));
 		//wait for server response message
 		//if ENTERBAREQGRANTED type message, trigger gui 
 		//elif ENTERBAREQDENIED type message, trigger gui to display error
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.ACCESSBAREQGRANTED){
+		Message serverResp = parseRecMessage();
+		if (serverResp.getType() == Message.Type.ACCESSBAREQGRANTED){
 			//trigger next GUI screen
 		}
-		else if (serverresp.getType()==Message.Type.ACCESSBAREQDENIED){
+		else if (serverResp.getType() == Message.Type.ACCESSBAREQDENIED){
 			//trigger error popup on GUI
 		}
 	}
 	
-	public void exitAccount(String accnum) throws IOException {
-		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+	public void exitAccount(String accNum) throws IOException {
+		if(!loggedInUser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
 		//should there be a check for user in BA??
-		sendMessage(new Message(me, "Server", accnum, Message.Type.EXITBAREQ));
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.EXITBAREQGRANTED){
+		sendMessage(new Message(me, "Server", accNum, Message.Type.EXITBAREQ));
+		Message serverResp = parseRecMessage();
+		if (serverResp.getType() == Message.Type.EXITBAREQGRANTED) {
 			//trigger next GUI screen
 		}
-		else if (serverresp.getType()==Message.Type.EXITBAREQDENIED){
+		else if (serverResp.getType() == Message.Type.EXITBAREQDENIED) {
 			//smth
 		}
 	}
 
-	public void withdraw(double amt) throws IOException {
-		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
-		if(amt>getCurrReserve()){
-		//trigger gui error
+	public void withdraw(double amount) throws IOException {
+		if(!loggedInUser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+		if(amount > getCurrReserve()) {
+			//trigger gui error
 		}
-		else{
-		sendMessage(new Message(me, "Server", String.valueOf(amt) , Message.Type.WITHDRAWREQ));
+		else {
+			sendMessage(new Message(me, "Server", String.valueOf(amount) , Message.Type.WITHDRAWREQ));
 			//wait for server resp
 			//...
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.WITHDRAWREQDONE){
-			//imagine cash given out
-			updateCurrReserve(getCurrReserve()-amt);
-		}
-		// if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
-		// 	//and only permanently updates it after client confirms withdrawal???????????/
-		// 	//imagine cash given out of machine
-		// 	//decrease reserves
-		// 	updateCurrReserve(getCurrReserve()-amt);
-		// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
-		// }
-		else{
-		//gui err popup
+			Message serverResp = parseRecMessage();
+			if (serverResp.getType() == Message.Type.WITHDRAWDONE) {
+				//imagine cash given out
+				updateCurrReserve(getCurrReserve() - amount);
+			}
+			// if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
+			// 	//and only permanently updates it after client confirms withdrawal???????????/
+			// 	//imagine cash given out of machine
+			// 	//decrease reserves
+			// 	updateCurrReserve(getCurrReserve()-amt);
+			// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
+			// }
+			else {
+				//gui err popup
+			}
 		}
 	}
 	
 	public void viewBalance(String accnum) throws IOException {
-		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+		if(!loggedInUser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
 		sendMessage(new Message(me, "Server", accnum+",Balance", Message.Type.GETREQ));
 		//wait for data from server
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.GETREQGRANTED){
+		Message serverResp = parseRecMessage();
+		if (serverResp.getType() == Message.Type.GETREQGRANTED) {
 		//send curr bal to GUI
 		}
-		else{
+		else {
 		//errr popup on GUI
 		}
 	}
 	
-	public void viewTransactionHistory(String accnum) throws IOException {
-		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
-		sendMessage(new Message(me, "Server", accnum + ",History", Message.Type.GETREQ));
+	public void viewTransactionHistory(String accNum) throws IOException {
+		if(!loggedInUser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+		sendMessage(new Message(me, "Server", accNum + ",History", Message.Type.GETREQ));
 		//wait for data from server
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.GETREQGRANTED){
-		//send transaction history to GUI
+		Message serverResp = parseRecMessage();
+		if (serverResp.getType() == Message.Type.GETREQGRANTED) {
+			//send transaction history to GUI
 		}
-		else{
-		//errr popup on GUI
+		else {
+			//errr popup on GUI
 		}
 	}
 	
-	public void deposit(double amt) throws IOException {
-		if(!loggedinuser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
-		sendMessage(new Message(me, "Server", String.valueOf(amt), Message.Type.DEPOSITREQ));
+	public void deposit(double amount) throws IOException {
+		if(!loggedInUser){return;} //our interface makes this an other functions unavailable until user logsin, but adding an extra check just in case
+		sendMessage(new Message(me, "Server", String.valueOf(amount), Message.Type.DEPOSITREQ));
 		//wait for server confirmation
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.DEPOSITDONE){
-		//send transaction history to GUI
+		Message serverResp = parseRecMessage();
+		if (serverResp.getType() == Message.Type.DEPOSITDONE) {
+			//send transaction history to GUI
 		}
-		else if (serverresp.getType()==Message.Type.ERROR){
-		//errr popup on GUI
+		else if (serverResp.getType() == Message.Type.ERROR) {
+			//errr popup on GUI
 		}
 	}
 	
@@ -189,30 +190,30 @@ public class ATM {
 	}
 
 	//triggered by a separate thread which is always listening for server's refill message
-	public void updateCurrReserve(double refill_amt)//refill_amt sent by server
+	public void updateCurrReserve(double refillAmount)//refill_amt sent by server
 	{
-		this.cashInMachine = refill_amt;
+		this.cashInMachine = refillAmount;
 	}
 
 	
-	public void testlogin(String fname, String lname,String phno, String pswd) throws IOException {
-		//received custname, phno, pswd from gui 
-		String login_creds="uname="+fname+lname+phno+",pswd="+pswd;
+	public void testlogin(String firstName, String lastName,String phoneNumber, String password) throws IOException {
+		//received customer name, phone number, password from gui 
+		String loginCreds = "username=" + firstName + lastName + phoneNumber + ",pswd=" + password;
 		//send message to server
-		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINREQATM));
+		sendMessage(new Message(me, "Server", loginCreds, Message.Type.LOGINREQATM));
 		//wait for server response message
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.LOGINOK){
-		//if loginok type message, 
-		loggedinuser=true;
-		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedin)
+		Message serverResp = parseRecMessage();
+		if (serverResp.getType() == Message.Type.LOGINOK){
+			//if loginok type message, 
+			loggedInUser = true;
+			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+			System.out.println("loggedin");
 		}
-		else if (serverresp.getType()==Message.Type.LOGINDENIED){
-		System.out.println("Incorrect creds");
+		else if (serverResp.getType() == Message.Type.LOGINDENIED) {
+			System.out.println("Incorrect credentials");
 		}
 		else{
-		System.out.println("some error, check more");
+			System.out.println("Some error, check more");
 		}
 		//and spawn gui thread for autologout
 		//elif logindenied type message, trigger gui to display error
@@ -220,15 +221,15 @@ public class ATM {
 	public void testlogout() throws IOException {
 		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQATM));
 		//wait for server ok or not?
-		Message serverresp = parseRecMessage();
-		if (serverresp.getType()==Message.Type.LOGOUTOK){
-		//if logoutok type message, 
-		loggedinuser=false;
-		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedout)
+		Message serverResp = parseRecMessage();
+		if (serverResp.getType() == Message.Type.LOGOUTOK){
+			//if logoutok type message, 
+			loggedInUser = false;
+			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+			System.out.println("loggedout");
 		}
 		else {
-		System.out.println("some error, check more");
+			System.out.println("some error, check more");
 		}
 		
 		//kill autologout timer thread
