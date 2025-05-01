@@ -20,8 +20,8 @@ public class Teller {
 	public Teller(String host, int port, TellerListener listener) throws IOException {
 		this.listener=listener;
 		this.socket = new Socket(host, port);
+		this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 		this.objectInputStream = new ObjectInputStream(socket.getInputStream());
-	    this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 	        
 	        ct+=1;
 		this.me="Teller"+ct;

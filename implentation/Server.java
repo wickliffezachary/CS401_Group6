@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
@@ -30,6 +31,7 @@ public class Server {
 		System.out.println("customer Directory: " + ((customerAccounts.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("Bank Accounts Directory: " + ((bankAccounts.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("other Directory: " + ((otherFiles.mkdirs()) ? "Created" : "Exists"));
+		System.out.println("Teller Accounts: " + ((tellerAccounts.mkdirs())? "Created": "Exists"));
 
 		
 		System.out.println("Server Started");
@@ -92,8 +94,8 @@ public class Server {
 		public ClientHandler(Socket socket) throws IOException
 		{
 			this.clientSocket = socket;
-			this.objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 			this.objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+			this.objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 
 		}
 		
@@ -126,10 +128,10 @@ public class Server {
 		        	if (!VERIFIED) {
 		        	    if (message.getType() == Message.Type.LOGINREQTELLER) {
 		        	        // AUTHENTICATE TELLER
-		        	        String[] parts = message.getData().split(",");
+		        	        String[] credentials = message.getData().split(",");
 		        	        String uname = null;
 		        	        String pswd = null;
-		        	        for (String part : parts) {
+		        	        for (String part : credentials) {
 		        	        	if (part.startsWith("uname=")) uname = part.substring(6);
 		        	        	if (part.startsWith("pswd=")) pswd = part.substring(5);
 		        	        }
@@ -142,20 +144,25 @@ public class Server {
 		        	        if (uname != null && pswd != null) {
 		        	            File file = new File(tellerAccounts, uname + ".txt");
 		        	            System.out.println("Reading file: " + file.getAbsolutePath());
+		        	            System.out.println(" file.exists()? " + file.exists() + ", isFile()? " + file.isFile());
+		        	            System.out.println(System.getProperty("user.dir"));
 		        	            if (file.exists()) {
 		        	            	
 		        	                Scanner scanner = new Scanner(file);
 		        	                while (scanner.hasNextLine()) {
 		        	                    String line = scanner.nextLine().trim();
-		        	                    if (line.startsWith("password:")) {
-		        	                        String stored = line.substring(9).trim();
+		        	                 // inside the while(scanner.hasNextLine()) loop:
+		        	                    
+		        	                    String[] parts = line.split(":", 2);
+		        	                    if (parts.length == 2 && parts[0].trim().equalsIgnoreCase("password")) {
+		        	                        String stored = parts[1].trim();
 		        	                        System.out.println("Checking password: " + stored);
 		        	                        if (stored.equals(pswd)) {
-		        	                        	System.out.println("Checking password: " + stored);
 		        	                            valid = true;
 		        	                            break;
 		        	                        }
 		        	                    }
+
 		        	                }
 		        	                scanner.close();
 		        	            }
@@ -171,6 +178,8 @@ public class Server {
 		        	        
 		        	        continue;
 		        	    }
+		        	    
+		        	    
 
 		        	    else if (message.getType() == Message.Type.LOGINREQATM) {
 		        	        // Allow ATM login without authentication
@@ -178,11 +187,25 @@ public class Server {
 		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "ATM login successful", Message.Type.LOGINOK));
 		        	        continue;
 		        	    }
+		        	    
+		        	    else if (message.getType() == Message.Type.LOGOUTREQTELLER || message.getType() == Message.Type.LOGOUTREQATM) {
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Logout ok", Message.Type.LOGOUTOK));
+		        	        break; // terminate handler thread cleanly
+		        	    }
 
-		        	    // If not a valid login type, reject
+		        	    // fallback last resort
 		        	    sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid login type", Message.Type.INVALID));
 		        	    continue;
 		        	}
+		        	
+		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
+		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
+		        			    isTeller   = false;
+		        			    VERIFIED   = false;
+		        			    sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
+		        			    break;  // exit
+		        	}
+		        	
 		        	
 		        	
 		        	//a verified client should be able to quit as a first options
@@ -310,6 +333,10 @@ public class Server {
 		        	objectOutputStream.flush();
 		        }//while
 	        }//try
+	        
+	        catch (SocketException e) {
+	            System.out.println("Client disconnected.");
+	        }
 	        catch(IOException e) {
 	        	e.printStackTrace();
 	        } catch (ClassNotFoundException e) {
