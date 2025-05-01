@@ -1,5 +1,4 @@
 import java.io.IOException;
-
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -15,9 +14,10 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	public ATMGUI() {
 		try {
 			atm = new ATM("xxxx", 1234, this);
-		} catch (IOException e) {
+		}
+		catch (IOException error) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			error.printStackTrace();
 		}
 	}
 	
@@ -28,13 +28,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		
 		//swing utilities
 		SwingUtilities.invokeLater(() -> new ATMGUI().setVisible(true));
-		
-			
-
-
 	}
-
-
 
 	@Override
 	//this function is where we receive messages from atm from server
