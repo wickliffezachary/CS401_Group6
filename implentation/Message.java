@@ -2,6 +2,7 @@ import java.io.Serializable;
 
 @SuppressWarnings("serial")
 public class Message implements Serializable{
+
 	enum Type {
 		INVALID, ERROR,										//error messages
 		
@@ -73,13 +74,16 @@ public class Message implements Serializable{
  public String getTo() {
 	 return this.to;
  }
- public String toString() {
-	    return "Message{" +
-	           "id=" + id +
-	           ", from='" + from + '\'' +
-	           ", to='" + to + '\'' +
-	           ", type=" + type +
-	           ", data='" + data + '\'' +
-	           '}';
-	}
+
+
+public String toString() {
+    return "Message{" +
+           "id=" + id +
+           ", from='" + from + '\'' +
+           ", to='" + to + '\'' +
+           ", type=" + type +
+           ", data='" + data + '\'' +
+           '}';
+}
+
 }
