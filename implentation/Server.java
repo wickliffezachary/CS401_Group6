@@ -23,8 +23,6 @@ public class Server {
 
 	public static void main(String[] args) {
 		
-		
-		
 		ServerSocket server = null;
 		
 		//attempts to create directory where files go and outputs status
@@ -33,8 +31,6 @@ public class Server {
 		System.out.println("other Directory: " + ((otherFiles.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("Teller Accounts: " + ((tellerAccounts.mkdirs())? "Created": "Exists"));
 
-
-		
 		System.out.println("Server Started");
 		
 		try {
@@ -53,29 +49,26 @@ public class Server {
 
 				// Displaying that new client is connected
 				// to server
-				System.out.println("New client connected "
-								+ client.getInetAddress()
-										.getHostAddress());
+				System.out.println("New client connected " + client.getInetAddress().getHostAddress());
 
 				// create a new thread object
-				ClientHandler clientSock
-					= new ClientHandler(client);
+				ClientHandler clientSocket = new ClientHandler(client);
 
 				// This thread will handle the client
 				// separately
-				new Thread(clientSock).start();
+				new Thread(clientSocket).start();
 			}
 		}
-		catch (IOException e) {
-			e.printStackTrace();
+		catch (IOException error) {
+			error.printStackTrace();
 		}
 		finally {
 			if (server != null) {
 				try {
 					server.close();
 				}
-				catch (IOException e) {
-					e.printStackTrace();
+				catch (IOException error) {
+					error.printStackTrace();
 				}
 			}
 		}
@@ -89,9 +82,7 @@ public class Server {
 		private final ObjectInputStream objectInputStream;
         private final ObjectOutputStream objectOutputStream;
 
-        
-
-		//Thread constructor to handle socket
+		//thread constructor to handle socket
 		public ClientHandler(Socket socket) throws IOException
 		{
 			this.clientSocket = socket;
@@ -101,13 +92,11 @@ public class Server {
 		
 		public void run() {
 			
-			
-			
 			//variables to hold data to change
 			Message message;
 			Boolean AccessingBankAccount = false;
-			Boolean LOGGEDIN = false;			//determines if you are currently accessing a Customer Account
-			Boolean VERIFIED = false;			//determines if the client has verified its identity
+			Boolean loggedIn = false;			//determines if you are currently accessing a Customer Account
+			Boolean verified = false;			//determines if the client has verified its identity
 			Boolean isTeller = false;			//determines if the client is an atm or teller
 			String User = "";					//TODO: change this to be based on customer data
 	        try {
@@ -118,7 +107,7 @@ public class Server {
 		        			//display ip of client
 		        			"Client <" + clientSocket.getInetAddress() + "> "
 		        			//if the client is logged in include their name
-		        			+ (LOGGEDIN? "[" + User + "]: " : ": ")
+		        			+ (loggedIn? "[" + User + "]: " : ": ")
 		        			//display the message type
 		        			+ "Request " + message.getType().name() + " "
 		        			//display any extra info sent with the message
@@ -126,7 +115,7 @@ public class Server {
 		        	
 		        	//when the client connects it should first send a connection request to verify if it is an atm or teller
 
-		        	if (!VERIFIED) {
+		        	if (!verified) {
 		        	    if (message.getType() == Message.Type.LOGINREQTELLER) {
 		        	        // AUTHENTICATE TELLER
 		        	        String[] credentials = message.getData().split(",");
@@ -171,7 +160,7 @@ public class Server {
 
 		        	        if (valid) {
 		        	            isTeller = true;
-		        	            VERIFIED = true;
+		        	            verified = true;
 		        	            sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login successful", Message.Type.LOGINOK));
 		        	        } else {
 		        	            sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login failed", Message.Type.LOGINDENIED));
@@ -184,7 +173,7 @@ public class Server {
 
 		        	    else if (message.getType() == Message.Type.LOGINREQATM) {
 		        	        // Allow ATM login without authentication
-		        	        VERIFIED = true;
+		        	        verified = true;
 		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "ATM login successful", Message.Type.LOGINOK));
 		        	        continue;
 		        	    }
@@ -202,10 +191,10 @@ public class Server {
 		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
 		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
 		        			    isTeller   = false;
-		        			    VERIFIED   = false;
+		        			    verified   = false;
                 
                 	//if a user is currently being accessed then it needs to be logged out
-                  if(LOGGEDIN) {
+                  if(loggedIn) {
 		        			  //TODO: logout CA, this includes resetting the access modifier
 		        		  }
 		        			    sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
@@ -215,12 +204,12 @@ public class Server {
 		        	
 		        	
 		        	//once the client is connected it should attempt to access a customer account before being able to access more functionality
-		        	if(!LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
+		        	if(!loggedIn && message.getType() == Message.Type.ACCESSCAREQ) {
 		        		
 		        		//attempt to log in
-		        		LOGGEDIN = login(message);
+		        		loggedIn = login(message);
 		        		//if login was successful
-		        		if(LOGGEDIN == true) {
+		        		if(loggedIn == true) {
 		        			
 		        			//set the current user to the username of the account
 		        			User = message.getData().split(",")[0];
@@ -239,7 +228,7 @@ public class Server {
 		        	}	
 			        
 		        	//if a message is sent but they are not logged in just throw back an error because its not correct
-		        	if(!LOGGEDIN) {
+		        	if(!loggedIn) {
 		        		//tell them its not valid
 		        		sendMessage(
 		        				new Message(
@@ -306,17 +295,6 @@ public class Server {
 		        		}
 		        	}
 		        	
-		        	
-		        	
-		        	
-		        	
-		        	
-		        	
-		        	
-		        	
-		        	
-		        	
-		        	
 		        	//this will be below all other request types and should only be reachable
 		        	//if a message with an incorrect or invalid type is sent
 		        	sendMessage(
@@ -326,13 +304,13 @@ public class Server {
 		        	objectOutputStream.flush();
 		        }//while
 	        }//try
-	        catch (SocketException e) {
+	        catch (SocketException error) {
 	            System.out.println("Client disconnected.");
 	        }
-	        catch(IOException e) {
-	        	e.printStackTrace();
-	        } catch (ClassNotFoundException e) {
-				e.printStackTrace();
+	        catch(IOException error) {
+	        	error.printStackTrace();
+	        } catch (ClassNotFoundException error) {
+				error.printStackTrace();
 			}
 	        
 	        
@@ -353,7 +331,6 @@ public class Server {
 			//TODO: implement
 			//write(Date.getTime() + " Account " + account + " " + action + " " + details);
 		}
-		
 		
 		//login function synchronized to prevent duplicate logins
 		private synchronized Boolean login(Message msg) throws IOException {
@@ -424,7 +401,6 @@ public class Server {
 		}
 		
 	}
-
 
 	//helpers for server
 	private void dailyUpkeep() {
