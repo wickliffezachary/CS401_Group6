@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
@@ -18,6 +19,7 @@ public class Server {
     private final static File customerAccounts = new File(directory, "data/customerAccounts/");
     private final static File bankAccounts = new File(directory, "data/bankAccounts/");
     private final static File otherFiles = new File(directory, "data/otherFiles/");
+    private final static File tellerAccounts = new File(directory, "data/tellerAccounts/");
 
 	public static void main(String[] args) {
 		
@@ -29,6 +31,8 @@ public class Server {
 		System.out.println("customer Directory: " + ((customerAccounts.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("Bank Accounts Directory: " + ((bankAccounts.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("other Directory: " + ((otherFiles.mkdirs()) ? "Created" : "Exists"));
+		System.out.println("Teller Accounts: " + ((tellerAccounts.mkdirs())? "Created": "Exists"));
+
 
 		
 		System.out.println("Server Started");
@@ -93,7 +97,6 @@ public class Server {
 			this.clientSocket = socket;
 			this.objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 			this.objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-
 		}
 		
 		public void run() {
@@ -122,34 +125,93 @@ public class Server {
 		        			+ "with data \"" + message.getData() + "\"");
 		        	
 		        	//when the client connects it should first send a connection request to verify if it is an atm or teller
-		        	if(!VERIFIED && (message.getType() == Message.Type.LOGINREQATM || message.getType() == Message.Type.LOGINREQTELLER)) {
-		        		//if the login was for a teller then flow will adjust accordingly
-	        			if(message.getType() == Message.Type.LOGINREQTELLER) {
-	        				isTeller = true;
-	        			}
-	        			sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.LOGINOK));
-	        			VERIFIED = true;
+
+		        	if (!VERIFIED) {
+		        	    if (message.getType() == Message.Type.LOGINREQTELLER) {
+		        	        // AUTHENTICATE TELLER
+		        	        String[] credentials = message.getData().split(",");
+		        	        String uname = null;
+		        	        String pswd = null;
+		        	        for (String part : credentials) {
+		        	        	if (part.startsWith("uname=")) uname = part.substring(6);
+		        	        	if (part.startsWith("pswd=")) pswd = part.substring(5);
+		        	        }
+		        	        
+		        	        System.out.println("Parsed uname = " + uname);
+		        	        System.out.println("Parsed pswd = " + pswd);
+
+		        	        boolean valid = false;
+
+		        	        if (uname != null && pswd != null) {
+		        	            File file = new File(tellerAccounts, uname + ".txt");
+		        	            System.out.println("Reading file: " + file.getAbsolutePath());
+		        	            System.out.println(" file.exists()? " + file.exists() + ", isFile()? " + file.isFile());
+		        	            System.out.println(System.getProperty("user.dir"));
+		        	            if (file.exists()) {
+		        	            	
+		        	                Scanner scanner = new Scanner(file);
+		        	                while (scanner.hasNextLine()) {
+		        	                    String line = scanner.nextLine().trim();
+		        	                 // inside the while(scanner.hasNextLine()) loop:
+		        	                    
+		        	                    String[] parts = line.split(":", 2);
+		        	                    if (parts.length == 2 && parts[0].trim().equalsIgnoreCase("password")) {
+		        	                        String stored = parts[1].trim();
+		        	                        System.out.println("Checking password: " + stored);
+		        	                        if (stored.equals(pswd)) {
+		        	                            valid = true;
+		        	                            break;
+		        	                        }
+		        	                    }
+
+		        	                }
+		        	                scanner.close();
+		        	            }
+		        	        }
+
+		        	        if (valid) {
+		        	            isTeller = true;
+		        	            VERIFIED = true;
+		        	            sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login successful", Message.Type.LOGINOK));
+		        	        } else {
+		        	            sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login failed", Message.Type.LOGINDENIED));
+		        	        }
+		        	        
+		        	        continue;
+		        	    }
+		        	    
+		        	    
+
+		        	    else if (message.getType() == Message.Type.LOGINREQATM) {
+		        	        // Allow ATM login without authentication
+		        	        VERIFIED = true;
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "ATM login successful", Message.Type.LOGINOK));
+		        	        continue;
+		        	    }
+		        	    
+		        	    else if (message.getType() == Message.Type.LOGOUTREQTELLER || message.getType() == Message.Type.LOGOUTREQATM) {
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Logout ok", Message.Type.LOGOUTOK));
+		        	        break; // terminate handler thread cleanly
+		        	    }
+
+		        	    // fallback last resort
+		        	    sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid login type", Message.Type.INVALID));
+		        	    continue;
 		        	}
-		        	//the client MUST send the first log in message otherwise they cant attempt to access login functions
-		        	if(!VERIFIED) {
-		        		//tell them its not valid if they dont properly connect the client
-		        		sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-		        		//go back to waiting for new message
-		        		continue;
-			        }
 		        	
-		        	
-		        	//a verified client should be able to quit as a first options
-		        	//this should be called when the client is exiting
-		        	if(message.getType() == Message.Type.LOGOUTREQATM || message.getType() == Message.Type.LOGOUTREQTELLER) {
-		        		if(message.getType() == Message.Type.LOGOUTREQTELLER) {
-	        				isTeller = false;
-	        			}
-		        		//if a user is currently being accessed then it needs to be logged out
-		        		if(LOGGEDIN) {
-		        			//TODO: logout CA
-		        		}
+		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
+		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
+		        			    isTeller   = false;
+		        			    VERIFIED   = false;
+                
+                	//if a user is currently being accessed then it needs to be logged out
+                  if(LOGGEDIN) {
+		        			  //TODO: logout CA, this includes resetting the access modifier
+		        		  }
+		        			    sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
+		        			    break;  // exit
 		        	}
+		        	
 		        	
 		        	
 		        	//once the client is connected it should attempt to access a customer account before being able to access more functionality
@@ -264,6 +326,9 @@ public class Server {
 		        	objectOutputStream.flush();
 		        }//while
 	        }//try
+	        catch (SocketException e) {
+	            System.out.println("Client disconnected.");
+	        }
 	        catch(IOException e) {
 	        	e.printStackTrace();
 	        } catch (ClassNotFoundException e) {
@@ -280,6 +345,7 @@ public class Server {
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
 			objectOutputStream.flush();
+			System.out.println("Server sent: " + message.getType() + " - " + message.getData());
 		}
 		
 		//called whenever an action occurs that modifies an account
@@ -369,4 +435,6 @@ public class Server {
 		//used for things like interest, etc.
 	}
 	
+
 }
+

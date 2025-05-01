@@ -20,8 +20,9 @@ public class Teller {
 	public Teller(String host, int port, TellerListener listener) throws IOException {
 		this.listener=listener;
 		this.socket = new Socket(host, port);
-	        this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-	        this.objectInputStream = new ObjectInputStream(socket.getInputStream());
+
+		this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+		this.objectInputStream = new ObjectInputStream(socket.getInputStream());
 	        ct+=1;
 		this.me="Teller"+ct;
 		this.loggedinteller=false;
@@ -66,7 +67,7 @@ public class Teller {
 			//trigger gui error
 		}
 	}
-	
+
 	public void logout()  throws IOException {
 		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
 		//wait for server ok or not??????
@@ -124,19 +125,21 @@ public class Teller {
 		//ok, maybe a gui lie saying "manager alerted, please wait for assistance"
 	}
 
+
 	//for testing server-client prior to having our GUI
 	public void testlogin(String tellerid, String pswd) throws IOException {
 		//received custname, phno, pswd from gui 
 		String login_creds="uname="+tellerid+",pswd="+pswd;
 		//send message to server
-		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINRETELLER));
+		sendMessage(new Message(me, "Server", login_creds, Message.Type.LOGINREQTELLER));
 		//wait for server response message
 		Message serverresp = parseRecMessage();
 		if (serverresp.getType()==Message.Type.LOGINOK){
 		//if loginok type message, 
 		loggedinteller=true;
+		
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedin)
+		System.out.println("loggedin");
 		}
 		else if (serverresp.getType()==Message.Type.LOGINDENIED){
 		System.out.println("Incorrect creds");
@@ -155,7 +158,7 @@ public class Teller {
 		//if logoutok type message, 
 		loggedinteller=false;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		System.out.println("loggedout)
+		System.out.println("loggedout");
 		}
 		else {
 		System.out.println("some error, check more");
