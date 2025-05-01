@@ -1,28 +1,34 @@
 import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 @SuppressWarnings("serial")
 public class ATMGUI extends JFrame implements ATM.ATMListener {
 	
 	private Panel stackPanel;	//stack of all panels
 	private LoginPanel loginPanel;
-	private JPanel customerPanel;
+	//TODO: PromptLoginPanel
+	//TODO: LoginFailedPanel
+	
+	private CustomerPanel customerPanel;
 	private JPanel BankAccountPanel;
-	private ATMPanel currPanel;
+	private ATMPanel currPanel;	//keeps track of currently visible panel
 
 	
 
@@ -43,8 +49,12 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			this.add(stackPanel);
 			
 			loginPanel = new LoginPanel();
+			customerPanel = new CustomerPanel();
+			customerPanel.setVisible(false);
 			stackPanel.add(loginPanel);
-		
+			stackPanel.add(customerPanel);
+			
+			currPanel = loginPanel;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -55,11 +65,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	//takes the panel you want to show, hides the old one, and shows the new one
 	private void switchPanel(ATMPanel panel) {
 		currPanel.setVisible(false);
-		currPanel.clearFields();
 		currPanel = panel;
 		currPanel.setVisible(true);
 	}
-	
 	
 	//starting point for class
 	public static void main(String[] args) {
@@ -68,9 +76,64 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	}
 	
 	private class ATMPanel extends JPanel{
-		//call so ATM GUI doesn't display previous data
+		//call so ATM GUI doesn't display previous users data
 		public void clearFields() {
 			//Implement in child classes
+		}
+	}
+	
+	private class CustomerPanel extends ATMPanel{
+		private JPanel mainPanel;
+		private JScrollPane scrollPane;	//for if user has many associated BA's
+		private JList<String> bankAccountList;	//list view of customers bank accounts; send ACCESSBAREQ when element selected
+		private DefaultListModel<String> bankAccountModel;	//list of customers bank accounts
+		private JButton logoutButton;
+		
+		public CustomerPanel() {
+			this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			mainPanel = new JPanel();
+			mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+			
+			
+			mainPanel.add(new JLabel("Accounts"));
+			bankAccountModel = new DefaultListModel<>();
+			bankAccountList = new JList<>(bankAccountModel);
+			bankAccountList.addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					try {
+						atm.selectAccount(bankAccountList.getSelectedValue());
+					} catch (IOException e1) {e1.printStackTrace();}
+				}
+			});
+			logoutButton = new JButton("Logout");
+			logoutButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						atm.logout();
+					} catch (IOException e1) {e1.printStackTrace();}
+				}
+			});
+			
+			mainPanel.add(bankAccountList);
+			mainPanel.add(logoutButton);
+			
+			scrollPane = new JScrollPane(mainPanel);
+			this.add(scrollPane);
+		}
+		
+		public void setContents(String[] data) {
+			clearFields();
+			//data should be list of account numbers
+			for(int i = 0; i < data.length; ++i) {
+				bankAccountModel.add(i, data[i]);
+			}
+		}
+		
+		@Override
+		public void clearFields() {
+			bankAccountModel.clear();
 		}
 	}
 	
@@ -91,14 +154,14 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			
 			firstNameField = new JTextField(16);
-			firstNameField.setMaximumSize(firstNameField.getPreferredSize());
+			firstNameField.setMaximumSize(firstNameField.getPreferredSize());	//adjusts height of textfield
 			lastNameField = new JTextField(16);
 			lastNameField.setMaximumSize(firstNameField.getPreferredSize());
 			nameBox = new JPanel();
 			nameBox.setLayout(new BoxLayout(nameBox, BoxLayout.X_AXIS));
-			nameBox.add(new JLabel("First Name:\t"));
+			nameBox.add(new JLabel("First Name:"));
 			nameBox.add(firstNameField);
-			nameBox.add(new JLabel("Last Name:\t"));
+			nameBox.add(new JLabel("Last Name:"));
 			nameBox.add(lastNameField);
 			
 			phoneNumberField = new JTextField();
@@ -112,7 +175,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			passwordField.setMaximumSize(firstNameField.getPreferredSize());
 			passwordBox = new JPanel();
 			passwordBox.setLayout(new BoxLayout(passwordBox, BoxLayout.X_AXIS));
-			passwordBox.add(new JLabel("Password:\t"));
+			passwordBox.add(new JLabel("Password:"));
 			passwordBox.add(passwordField);
 			
 			fieldBox = new JPanel();
@@ -161,13 +224,25 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	//this function is where we receive messages from atm from server
 	public void receivedMessage(Message msg) {
 		// TODO update gui based on received info
-
 		
-		//example
-		if(msg.getType() == Message.Type.ACCESSBAREQ) {
-			
+		switch(msg.getType()) {
+		case LOGOUTOK: //call clearFields() on all panels
+			loginPanel.clearFields();
+			customerPanel.clearFields();
+			switchPanel(loginPanel);
+		case ACCESSCAREQGRANTED: 
+			String search = "BankAccounts:";
+			int pos = msg.getData().indexOf(search);
+			if(pos > -1) {
+				pos += search.length();
+				String[] accounts = msg.getData().substring(pos).split(",");
+				customerPanel.setContents(accounts);
+			}else {
+				customerPanel.clearFields();
+			}
+			switchPanel(customerPanel); break;
+		
 		}
-		
 	}
 
 }
