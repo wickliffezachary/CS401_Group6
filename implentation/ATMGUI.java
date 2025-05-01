@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
@@ -27,9 +28,8 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	//TODO: LoginFailedPanel
 	
 	private CustomerPanel customerPanel;
-	private JPanel BankAccountPanel;
+	private BankAccountPanel bankAccountPanel;
 	private ATMPanel currPanel;	//keeps track of currently visible panel
-
 	
 
 	//gui must contain an atm object
@@ -51,10 +51,14 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			loginPanel = new LoginPanel();
 			customerPanel = new CustomerPanel();
 			customerPanel.setVisible(false);
+			bankAccountPanel = new BankAccountPanel();
+			bankAccountPanel.setVisible(false);
 			stackPanel.add(loginPanel);
 			stackPanel.add(customerPanel);
+			stackPanel.add(bankAccountPanel);
 			
 			currPanel = loginPanel;
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -75,10 +79,89 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		SwingUtilities.invokeLater(() -> new ATMGUI().setVisible(true));
 	}
 	
-	private class ATMPanel extends JPanel{
+	private abstract class ATMPanel extends JPanel{
 		//call so ATM GUI doesn't display previous users data
+		public abstract void clearFields();
+	}
+	
+	private class BankAccountPanel extends ATMPanel{
+		//organization panels
+		private JPanel borderPanel;	
+		private JPanel leftPanel;
+		private JPanel rightPanel;
+		
+		private JLabel accountName;
+		
+		//buttons
+		private JButton viewCurrentBalanceButton;
+		private JButton viewTransactionHistoryButton;
+		private JButton depositButton;
+		private JButton withdrawButton;
+		private JButton exitButton;
+		
+		public BankAccountPanel() {
+			accountName = new JLabel("");
+			
+			borderPanel = new JPanel();
+			borderPanel.setLayout(new BorderLayout());
+			
+			leftPanel = new JPanel();
+			leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+			rightPanel = new JPanel();
+			rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+			borderPanel.add(leftPanel, BorderLayout.WEST);
+			borderPanel.add(rightPanel, BorderLayout.EAST);
+			
+			viewCurrentBalanceButton = new JButton("View Current Balance");
+			viewTransactionHistoryButton = new JButton("Transaction History");
+			depositButton = new JButton("Deposit");
+			withdrawButton = new JButton("Withdraw");
+			
+			leftPanel.add(viewCurrentBalanceButton);
+			leftPanel.add(viewTransactionHistoryButton);
+			rightPanel.add(depositButton);
+			rightPanel.add(withdrawButton);
+			
+			viewCurrentBalanceButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+				}});
+			viewTransactionHistoryButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+				}});
+			depositButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+						
+				}});
+			withdrawButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {	
+				}});
+			
+			exitButton = new JButton("Exit");
+			exitButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {	
+				}});
+			
+			this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			this.add(accountName);
+			this.add(borderPanel);
+			this.add(exitButton);
+			
+		}
+		
+		public void setContents() {
+			
+		}
+		
+		@Override
 		public void clearFields() {
-			//Implement in child classes
+			
 		}
 	}
 	
@@ -199,10 +282,10 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			});
 			
 			//set all data fields to left alignment
-			nameBox.setAlignmentX(Component.LEFT_ALIGNMENT);               
-			phoneBox.setAlignmentX(Component.LEFT_ALIGNMENT);              
-			passwordBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-			fieldBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+			//nameBox.setAlignmentX(Component.LEFT_ALIGNMENT);               
+			//phoneBox.setAlignmentX(Component.LEFT_ALIGNMENT);              
+			//passwordBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+			//fieldBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 			
 			this.add(fieldBox);
 			this.add(loginButton);
@@ -217,9 +300,6 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-
-
-
 	@Override
 	//this function is where we receive messages from atm from server
 	public void receivedMessage(Message msg) {
@@ -229,6 +309,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		case LOGOUTOK: //call clearFields() on all panels
 			loginPanel.clearFields();
 			customerPanel.clearFields();
+			bankAccountPanel.clearFields();
 			switchPanel(loginPanel);
 		case ACCESSCAREQGRANTED: 
 			String search = "BankAccounts:";
@@ -241,6 +322,10 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				customerPanel.clearFields();
 			}
 			switchPanel(customerPanel); break;
+		case ACCESSBAREQGRANTED:
+			//TODO: Handle how data should be distributed to GUI components
+			switchPanel(bankAccountPanel);
+			break;
 		
 		}
 	}
