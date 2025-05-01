@@ -33,6 +33,7 @@ public class Server {
 		System.out.println("other Directory: " + ((otherFiles.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("Teller Accounts: " + ((tellerAccounts.mkdirs())? "Created": "Exists"));
 
+
 		
 		System.out.println("Server Started");
 		
@@ -94,9 +95,8 @@ public class Server {
 		public ClientHandler(Socket socket) throws IOException
 		{
 			this.clientSocket = socket;
-			this.objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 			this.objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-
+			this.objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 		}
 		
 		public void run() {
@@ -125,6 +125,7 @@ public class Server {
 		        			+ "with data \"" + message.getData() + "\"");
 		        	
 		        	//when the client connects it should first send a connection request to verify if it is an atm or teller
+
 		        	if (!VERIFIED) {
 		        	    if (message.getType() == Message.Type.LOGINREQTELLER) {
 		        	        // AUTHENTICATE TELLER
@@ -202,23 +203,15 @@ public class Server {
 		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
 		        			    isTeller   = false;
 		        			    VERIFIED   = false;
+                
+                	//if a user is currently being accessed then it needs to be logged out
+                  if(LOGGEDIN) {
+		        			  //TODO: logout CA, this includes resetting the access modifier
+		        		  }
 		        			    sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
 		        			    break;  // exit
 		        	}
 		        	
-		        	
-		        	
-		        	//a verified client should be able to quit as a first options
-		        	//this should be called when the client is exiting
-		        	if(message.getType() == Message.Type.LOGOUTREQATM || message.getType() == Message.Type.LOGOUTREQTELLER) {
-		        		if(message.getType() == Message.Type.LOGOUTREQTELLER) {
-	        				isTeller = false;
-	        			}
-		        		//if a user is currently being accessed then it needs to be logged out
-		        		if(LOGGEDIN) {
-		        			//TODO: logout CA
-		        		}
-		        	}
 		        	
 		        	
 		        	//once the client is connected it should attempt to access a customer account before being able to access more functionality
@@ -333,7 +326,6 @@ public class Server {
 		        	objectOutputStream.flush();
 		        }//while
 	        }//try
-	        
 	        catch (SocketException e) {
 	            System.out.println("Client disconnected.");
 	        }
@@ -443,4 +435,6 @@ public class Server {
 		//used for things like interest, etc.
 	}
 	
+
 }
+
