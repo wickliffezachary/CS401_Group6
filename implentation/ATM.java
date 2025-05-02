@@ -99,9 +99,14 @@ public class ATM {
 	
 	}
 	
+	// method that returns whether or not a user is logged in
+	public boolean isLoggedInUser() {
+		return loggedInUser;
+	}
+	
 	// method that allows a user to select a financial account
 	// (the account number is supplied when user action triggers GUI event that calls this method)
-	public void selectAccount(String accNum) throws IOException {
+	public void selectAccount(String accnum) throws IOException {
 		// if the user is not logged in, then they should not be allowed to select any account
 		// so exit this method call
 		if (!loggedInUser) {
@@ -157,7 +162,7 @@ public class ATM {
 		}
 		
 		// if the amount to withdraw is greater than the current cash reserve in the ATM, then trigger an error pop-up on the GUI
-		if(amount > getCurrReserve()) {
+		if (amount > getCurrReserve()) {
 			// TODO - trigger GUI error
 		}
 		// else, initiate the withdraw request
@@ -168,19 +173,11 @@ public class ATM {
 			// get the response message back from the server
 			Message serverResponse = parseReceivedMessage();
 			
-			// if the response message is of type WITHDRAW_DONE, then subtract the amount withdrawn from the ATM cash reserves
-			if (serverResponse.getType() == Message.Type.WITHDRAWDONE) {
+			// if the response message is of type WITHDRAW_REQ_ACCEPTED, then subtract the amount withdrawn from the ATM cash reserves
+			if (serverResponse.getType() == Message.Type.WITHDRAWREQACCEPTED) {
 				//imagine cash given out
 				updateCurrReserve(getCurrReserve() - amount);
 			}
-			// if (serverresp.getType()==Message.Type.WITHDRAWREQACCEPTED){ //are we implementing server "temporarily" updates acc balance 
-			// 	//and only permanently updates it after client confirms withdrawal???????????/
-			// 	//imagine cash given out of machine
-			// 	//decrease reserves
-			// 	updateCurrReserve(getCurrReserve()-amt);
-			// 	sendMessage(new Message(me, "Server", amt+"withdrawn" , Message.Type.WITHDRAWREQDONE); //and now server updates bal and daily lims
-			// }
-			
 			// else, if the response message is of any other type, then trigger an error pop-up on the GUI
 			else {
 				// TODO - trigger GUI error pop-up
@@ -273,9 +270,10 @@ public class ATM {
 	}
 	
 	// test method for logging in
-	public void testLogin(String firstName, String lastName,String phoneNumber, String password) throws IOException {
+	// (for use until the GUI is implemented)
+	public void testLogin(String firstName, String lastName, String phoneNumber, String password) throws IOException {
 		// received the customer's name, phone number, and password from the GUI 
-		String loginCreds = "username=" + firstName + lastName + phoneNumber + ",pswd=" + password;
+		String loginCreds = "username=" + firstName + lastName + phoneNumber + ",password=" + password;
 		
 		// send a message to the server that the user is requesting to log in
 		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQATM));
@@ -301,8 +299,8 @@ public class ATM {
 	}
 	
 	// test method for logging out
-	public void testlogout() throws IOException {
-		
+	// (for use until the GUI is implemented)
+	public void testLogout() throws IOException {
 		// send a message to the server that the user is requesting to log out
 		sendMessage(new Message(id, "Server", "Requesting logout", Message.Type.LOGOUTREQATM));
 		

@@ -184,6 +184,7 @@ public class Teller {
 	}
 
 	// test method for logging in
+	// (for use until the GUI is implemented)
 	public void testLogin(String tellerID, String password) throws IOException {
 		// received the teller's username and password from the GUI
 		String loginCreds = "username=" + tellerID + ",password=" + password;
@@ -212,6 +213,7 @@ public class Teller {
 	}
 	
 	// test method for logging out
+	// (for use until the GUI is implemented)
 	public void testLogout() throws IOException {
 		// send a message to the server that the teller is requesting to log out
 		sendMessage(new Message(id, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
