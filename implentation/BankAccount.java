@@ -4,27 +4,31 @@ import java.time.*;
 
 public class BankAccount {
 	
+	// Fields:
 	enum AccType {SAVINGS, CHECKING}
 	private String accountID;
-	private static int id=0;
-	private AccType acc_type;
+	private static int id = 0;
+	private AccType accType;
 	private ArrayList<String> users;
-	private Date date_created;
-	private double curr_balance;
-	private Boolean in_access;
-	private String tranction_hist;
+	private Date dateCreated;
+	private double currBalance;
+	private boolean inAccess;
+	private String tranctionHist;
 	
-	// constr for when loading from file
-	public BankAccount(String accid, String th, AccType t, ....) {
+	// BankAccount - Constructor
+	// this constructor is used when loading from file
+	public BankAccount(String accid, String th, AccType t) {
 		
 	}
 	
-	//constr for when creating
+	// BankAccount - Constructor
+	// this constructor is used when creating a new bank account
 	public BankAccount(String user, AccType type) {
 		
 	}
 	
-	// so code doesn't crash
+	// BankAccount - Default Constructor
+	// this constructor is here so that the code does not crash
 	public BankAccount() {
 		
 	}
@@ -37,44 +41,50 @@ public class BankAccount {
 		
 	}
 	
-	public void renameUser(String olduser, String newuser)
-	{
-		//: bool #helper meth for when we update customer name or ph num because custID=name+phnum..uses add and rem user
+	public void renameUser(String olduser, String newuser) {
+		// bool #helper meth for when we update customer name or ph num because custID=name+phnum..uses add and rem user
 	}
 	
-	public String get_accID() {
+	public String getAccountID() {
+		// TODO
+		return null;
+	}
+	
+	public ArrayList<String> getUsers(){
+		// TODO
+		return null;
+	}
+	
+	public double getBalance() {
+		// TODO
+		return 0.0;
 		
 	}
 	
-	public ArrayList<String> get_users(){
+	public String getHistory() {
+		// TODO
+		return null;
+	}
+	
+	public AccType getType() {
+		// TODO
+		return null;
+	}
+	
+	public void updateBalance(double newBalance) {
 		
 	}
 	
-	public double get_balance() {
+	public void updateHist(String entry) {
 		
 	}
 	
-	public String get_hist() {
-		
+	public boolean checkInActiveStatus() {
+		// TODO
+		return false;
 	}
 	
-	public AccType get_type() {
-		
-	}
-	
-	public void update_bal(double new_bal) {
-		
-	}
-	
-	public void update_hist(String entry) {
-		
-	}
-	
-	public Boolean check_in_active_access() {
-		
-	}
-	
-	public void switch_access() {
+	public void switchAccess() {
 		
 	}
 }
