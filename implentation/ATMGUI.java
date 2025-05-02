@@ -23,7 +23,10 @@ import javax.swing.event.ListSelectionListener;
 @SuppressWarnings("serial")
 public class ATMGUI extends JFrame implements ATM.ATMListener {
 	
-	private Panel stackPanel;	//stack of all panels
+	// Fields:
+	private ATM atm;				// the GUI must contain an ATM object
+	
+	private Panel stackPanel;		// stack of all panels
 	
 	private LoginPanel loginPanel;
 	private PromptLoginPanel promptLoginPanel;
@@ -40,24 +43,23 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	private DepositFailPanel depositFailPanel;
 	private DepositGoodPanel depositGoodPanel;
 	
-	private JPanel currPanel;	//keeps track of currently visible panel
+	private JPanel currPanel;		// this keeps track of the currently-visible panel
 	
-	//gui must contain an atm object
-	private ATM atm;
-	
-	//when the gui is created it should instantiate an atm
+	// ATMGUI - Constructor
+	// when the GUI is initialized, it should instantiate an instance of ATM
+	// and initialize all the GUI elements
 	public ATMGUI() {
 		try {
-			atm = new ATM("localhost", 1234, this);	//connect to server
+			atm = new ATM("localhost", 1234, this);		// connect to the server
 	
 			this.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					//TODO: Reset auto logout timer
+					// TODO - reset auto-logout timer
 				}
 			});
 			
-			//initialize gui elements
+			// initialize the GUI elements
 			this.setSize(600,600);
 			
 			stackPanel = new Panel();	
@@ -107,28 +109,28 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			stackPanel.add(depositFailPanel);
 			stackPanel.add(depositGoodPanel);
 			
-			
 			currPanel = promptLoginPanel;
-		} catch (IOException e) {
-			e.printStackTrace();
+		} 
+		catch (IOException error) {
+			error.printStackTrace();
 		}
 	}
 
-	//starting point for class
+	// 'main' method for ATM-GUI class
 	public static void main(String[] args) {
-		//swing utilities
+		// swing utilities
 		SwingUtilities.invokeLater(() -> new ATMGUI().setVisible(true));
 	}
 	
-	//helper method
-	//takes the panel you want to show, hides the old one, and shows the new one
+	// helper method that hides a panel and shows the new panel,
+	// which is passed in as a parameter
 	private void switchPanel(JPanel panel) {
 		currPanel.setVisible(false);
 		currPanel = panel;
 		currPanel.setVisible(true);
 	}
 	
-	private class DepositGoodPanel extends JPanel{
+	private class DepositGoodPanel extends JPanel {
 		private JLabel label;
 		private JButton continueButton;
 		
@@ -147,7 +149,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class WithdrawGoodPanel extends JPanel{
+	private class WithdrawGoodPanel extends JPanel {
 		private JLabel label;
 		private JButton continueButton;
 		
@@ -166,7 +168,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class BankAccountFailPanel extends JPanel{
+	private class BankAccountFailPanel extends JPanel {
 		private JLabel failLabel;
 		private JButton backButton;
 		
@@ -186,13 +188,13 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class PromptLoginPanel extends JPanel{
+	private class PromptLoginPanel extends JPanel {
 		private JLabel promptLabel;
 		
 		public PromptLoginPanel() {
 			promptLabel = new JLabel("Click Me");
 			
-			//when panel is clicked go to login view
+			// when the panel is clicked on, go to the login view
 			this.add(promptLabel);
 			this.addMouseListener(new MouseAdapter() {
 				@Override
@@ -204,7 +206,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class LoginFailPanel extends JPanel{
+	private class LoginFailPanel extends JPanel {
 		private JLabel failLabel;
 		private JPanel buttonBox;
 		private JButton backButton;	
@@ -239,13 +241,13 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class DepositFailPanel extends JPanel{
+	private class DepositFailPanel extends JPanel {
 		private JLabel failLabel;
 		private JPanel buttonBox;
-		private JButton backButton;	//go back to BA panel
+		private JButton backButton;		//go back to BA panel
 		private JButton retryButton;
 		
-		public DepositFailPanel(){
+		public DepositFailPanel() {
 			failLabel = new JLabel("Deposit Failed");
 			buttonBox = new JPanel();
 			buttonBox.setLayout(new BoxLayout(buttonBox, BoxLayout.X_AXIS));
@@ -274,13 +276,13 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class WithdrawFailPanel extends JPanel{
+	private class WithdrawFailPanel extends JPanel {
 		private JLabel failLabel;
 		private JPanel buttonBox;
-		private JButton backButton;	//go back to BA panel
+		private JButton backButton;		// go back to BA panel
 		private JButton retryButton;
 		
-		public WithdrawFailPanel(){
+		public WithdrawFailPanel() {
 			failLabel = new JLabel("Withdraw Failed");
 			buttonBox = new JPanel();
 			buttonBox.setLayout(new BoxLayout(buttonBox, BoxLayout.X_AXIS));
@@ -309,7 +311,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 
-	private class DepositPanel extends JPanel{
+	private class DepositPanel extends JPanel {
 		private JTextField amountField;
 		private JPanel buttonPanel;
 		private JButton sendButton;
@@ -329,27 +331,30 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String amount = amountField.getText();
-					//performing logic in gui, seems bad, maybe withdraw should accept string input and parse there?
+					// performing logic in GUI - seems bad
+					// maybe withdraw should accept string input and parse there?
 					int dotCount = 0;
 					boolean isGood = true;
-					for(char token : amount.toCharArray()) {
-						if('.' == token) {
+					for (char token : amount.toCharArray()) {
+						if ('.' == token) {
 							dotCount += 1;
 							if(dotCount > 1) {
 								isGood = false;
 							}
 						}
-						if(Character.isDigit(token)) {
+						if (Character.isDigit(token)) {
 							isGood = false;
 						}
 					}
-					if(isGood) {
+					if (isGood) {
 						try {
 							atm.deposit(Double.valueOf(amount));
-						} catch (NumberFormatException e1) {
-							e1.printStackTrace();
-						} catch (IOException e1) {
-							e1.printStackTrace();
+						}
+						catch (NumberFormatException error) {
+							error.printStackTrace();
+						} 
+						catch (IOException error) {
+							error.printStackTrace();
 						}
 					}
 				}});
@@ -369,14 +374,13 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			this.add(buttonPanel);
 		}
 		
-		
 		public void clearFields() {
 			amountField.setText("");
 		}
 		
 	}
 	
-	private class WithdrawPanel extends JPanel{
+	private class WithdrawPanel extends JPanel {
 		private JTextField amountField;
 		private JPanel buttonPanel;
 		private JButton sendButton;
@@ -395,7 +399,8 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String amount = amountField.getText();
-					//performing logic in gui, seems bad, maybe withdraw should accept string input and parse there?
+					// performing logic in GUI - seems bad
+					// maybe withdraw should accept string input and parse there?
 					int dotCount = 0;
 					boolean isGood = true;
 					for(char token : amount.toCharArray()) {
@@ -412,10 +417,12 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 					if(isGood) {
 						try {
 							atm.withdraw(Double.valueOf(amount));
-						} catch (NumberFormatException e1) {
-							e1.printStackTrace();
-						} catch (IOException e1) {
-							e1.printStackTrace();
+						}
+						catch (NumberFormatException error) {
+							error.printStackTrace();
+						}
+						catch (IOException error) {
+							error.printStackTrace();
 						}
 					}
 				}});
@@ -440,9 +447,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class TransactionHistoryPanel extends JPanel{
+	private class TransactionHistoryPanel extends JPanel {
 		private JScrollPane scrollPane;
-		private JPanel mainPanel;	//used to hold elements for scroll pane
+		private JPanel mainPanel;			// this is used to hold the elements for the scroll pane
 		private JList<String> transactionList;
 		private DefaultListModel<String> transactionHistoryModel;
 		private JButton backButton;
@@ -480,7 +487,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class CurrentBalancePanel extends JPanel{
+	private class CurrentBalancePanel extends JPanel {
 		private JLabel balance;
 		private JButton backButton;
 		
@@ -500,7 +507,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 		
 		public void setContents(String amount) {
-			balance.setText(amount);	//(Consider) should $ sign be added here or before
+			balance.setText(amount);			// (consider) should '$' symbol be added here or before?
 		}
 		
 		public void clearFields() {
@@ -508,15 +515,15 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class BankAccountPanel extends JPanel{
-		//organization panels
+	private class BankAccountPanel extends JPanel {
+		// organization panels
 		private JPanel borderPanel;	
 		private JPanel leftPanel;
 		private JPanel rightPanel;
 		
 		private JLabel accountName;
 		
-		//buttons
+		// buttons
 		private JButton viewCurrentBalanceButton;
 		private JButton viewTransactionHistoryButton;
 		private JButton depositButton;
@@ -573,9 +580,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				public void actionPerformed(ActionEvent e) {
 					try {
 						atm.exitAccount(accountName.getText());
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+					} 
+					catch (IOException error) {
+						error.printStackTrace();
 					}
 				}});
 			
@@ -595,11 +602,11 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class CustomerPanel extends JPanel{
+	private class CustomerPanel extends JPanel {
 		private JPanel mainPanel;
-		private JScrollPane scrollPane;	//for if user has many associated BA's
-		private JList<String> bankAccountList;	//list view of customers bank accounts; send ACCESSBAREQ when element selected
-		private DefaultListModel<String> bankAccountModel;	//list of customers bank accounts
+		private JScrollPane scrollPane;						// for if a user has many associated BA's
+		private JList<String> bankAccountList;				// list view of customer's bank accounts; send ACCESS_BA_REQ when element is selected
+		private DefaultListModel<String> bankAccountModel;	// list of customer's bank accounts
 		private JButton logoutButton;
 		
 		public CustomerPanel() {
@@ -636,8 +643,8 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		
 		public void setContents(String[] data) {
 			clearFields();
-			//data should be list of account numbers
-			for(int i = 0; i < data.length; ++i) {
+			// data should be list of account numbers
+			for (int i = 0; i < data.length; ++i) {
 				bankAccountModel.add(i, data[i]);
 			}
 		}
@@ -647,7 +654,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	private class LoginPanel extends JPanel{
+	private class LoginPanel extends JPanel {
 		private JTextField firstNameField;
 		private JTextField lastNameField;
 		private JPanel nameBox;
@@ -659,8 +666,8 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		private JButton loginButton;
 		
 		public LoginPanel() {
-			//TODO: Font size
-			//TODO: component spacing
+			// TODO - font size
+			// TODO - component spacing
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			
 			firstNameField = new JTextField(16);
@@ -694,16 +701,15 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			fieldBox.add(phoneBox);
 			fieldBox.add(passwordBox);
 			loginButton = new JButton("Login");
-			//when login button pressed, send login message w/ credentials from text fields
+			// when the login button is pressed, send a login message with the credentials from the text fields
 			loginButton.addActionListener(new ActionListener() {	
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						atm.login(firstNameField.getText(), lastNameField.getText(), 
-								phoneNumberField.getText(), passwordField.getText());
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						atm.login(firstNameField.getText(), lastNameField.getText(), phoneNumberField.getText(), passwordField.getText());
+					} 
+					catch (IOException error) {
+						error.printStackTrace();
 					}
 				}
 			});
@@ -726,81 +732,97 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 	}
 	
-	//find value corresponding to key
+	// find value corresponding to key
 	private String searchStringElement(String text, String key) {
 		int pos = text.indexOf(key);
-		if(pos == -1) { return "";}
+		
+		if (pos == -1) { 
+			return "";
+		}
+		
 		pos += key.length();
 		int posEnd = text.indexOf(",", pos);
-		if(posEnd == -1 ) {return "";}
+		
+		if (posEnd == -1) {
+			return "";
+		}
+		
 		return text.substring(pos, posEnd);
 	}
 	
-	//return array of Strings starting from key & ending w/ "}"
-	//expected data format: key:{stuff,stuff,stuff}
+	// return array of strings starting from key and ending with '}'
+	// expected data format: key:{stuff,stuff,stuff}
 	private String[] searchStringArray(String text, String key) {
 		int pos = text.indexOf(key);
-		if(pos == -1) {return new String[0];}
+		
+		if(pos == -1) {
+			return new String[0];
+		}
+		
 		pos += key.length();
 		int posEnd = text.indexOf("}", pos);
-		if(posEnd == -1) {return new String[0];}
+		
+		if(posEnd == -1) {
+			return new String[0];
+		}
+		
 		String substr = text.substring(pos, posEnd);
 		return substr.split(",");
 	}
 	
 	@Override
-	//this function is where we receive messages from atm from server
+	// this method is where we receive messages from ATM from server
 	public void receivedMessage(Message msg) {
-		// TODO update gui based on received info
-		
 		switch(msg.getType()) {
-		case LOGOUTOK: 
-			//clear all user data from panels
-			loginPanel.clearFields();
-			customerPanel.clearFields();
-			bankAccountPanel.clearFields();
-			withdrawPanel.clearFields();
-			depositPanel.clearFields();
-			currentBalancePanel.clearFields();
-			transactionHistoryPanel.clearFields();
-			switchPanel(promptLoginPanel);
-		case ACCESSCAREQGRANTED: 
-			String search = "BankAccounts:";
-			int pos = msg.getData().indexOf(search);
-			if(pos > -1) {
-				pos += search.length();
-				String[] accounts = msg.getData().substring(pos).split(",");
-				customerPanel.setContents(accounts);
-			}else {
+			case LOGOUTOK: 
+				// clear all user data from panels
+				loginPanel.clearFields();
 				customerPanel.clearFields();
+				bankAccountPanel.clearFields();
+				withdrawPanel.clearFields();
+				depositPanel.clearFields();
+				currentBalancePanel.clearFields();
+				transactionHistoryPanel.clearFields();
+				switchPanel(promptLoginPanel);
+				break;
+			case ACCESSCAREQGRANTED: 
+				String search = "BankAccounts:";
+				int pos = msg.getData().indexOf(search);
+				if (pos > -1) {
+					pos += search.length();
+					String[] accounts = msg.getData().substring(pos).split(",");
+					customerPanel.setContents(accounts);
+				}
+				else {
+					customerPanel.clearFields();
+				}
+				switchPanel(customerPanel); 
+				break;
+			case ACCESSBAREQGRANTED:
+				bankAccountPanel.setContents(searchStringElement(msg.getData(), "AccountNumber:"));
+				currentBalancePanel.setContents(searchStringElement(msg.getData(), "Balance:"));
+				transactionHistoryPanel.setContents(searchStringArray(msg.getData(), "TransactionHistory:{"));
+				switchPanel(bankAccountPanel);
+				break;
+			case DEPOSITDONE:
+				depositPanel.clearFields();
+				switchPanel(depositGoodPanel);
+				break;
+			case WITHDRAWDONE: 
+				withdrawPanel.clearFields();
+				switchPanel(withdrawGoodPanel);
+				break;
+			case EXITBAREQGRANTED:
+				bankAccountPanel.clearFields();
+				switchPanel(customerPanel);
+				break;
+			case ACCESSCAREQDENIED:
+				switchPanel(loginFailPanel);
+				break;
+			case ACCESSBAREQDENIED:
+				switchPanel(bankAccountFailPanel);
+				break;
 			}
-			switchPanel(customerPanel); break;
-		case ACCESSBAREQGRANTED:
-			bankAccountPanel.setContents(searchStringElement(msg.getData(), "AccountNumber:"));
-			currentBalancePanel.setContents(searchStringElement(msg.getData(), "Balance:"));
-			transactionHistoryPanel.setContents(searchStringArray(msg.getData(), "TransactionHistory:{"));
-			switchPanel(bankAccountPanel);
-			break;
-		case DEPOSITDONE:
-			depositPanel.clearFields();
-			switchPanel(depositGoodPanel);
-			break;
-		case WITHDRAWDONE: 
-			withdrawPanel.clearFields();
-			switchPanel(withdrawGoodPanel);
-			break;
-		case EXITBAREQGRANTED:
-			bankAccountPanel.clearFields();
-			switchPanel(customerPanel);
-			break;
-		case ACCESSCAREQDENIED:
-			switchPanel(loginFailPanel);
-			break;
-		case ACCESSBAREQDENIED:
-			switchPanel(bankAccountFailPanel);
-			break;
-		
-		}
 	}
 
 }
