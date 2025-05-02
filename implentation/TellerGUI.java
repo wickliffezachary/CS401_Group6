@@ -11,9 +11,8 @@ public class TellerGUI extends JFrame  implements Teller.TellerListener{
 	private Teller teller;
 	private CardLayout cardLayout;
 	private JPanel cardPanel;
-
-
-	public TellerGUI(){
+	
+	public TellerGUI() {
 		setTitle("Teller Login Screen");
 		setSize(800,600);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);

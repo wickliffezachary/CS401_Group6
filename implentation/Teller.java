@@ -207,7 +207,7 @@ public class Teller {
 		else {
 			System.out.println("Some error, check more");
 		}
-		// and spawn gui thread for autologout
+		// and spawn GUI thread for auto-logout
 		// else if LOGIN_DENIED type message, trigger GUI to display error
 	}
 	
