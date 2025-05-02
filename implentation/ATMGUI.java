@@ -5,37 +5,36 @@ import javax.swing.SwingUtilities;
 @SuppressWarnings("serial")
 public class ATMGUI extends JFrame implements ATM.ATMListener {
 	
-	//TODO: add gui functions from jframe
+	// TODO - add GUI functions from JFrame
 
-	//gui must contain an atm object
-	private ATM atm;
+	// Fields:
+	private ATM atm;		// the GUI must contain an ATM object
 	
-	//when the gui is created it should instantiate an atm
+	// ATMGUI - Constructor
+	// when the GUI is initialized, it should instantiate an instance of ATM
 	public ATMGUI() {
 		try {
 			atm = new ATM("xxxx", 1234, this);
 		}
 		catch (IOException error) {
-			// TODO Auto-generated catch block
 			error.printStackTrace();
 		}
 	}
 	
-	
-	//starting point for class
+	// 'main' method
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		// TODO - auto-generated method stub
 		
-		//swing utilities
+		// swing utilities
 		SwingUtilities.invokeLater(() -> new ATMGUI().setVisible(true));
 	}
 
 	@Override
-	//this function is where we receive messages from atm from server
+	// this method is where we receive messages from ATM from server
 	public void receivedMessage(Message msg) {
-		// TODO update gui based on received info
+		// TODO - update the GUI based on received info
 		
-		//example
+		// example
 		if(msg.getType() == Message.Type.ACCESSBAREQ) {
 			
 		}
