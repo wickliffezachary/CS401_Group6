@@ -2,51 +2,53 @@ import java.util.ArrayList;
 
 public class CustomerAccount {
 
-	private String fullname;
-	private String ph_num;
-	private String addr;
-	private ArrayList<String> associated_ba;
-	private String pswd;
-	//private Boolean in_access=false;
-	private BankAccount ba_inuse_rn=null;
+	// Fields:
+	private String fullName;
+	private String phoneNumber;
+	private String address;
+	private ArrayList<String> bankAccounts;
+	private String password;
+	//private boolean inAccess = false;
+	private BankAccount bankAccInUse = null;
 	
-	// constructor for use when creating a new customer acc for first time
-	// info sent from GUI
-	public CustomerAccount(String fn, String pn, String a, String pswd){
-		this.fullname=fn;
-		this.ph_num=pn;
-		this.addr=a;
-		this.pswd=pswd;
-		this.associated_ba = new ArrayList<String>();
+	// CustomerAccount - Constructor
+	// this constructor is used when creating a new customer account for the first time
+	// (parameters are sent from the GUI)
+	public CustomerAccount(String name, String phoneNumber, String address, String password) {
+		this.fullName = name;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+		this.password = password;
+		this.bankAccounts = new ArrayList<String>();
 	}
 
-	// todo
-	// constructor for use when opening/loading preexisting customer acc 
-	// info sent by server from fn+pn.txt file
-	//ORRRRRRRRRR do we want this constr to open the file and load all req data?????????????????????????????
-	public CustomerAccount(String fn, String pn, String a, String pswd, ArrayList<String> assoc_ba){
-		this.fullname=fn;
-		this.ph_num=pn;
-		this.addr=a;
-		this.pswd=pswd;
-		//this.associated_ba = ;
-		//****IMPORTANT****
-		//server must change in_access field to true in CustAcc file whenever this constr is called
-		//and back to false when in exitCA function
-		//******END OF IMPORTANT*****
-		//dow e want to have server handle all that directlhy
-		//or have checkaccess, switchaccess, save funcs here???????????????
-		//if we have save, we can also use it to update custacc file when we update any cust info, add/del bankaccs etc
+	// TODO
+	// CustomerAccount - Constructor
+	// this constructor is used when loading pre-existing customer account information from a file
+	// (parameters are sent by the server from a text file)
+	public CustomerAccount(String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
+		this.fullName = name;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+		this.password = password;
+		//this.bankAccounts = ;
+		// ****IMPORTANT****
+		// server must change inAccess field to true in CustAcc file whenever this constructor is called
+		// and back to false when in exitCA function
+		// ******END OF IMPORTANT*****
+		//do we want to have server handle all that directly?
+		//or have checkaccess, switchaccess, save funcs here?
+		//if we have save, we can also use it to update custacc file when we update any cust info, add/del bankaccs, etc.
 	}
 
-	//no params constructor
-	// so code doesn't crash if someone accidentally uses it
-	public CustomerAccount(){
-		//errrrrrrrrrrrr
+	// CustomerAccount - Default Constructor
+	// this constructor is here so that the code does not crash
+	public CustomerAccount() {
+		// TODO
 	}
 	
-//	public Boolean validatePswd(String pswrd) {
-//		if ((this.pswd).equals(pswrd)) {
+//	public boolean validatePassword(String password) {
+//		if ((this.password).equals(password)) {
 //			return true;
 //		} 
 //		else {
@@ -54,48 +56,48 @@ public class CustomerAccount {
 //		}
 //	}
 //	
-//	public Boolean checkAccessStatus() {
-//		return this.in_access;
+//	public boolean checkAccessStatus() {
+//		return this.inAccess;
 //	}
 //	
 //	public void switchAccess() {
-//		this.in_access=!this.in_access
+//		this.inAccess = !this.inAccess;
 //	}
 	
-	public void removeBankAcc(String accID) {
+	public void removeBankAccount(String accountID) {
 		
 	}
 	
-	public void addbankAcc() {
+	public void addBankAccount() {
 		
 	}
 	
-	public void updateAddr(String addr) {
+	public void updateAddress(String address) {
 		
 	}
 	
-	public void updatePswd(String pswd) {
+	public void updatePassword(String password) {
 		
 	}
 	
-	public void updateName(String newname) {
+	public void updateName(String newName) {
 		
 	}
 	
-	public void updatePhoneNum(String newnum) {
+	public void updatePhoneNumber(String newNumber) {
 		
 	}
 	
-	public String getAddr() {
-		return this.addr;
+	public String getAddress() {
+		return this.address;
 	}
 	
 	public String getName() {
-		return this.fullname;
+		return this.fullName;
 	}
 	
-	public String getPhoneNum() {
-		return this.ph_num;
+	public String getPhoneNumber() {
+		return this.phoneNumber;
 	}
 	
 }
