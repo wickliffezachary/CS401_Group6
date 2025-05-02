@@ -75,7 +75,7 @@ public class ATM {
 		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQATM));
 		//wait for server response message
 		//if loginok type message, 
-		loggedInUser=true;
+		loggedInUser = true;
 		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
 		//and spawn gui thread for autologout
 		//elif logindenied type message, trigger gui to display error
@@ -88,7 +88,7 @@ public class ATM {
 		sendMessage(new Message(id, "Server", "Requesting Logout", Message.Type.LOGOUTREQATM));
 		//wait for server ok or not?
 		//if logoutok type message, 
-		loggedInUser=false;
+		loggedInUser = false;
 		//kill autologout timer thread
 		//send gui to login page
 	}
@@ -106,7 +106,7 @@ public class ATM {
 	
 	// method that allows a user to select a financial account
 	// (the account number is supplied when user action triggers GUI event that calls this method)
-	public void selectAccount(String accnum) throws IOException {
+	public void selectAccount(String accNum) throws IOException {
 		// if the user is not logged in, then they should not be allowed to select any account
 		// so exit this method call
 		if (!loggedInUser) {
