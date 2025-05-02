@@ -5,70 +5,87 @@ import java.net.Socket;
 
 public class Teller {
 	
-	private TellerListener listener;
+	// Fields:
 	private Socket socket = null;
    	private ObjectInputStream objectInputStream = null;
    	private ObjectOutputStream objectOutputStream = null;
+	private TellerListener listener;
+	private String id;
 	private static int count = 0;
-	private String me;
 	private boolean loggedInTeller;
 
 	public interface TellerListener {
         void receivedMessage(Message msg);
 	}
 	
+	// Teller - Constructor
 	public Teller(String host, int port, TellerListener listener) throws IOException {
-		this.listener = listener;
 		this.socket = new Socket(host, port);
 		this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 		this.objectInputStream = new ObjectInputStream(socket.getInputStream());
+		this.listener = listener;
 		count += 1;
-		this.me = "Teller" + count;
+		this.id = "Teller" + count;
 		this.loggedInTeller = false;
 	}
 	
-	//helper to read in a message 
-	private Message parseRecMessage() throws IOException {
+	// helper method for sending messages to server
+	private void sendMessage(Message message) throws IOException {
+		
+		// write object to server
+		objectOutputStream.writeObject(message);
+		
+		// flush to keep stream clear
+		objectOutputStream.flush();
+	
+	}
+	
+	// helper method to read a received message 
+	private Message parseReceivedMessage() throws IOException {
 		Message temp = null;
+		
 		try {
-			//read in message
+			// read the received message
 			temp = (Message) objectInputStream.readObject();
 		} 
 		catch (ClassNotFoundException error) {
 			error.printStackTrace();
 		}
+		
 		return temp;
 	}
-
-	private void sendMessage(Message message) throws IOException {
-		//write object to server
-		objectOutputStream.writeObject(message);
-		//flush to keep stream clear
-		objectOutputStream.flush();
-	}
 	
+	// method that logs a teller in
 	public void login(String tellerID, String password) throws IOException {
-		//received custname, phno, pswd from gui 
+		// received the teller's username and password from the GUI
 		String loginCreds = "username=" + tellerID + ",password=" + password;
-		//send message to server
-		sendMessage(new Message(me, "Server", loginCreds, Message.Type.LOGINREQTELLER));
-		//wait for server response message
-		//if loginok type message, 
-		Message serverResp = parseRecMessage();
-		if (serverResp.getType() == Message.Type.LOGINOK){
+		
+		// send a message to the server that the teller is requesting to log in
+		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQTELLER));
+		
+		// get the response message back from the server
+		Message serverResp = parseReceivedMessage();
+		
+		// if the response message is of type LOGIN_OK, then the teller is logged in and the GUI is triggered
+		if (serverResp.getType() == Message.Type.LOGINOK) {
 			loggedInTeller=true;
-			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
 		}
-		else if (serverResp.getType() == Message.Type.LOGINDENIED){
-			//elif logindenied type message, trigger gui to displaycreds  error
+		// else, if the response message is of type LOGIN_DENIED, then the teller entered incorrect credentials
+		else if (serverResp.getType() == Message.Type.LOGINDENIED) {
+			// TODO
 		}
-		else{
-			//trigger gui error
+		// else, if the response message is of any other type, then trigger an error pop-up on the GUI
+		else {
+			// TODO
 		}
 	}
 
+	// TODO
+	// method that logs a teller out
 	public void logout()  throws IOException {
-		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
+		// send a message to the server that the teller is requesting to log out
+		sendMessage(new Message(id, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
+		
 		//wait for server ok or not??????
 		//if logoutok type message, 
 		this.loggedInTeller = false;
@@ -76,105 +93,141 @@ public class Teller {
 		//else err
 	}
 	
+	// TODO
+	// method that allows a teller to select a customer account
 	public void selectCustomer() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to exit a customer account
 	public void exitCustomer() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to select a customer's financial account
 	public void selectAccount() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to exit a customer's financial account
 	public void exitAccount() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to withdraw money from a customer's financial account
 	public void withdraw() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to deposit money into a customer's financial account
 	public void deposit() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to view a customer's financial account balance
 	public void viewBalance() {
 		
 	}
 	
-	public void viewTransactionHist() {
+	// TODO
+	// method that allows a teller to view a customer's transaction history
+	public void viewTransactionHistory() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to create a new customer account for a customer
 	public void createNewCustomer() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to create a new financial account for a customer
 	public void createNewBankAccount() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to close a customer's financial account
 	public void closeBankAccount() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to add another (existing) user to a customer's financial account
 	public void addUserToBankAccount() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to remove a user from a customer's financial account
 	public void removeUserFromBankAccount() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to update a customer's account information
 	public void updateCustomerInfo() {
 		
 	}
 	
+	// TODO
+	// method that allows a teller to call a manager
 	public void callManager() {
-		//lolz does nothing
-		//ok, maybe a gui lie saying "manager alerted, please wait for assistance"
+		
 	}
 
-	//for testing server-client prior to having our GUI
+	// test method for logging in
 	public void testLogin(String tellerID, String password) throws IOException {
-		//received customer name, phone number, password from gui 
+		// received the teller's username and password from the GUI
 		String loginCreds = "username=" + tellerID + ",password=" + password;
-		//send message to server
-		sendMessage(new Message(me, "Server", loginCreds, Message.Type.LOGINREQTELLER));
-		//wait for server response message
-		Message serverResp = parseRecMessage();
-		if (serverResp.getType() == Message.Type.LOGINOK){
-			//if loginok type message, 
-			loggedInTeller = true;
 		
-			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+		// send a message to the server that the teller is requesting to log in
+		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQTELLER));
+		
+		// get the response message back from the server
+		Message serverResponse = parseReceivedMessage();
+		
+		// if the response message is of type LOGIN_OK, then the teller is logged in
+		if (serverResponse.getType() == Message.Type.LOGINOK) {
+			loggedInTeller = true;
 			System.out.println("loggedin");
 		}
-		else if (serverResp.getType() == Message.Type.LOGINDENIED){
+		// else, if the response message is of type LOGIN_DENIED, then the teller entered incorrect credentials
+		else if (serverResponse.getType() == Message.Type.LOGINDENIED) {
 			System.out.println("Incorrect credentials");
 		}
-		else{
-			System.out.println("some error, check more");
+		// else, if the response message is of any other type, then print out an error message
+		else {
+			System.out.println("Some error, check more");
 		}
-		//and spawn gui thread for autologout
-		//elif logindenied type message, trigger gui to display error
+		// and spawn gui thread for autologout
+		// else if LOGIN_DENIED type message, trigger GUI to display error
 	}
 	
+	// test method for logging out
 	public void testLogout() throws IOException {
-		sendMessage(new Message(me, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
-		//wait for server ok or not?
-		Message serverResp = parseRecMessage();
-		if (serverResp.getType()==Message.Type.LOGOUTOK){
-			//if logoutok type message, 
-			loggedInTeller=false;
-			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+		// send a message to the server that the teller is requesting to log out
+		sendMessage(new Message(id, "Server", "Requesting logout", Message.Type.LOGOUTREQTELLER));
+		
+		// get the response message back from the server
+		Message serverResponse = parseReceivedMessage();
+		
+		// if the response message is of type LOGOUT_OK, then the teller is logged out
+		if (serverResponse.getType() == Message.Type.LOGOUTOK){
+			loggedInTeller = false;
 			System.out.println("loggedout");
 		}
+		// else, if the response message is of any other type, then print out an error message
 		else {
-			System.out.println("some error, check more");
+			System.out.println("Some error, check more");
 		}
-		//send gui to login page
+		// send GUI to login page
 	}
 }
