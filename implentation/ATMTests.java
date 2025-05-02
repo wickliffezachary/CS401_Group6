@@ -13,10 +13,8 @@ import org.junit.jupiter.api.Test;
 
 
 
-
-
-//TODO: determine if server needs to be up before launching tests or if it can be launched through tests
-class ATM_Test {
+// TODO - determine if server needs to be up before launching tests or if it can be launched through tests
+class ATMTests {
 	private final String address = "localhost";
 	private final int port = 1234;
 	
@@ -29,7 +27,7 @@ class ATM_Test {
 	private class TestListener implements ATM.ATMListener{
 		@Override
 		public void receivedMessage(Message msg) {
-			// TODO Auto-generated method stub
+			// TODO - auto-generated method stub
 			
 		}
 	}
@@ -40,33 +38,35 @@ class ATM_Test {
 	public void init() {
 		try {
 			atm = new ATM(address, port, listener);
-		} catch (IOException e) {
-			e.printStackTrace();
-			assumeNoException(e);	//crash and burn test if atm cannot be initialized
+		} 
+		catch (IOException error) {
+			error.printStackTrace();
+			assumeNoException(error);		// crash and burn test if ATM cannot be initialized
 		}
 	}
 	@AfterEach
 	public void close() {
 		try {
 			atm.logout();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (IOException error) {
+			error.printStackTrace();
 		}
 		atm = null;
 	}
 	
 	@Test
 	public void testLogin() {
-		//TODO: Consider how to implement test users
+		// TODO - consider how to implement test users
 
 		assumeFalse(atm.isLoggedInUser());
 		try {
 			atm.login(firstName, lastName, phoneNumber, password);
 			assertTrue(atm.isLoggedInUser());
-		} catch (IOException e) {
-			e.printStackTrace();
-			assumeNoException(e);	//failed to login
+		} 
+		catch (IOException error) {
+			error.printStackTrace();
+			assumeNoException(error);		// failed to login
 		}
 	}
 	
@@ -76,9 +76,10 @@ class ATM_Test {
 		try {
 			atm.logout();
 			assertFalse(atm.isLoggedInUser());
-		} catch (IOException e) {
-			e.printStackTrace();
-			assumeNoException(e);
+		}
+		catch (IOException error) {
+			error.printStackTrace();
+			assumeNoException(error);
 		}
 	}
 
@@ -96,17 +97,13 @@ class ATM_Test {
 	
 	@Test
 	public void testSelectAccount() {
-		
-		testLogin();	//user must be logged in before an account can be selected
+		testLogin();		// user must be logged-in before an account can be selected
 		try {
 			atm.selectAccount(account);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (IOException error) {
+			error.printStackTrace();
 		}
 	}
-
-	
-
 
 }
