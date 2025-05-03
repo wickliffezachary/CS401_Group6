@@ -88,6 +88,10 @@ public class BankAccount {
 	public AccType getType() {
 		return this.accType;
 	}
+
+	public Date getCreationDate(){
+		return this.dateCreated;
+	}
 	
 	public void updateBalance(double newBalance) {
 		this.currBalance = newBalance;
@@ -107,10 +111,17 @@ public class BankAccount {
 		this.inAccess = !this.inAccess;
 	}
 	
-	// TODO
+	// save to file
+	// just like dvdcollection
 	public void save() {
-		//save to file
-		//just like dvdcollection
+		String sourceName=System.getProperty("user.dir")+"/data/bankAccounts/"+this.accountID;
+		try{
+			FileWriter writer = new FileWriter(sourceName);
+			w.write("Account_type: " + this.accType + "\nDate_created: " + this.dateCreated
+				+ "\nUsers: " + users.toString() + "\nCurrent_balance: " + currBalance + "\nTransaction_history: " + transactionHist); 
+			w.close()
+		}
+		catch (IOException e){}
 	}
 }
 
