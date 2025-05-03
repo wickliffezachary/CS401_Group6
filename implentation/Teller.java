@@ -48,6 +48,7 @@ public class Teller {
 		objectOutputStream.flush();
 	}
 	
+<<<<<<< Updated upstream
 	public void login(String tellerid, String pswd) throws IOException {
 		//received custname, phno, pswd from gui 
 		String login_creds="uname="+tellerid+",pswd="+pswd;
@@ -59,6 +60,24 @@ public class Teller {
 		if (serverresp.getType()==Message.Type.LOGINOK){
 			loggedinteller=true;
 			//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
+=======
+	// method that logs a teller in
+	public void login(String tellerID, String password) throws IOException {
+		// received the teller's username and password from the GUI
+		String loginCreds = "username=" + tellerID + ",password=" + password;
+		
+		// send a message to the server that the teller is requesting to log in
+		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQTELLER));
+		
+		// get the response message back from the server
+		Message serverResp = parseReceivedMessage();
+		
+		if (listener != null) listener.receivedMessage(serverResp); // added.
+		
+		// if the response message is of type LOGIN_OK, then the teller is logged in and the GUI is triggered
+		if (serverResp.getType() == Message.Type.LOGINOK) {
+			loggedInTeller=true;
+>>>>>>> Stashed changes
 		}
 		else if (serverresp.getType()==Message.Type.LOGINDENIED){
 			//elif logindenied type message, trigger gui to displaycreds  error

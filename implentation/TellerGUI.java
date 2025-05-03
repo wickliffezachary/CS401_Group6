@@ -7,9 +7,29 @@ import java.io.IOException;
 
 public class TellerGUI extends JFrame  implements Teller.TellerListener{
 
+<<<<<<< Updated upstream
     private Teller teller;
     private CardLayout cardLayout;
     private JPanel cardPanel;
+=======
+	private Teller teller;
+	private CardLayout cardLayout;
+	private JPanel cardPanel;
+	
+	public TellerGUI(Teller teller) {
+		
+		this.teller = teller;
+		
+		setTitle("Teller Login Screen");
+		setSize(800,600);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+		cardLayout = new CardLayout();
+		cardPanel = new JPanel(cardLayout);
+
+		cardPanel.add(setupLoginPanel(), "login");
+		cardPanel.add(setupMainPanel(), "main");
+>>>>>>> Stashed changes
 
 
     public TellerGUI(){
@@ -24,9 +44,53 @@ public class TellerGUI extends JFrame  implements Teller.TellerListener{
         cardPanel.add(setupMainPanel(), "main");
 
 
+<<<<<<< Updated upstream
         add(cardPanel);
         cardLayout.show(cardPanel, "login");
     }
+=======
+	private JPanel setupMainPanel() {
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		JLabel welcome = new JLabel("Welcome, Teller");
+	    JButton selectCustomerBtn = new JButton("Select Customer");
+	    JButton createCustomerBtn = new JButton("Create New Customer");
+	    JButton viewActivityBtn = new JButton("View Account Activity");
+	    JButton logoutBtn = new JButton("Logout");
+	    
+	    selectCustomerBtn.addActionListener(e -> {
+	        // placeholder
+	        System.out.println("Select Customer clicked");
+	    });
+
+	    createCustomerBtn.addActionListener(e -> {
+	        // placeholder
+	        System.out.println("Create New Customer clicked");
+	    });
+
+	    viewActivityBtn.addActionListener(e -> {
+	        // placeholder
+	        System.out.println("View Activity clicked");
+	    });
+
+	    logoutBtn.addActionListener(e -> {
+	        try {
+	            teller.logout();
+	            cardLayout.show(cardPanel, "login");
+	        } catch (Exception ex) {
+	            ex.printStackTrace();
+	        }
+	    });
+	    
+	    mainPanel.add(welcome);
+	    mainPanel.add(selectCustomerBtn);
+	    mainPanel.add(createCustomerBtn);
+	    mainPanel.add(viewActivityBtn);
+	    mainPanel.add(logoutBtn);
+		
+		return mainPanel;
+	}
+>>>>>>> Stashed changes
 
     private JPanel setupLoginPanel() {
         JPanel loginPanel = new JPanel();
@@ -34,6 +98,7 @@ public class TellerGUI extends JFrame  implements Teller.TellerListener{
         JPasswordField passField = new JPasswordField(20);
         JButton loginBtn = new JButton("Login");
 
+<<<<<<< Updated upstream
         loginBtn.addActionListener(e -> {
             try {
                 String uname = userField.getText();
@@ -80,6 +145,24 @@ public class TellerGUI extends JFrame  implements Teller.TellerListener{
             gui.setVisible(true);
         });
     }
+=======
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> {
+		    try {
+		        TellerGUI[] guiRef = new TellerGUI[1];  // to hold reference from lambda, without this, the gui doesn't exist yet and we run into bugs.
+		        Teller teller = new Teller("localhost", 1234, msg -> {
+		            guiRef[0].receivedMessage(msg);  // forward message to GUI
+		        });
+		        TellerGUI gui = new TellerGUI(teller);
+		        guiRef[0] = gui; // now we have an actual gui.
+		        gui.setVisible(true);
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
+		});
+
+	}
+>>>>>>> Stashed changes
 
 
 }

@@ -140,6 +140,7 @@ public class Server {
 		        	        System.out.println("Parsed uname = " + uname);
 		        	        System.out.println("Parsed pswd = " + pswd);
 
+<<<<<<< Updated upstream
 		        	        boolean valid = false;
 
 		        	        if (uname != null && pswd != null) {
@@ -163,6 +164,22 @@ public class Server {
 		        	                            break;
 		        	                        }
 		        	                    }
+=======
+			try {
+				// while the connection is still receiving messages...
+				while((message = (Message) objectInputStream.readObject()) != null) {
+					System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
+					// print out the action requested by the client
+					System.out.println(
+							// display IP address of client
+							"Client <" + clientSocket.getInetAddress() + "> "
+							// if the client is logged in, then include their name
+							+ (loggedIn? "[" + User + "]: " : ": ")
+							// display the Message object's type
+							+ "Request " + message.getType().name() + " "
+							// display any extra information sent with the Message
+							+ "with data \"" + message.getData() + "\"");
+>>>>>>> Stashed changes
 
 		        	                }
 		        	                scanner.close();
