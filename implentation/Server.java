@@ -93,132 +93,146 @@ public class Server {
 
 			// local variables to hold the data that changes
 			Message message;
-			boolean accessingBankAccount = false;
-			boolean loggedIn = false;			// boolean that keeps track of if you are currently accessing a customer account
-			boolean verified = false;			// boolean that keeps track of if the client has verified its identity
-			boolean isTeller = false;			// boolean that keeps track of if the client is an ATM or a teller
-			String User = "";					// TODO - change this to be based on customer data
+			Boolean AccessingBankAccount = false;
+			Boolean LOGGEDIN = false;			//determines if you are currently accessing a Customer Account
+			Boolean VERIFIED = false;			//determines if the client has verified its identity
+			Boolean isTeller = false;			//determines if the client is an atm or teller
+			String User = "";					//TODO: change this to be based on customer data
+	        try {
+				//while the connection is still receiving messages
+		        while((message = (Message) objectInputStream.readObject()) != null) {
+		        	System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
+					//print the action requested by the client
+		        	System.out.println(
+		        			//display ip of client
+		        			"Client <" + clientSocket.getInetAddress() + "> "
+		        			//if the client is logged in include their name
+		        			+ (LOGGEDIN? "[" + User + "]: " : ": ")
+		        			//display the message type
+		        			+ "Request " + message.getType().name() + " "
+		        			//display any extra info sent with the message
+		        			+ "with data \"" + message.getData() + "\"");
+		        	
+		        	//when the client connects it should first send a connection request to verify if it is an atm or teller
 
-			try {
-				// while the connection is still receiving messages...
-				while((message = (Message) objectInputStream.readObject()) != null) {
+		        	if (!VERIFIED) {
+		        	    if (message.getType() == Message.Type.LOGINREQTELLER) {
+		        	        // AUTHENTICATE TELLER
+		        	        String[] credentials = message.getData().split(",");
+		        	        String uname = null;
+		        	        String pswd = null;
+		        	        for (String part : credentials) {
+		        	        	if (part.startsWith("uname=")) uname = part.substring(6);
+		        	        	if (part.startsWith("pswd=")) pswd = part.substring(5);
+		        	        }
+		        	        
+		        	        System.out.println("Parsed uname = " + uname);
+		        	        System.out.println("Parsed pswd = " + pswd);
 
-					// print out the action requested by the client
-					System.out.println(
-							// display IP address of client
-							"Client <" + clientSocket.getInetAddress() + "> "
-							// if the client is logged in, then include their name
-							+ (loggedIn? "[" + User + "]: " : ": ")
-							// display the Message object's type
-							+ "Request " + message.getType().name() + " "
-							// display any extra information sent with the Message
-							+ "with data \"" + message.getData() + "\"");
+		        	        boolean valid = false;
 
-					// when the client connects, it should first send a connection request to verify if it is an ATM or a teller
-					
-					if (!verified) {
-						if (message.getType() == Message.Type.LOGINREQTELLER) {
-							String[] credentials = message.getData().split(",");
-							String username = null;
-							String password = null;
-							for (String part : credentials) {
-								if (part.startsWith("username=")) username = part.substring(9);
-								if (part.startsWith("password=")) password = part.substring(9);
-							}
+		        	        if (uname != null && pswd != null) {
+		        	            File file = new File(tellerAccounts, uname + ".txt");
+		        	            System.out.println("Reading file: " + file.getAbsolutePath());
+		        	            System.out.println(" file.exists()? " + file.exists() + ", isFile()? " + file.isFile());
+		        	            System.out.println(System.getProperty("user.dir"));
+		        	            if (file.exists()) {
+		        	            	
+		        	                Scanner scanner = new Scanner(file);
+		        	                while (scanner.hasNextLine()) {
+		        	                    String line = scanner.nextLine().trim();
+		        	                 // inside the while(scanner.hasNextLine()) loop:
+		        	                    
+		        	                    String[] parts = line.split(":", 2);
+		        	                    if (parts.length == 2 && parts[0].trim().equalsIgnoreCase("password")) {
+		        	                        String stored = parts[1].trim();
+		        	                        System.out.println("Checking password: " + stored);
+		        	                        if (stored.equals(pswd)) {
+		        	                            valid = true;
+		        	                            break;
+		        	                        }
+		        	                    }
+		        	                }
+		        	                scanner.close();
+		        	            }
+		        	        }
 
-							System.out.println("Parsed username = " + username);
-							System.out.println("Parsed password = " + password);
+		        	        if (valid) {
+		        	            isTeller = true;
+		        	            VERIFIED = true;
+		        	            sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login successful", Message.Type.LOGINOK));
+		        	        } else {
+		        	            sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login failed", Message.Type.LOGINDENIED));
+		        	        }
+		        	        
+		        	        continue;
+		        	    }
 
-							boolean valid = false;
+		        	    else if (message.getType() == Message.Type.LOGINREQATM) {
+		        	        // Allow ATM login without authentication
+		        	        VERIFIED = true;
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "ATM login successful", Message.Type.LOGINOK));
+		        	        continue;
+		        	    }
+		        	    
+		        	    else if (message.getType() == Message.Type.LOGOUTREQTELLER || message.getType() == Message.Type.LOGOUTREQATM) {
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Logout ok", Message.Type.LOGOUTOK));
+		        	        break; // terminate handler thread cleanly
+		        	    }
 
-							if (username != null && password != null) {
-								File file = new File(tellerAccounts, username + ".txt");
-								System.out.println("Reading file: " + file.getAbsolutePath());
-								System.out.println(" file.exists()? " + file.exists() + ", isFile()? " + file.isFile());
-								System.out.println(System.getProperty("user.dir"));
-								if (file.exists()) {
-									Scanner scanner = new Scanner(file);
-									while (scanner.hasNextLine()) {
-										String line = scanner.nextLine().trim();
-										String[] parts = line.split(":", 2);
-										if (parts.length == 2 && parts[0].trim().equalsIgnoreCase("password")) {
-											String stored = parts[1].trim();
-											System.out.println("Checking password: " + stored);
-											if (stored.equals(password)) {
-												valid = true;
-												break;
-											}
-										}
-
-									}
-									scanner.close();
-								}
-							}
-
-							if (valid) {
-								isTeller = true;
-								verified = true;
-								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login successful", Message.Type.LOGINOK));
-							} else {
-								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Teller login failed", Message.Type.LOGINDENIED));
-							}
-
-							continue;
-						}
-						else if (message.getType() == Message.Type.LOGINREQATM) {
-							// Allow ATM login without authentication
-							verified = true;
-							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "ATM login successful", Message.Type.LOGINOK));
-							continue;
-						}
-						else if (message.getType() == Message.Type.LOGOUTREQTELLER || message.getType() == Message.Type.LOGOUTREQATM) {
-							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Logout ok", Message.Type.LOGOUTOK));
-							break; // terminate handler thread cleanly
-						}
-
-						// fallback last resort
-						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid login type", Message.Type.INVALID));
-						continue;
-					}
-
-					if (message.getType() == Message.Type.LOGOUTREQTELLER || message.getType() == Message.Type.LOGOUTREQATM) {
-						isTeller   = false;
-						verified   = false;
-
-						// if a user is currently being accessed, then they needs to be logged out
-						if(loggedIn) {
-							// TODO: log out of customer account; this includes resetting the access modifier
-						}
-						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Logout successful", Message.Type.LOGOUTOK));
-						break;  // exit
-					}
-
-					// once the client is connected, it should attempt to access a customer account before being able to access more functionality
-					if(!loggedIn && message.getType() == Message.Type.ACCESSCAREQ) {
-						// attempt to log in
-						loggedIn = login(message);
-						// if login was successful
-						if(loggedIn == true) {
-							// set the current user to the username of the account
-							User = message.getData().split(",")[0];
-							// respond that the login was successful
-							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSCAREQGRANTED));
-						}
-						else {
-							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSCAREQDENIED));
-						}
-
-						// go back to waiting for new message
-						continue;
-					}	
-
-					// if a message is sent but they are not logged in, just throw back an error because its not correct
-					if(!loggedIn) {
-						// tell them its not valid
-						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-						// go back to waiting for new message
-						continue;
-					}
+		        	    // fallback last resort
+		        	    sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid login type", Message.Type.INVALID));
+		        	    continue;
+		        	}
+		        	
+		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
+		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
+		        			    isTeller   = false;
+		        			    VERIFIED   = false;
+                
+                	//if a user is currently being accessed then it needs to be logged out
+                  if(LOGGEDIN) {
+		        			  //TODO: logout CA, this includes resetting the access modifier
+		        		  }
+		        			    sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
+		        			    break;  // exit
+		        	}
+		        	
+		        	
+		        	
+		        	//once the client is connected it should attempt to access a customer account before being able to access more functionality
+		        	if(!LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
+		        		
+		        		//attempt to log in
+		        		LOGGEDIN = login(message);
+		        		//if login was successful
+		        		if(LOGGEDIN == true) {
+		        			
+		        			//set the current user to the username of the account
+		        			User = message.getData().split(",")[0];
+			        		//respond that the login was successful
+			        		sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSCAREQGRANTED));
+		        		}
+		        		else{
+		        			sendMessage(
+			        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSCAREQDENIED));
+		        		}
+		        		
+		        		//go back to waiting for new message
+		        		continue;
+		        	}	
+			        
+		        	//if a message is sent but they are not logged in just throw back an error because its not correct
+		        	if(!LOGGEDIN) {
+		        		//tell them its not valid
+		        		sendMessage(
+		        				new Message(
+		        						"Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+		        		//go back to waiting for new message
+		        		continue;
+			        }
 
 					// if they are logged in, then see if they want to log out first
 					if(message.getType() == Message.Type.EXITCAREQ) {
@@ -243,12 +257,12 @@ public class Server {
 					// commands allowed for ATMs
 					else {
 						// ATM will only be able to select a bank account to make transactions from or logout
-						if(!accessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
+						if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
 							// TODO - log-in to financial account
 						}
 						// ATM should only be able to log out of customer account (handled before) or log in to financial account
 						// otherwise invalid
-						if(!accessingBankAccount) {
+						if(!AccessingBankAccount) {
 							// tell them its not valid
 							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Log in to bank account to access money transfers", Message.Type.INVALID));
 							// go back to waiting for new message
