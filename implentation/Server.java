@@ -122,12 +122,12 @@ public class Server {
 		        	        String uname = null;
 		        	        String pswd = null;
 		        	        for (String part : credentials) {
-		        	        	if (part.startsWith("uname=")) uname = part.substring(6);
-		        	        	if (part.startsWith("pswd=")) pswd = part.substring(5);
+		        	        	if (part.startsWith("username=")) uname = part.substring(9);
+		        	        	if (part.startsWith("password=")) pswd = part.substring(9);
 		        	        }
 		        	        
-		        	        System.out.println("Parsed uname = " + uname);
-		        	        System.out.println("Parsed pswd = " + pswd);
+		        	        System.out.println("Parsed username = " + uname);
+		        	        System.out.println("Parsed password = " + pswd);
 
 		        	        boolean valid = false;
 
