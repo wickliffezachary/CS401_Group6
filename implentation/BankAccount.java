@@ -12,33 +12,12 @@ public class BankAccount {
 	private ArrayList<String> users;
 	private Date dateCreated;
 	private double currBalance;
-	private boolean inAccess=false;
+	private boolean inAccess = false;
 	private String tranctionHist;
-
+	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can not if file is in access
+	
 	// BankAccount - Constructor
 	// this constructor is used when creating a new bank account
-	public BankAccount(String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs) {
-		this.accountID = accid;
-		this.accType = t;
-		this.dateCreated = d;
-		this.currBalance = cb;
-		this.tranctionHist = th;
-		//this.in_access = true;
-		// ****IMPORTANT****
-		// server must change inAccess field to true in CustAcc file whenever this constructor is called
-		// and back to false when in exitCA function
-		// ******END OF IMPORTANT*****
-		//do we want to have server handle all that directly?
-		//or have checkAccess, switchAccess, save methods here?
-		//if we have save, we can also use it to update custAcc file when we update any customer info, add/del bankaccs, etc.
-		this.users = new ArrayList<String>();
-		for (int i = 0; i < usrs.size(); i++) {
-		      this.users.add(usrs.get(i));
-		}
-	}
-
-	// BankAccount - Constructor
-	// this constructor is used when loading from file
 	public BankAccount(String user, AccType type) {
 			id+=1;
 			this.accountID = id + "0";
@@ -48,13 +27,44 @@ public class BankAccount {
 			this.dateCreated = new Date();
 			this.tranctionHist = "";
 	}
+
+	// BankAccount - Constructor
+	// this constructor is used when loading from file
+	// accessor is customerAccount which we're in when we create this object
+	public BankAccount(String access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
+		this.inAccess = access;
+		this.accountID = accid;
+		this.accType = t;
+		this.dateCreated = d;
+		this.currBalance = cb;
+		this.tranctionHist = th;
+		this.users = new ArrayList<String>();
+		for (int i = 0; i < usrs.size(); i++) {
+		      this.users.add(usrs.get(i));
+		}
+		if (!this.inAccess) // no existing access when this object is created
+		{
+			switchAccess(); // change access status here and on file
+			this.currentAccessor = accessor; 
+		}
+	}
 	
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public BankAccount() {
-		
+		// TODO
+	}
+
+	public Boolean checkInActiveAccess() {
+		return this.inAccess;
 	}
 	
+	//*****IMPORTANT*******
+	// before calling any of the following methods
+	// server must check that either acc is !inAccess and make the requesting client the currentAccessor
+	// or that if account is inAccess, the requesting client IS the currentAccessor
+	// and only then allow these actions
+	//*********************
 	public void addUser (String user) {
 		this.users.add(user);
 		save();
@@ -91,6 +101,10 @@ public class BankAccount {
 	public AccType getType() {
 		return this.accType;
 	}
+
+	public Date getCreationDate(){
+		return this.dateCreated;
+	}
 	
 	public void updateBalance(double newBalance) {
 		this.currBalance = newBalance;
@@ -102,18 +116,22 @@ public class BankAccount {
 		save();
 	}
 	
-	public Boolean checkInActiveAccess() {
-		return this.inAccess;
-	}
-	
 	public void switchAccess() {
 		this.inAccess = !this.inAccess;
+		save();
 	}
 	
-	// TODO
+	// save to file
+	// just like dvdcollection
 	public void save() {
-		//save to file
-		//just like dvdcollection
+		String sourceName=System.getProperty("user.dir")+"/data/bankAccounts/"+this.accountID;
+		try{
+			FileWriter writer = new FileWriter(sourceName);
+			w.write("Account_type: " + this.accType + "\nDate_created: " + this.dateCreated
+				+ "\nUsers: " + users.toString() + "\nCurrent_balance: " + currBalance + "\nTransaction_history: " + transactionHist); 
+			w.close()
+		}
+		catch (IOException e){}
 	}
 }
 
