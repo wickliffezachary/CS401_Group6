@@ -50,7 +50,18 @@ public class TellerTests {
 	
 	@Test
 	public void logoutTest() {
-		Assertions.fail();
+		Teller teller = null;
+		
+		try {
+			teller = new Teller(host, port, listener);
+			teller.testLogin(username, password);
+			teller.testLogout();
+			
+			Assertions.assertFalse(teller.isLoggedInTeller());
+		}
+		catch (IOException error) {
+			Assume.assumeNoException(error);
+		}
 	}
 	
 	@Test
