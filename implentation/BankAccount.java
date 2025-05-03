@@ -64,9 +64,12 @@ public class BankAccount {
 		this.users.remove(user);
 		save();
 	}
-	
+
+	// helper method for when we update customer name or phone number because custID=name+phnum..uses add and rem user
 	public void renameUser(String olduser, String newuser) {
-		// bool #helper method for when we update customer name or phone number because custID=name+phnum..uses add and rem user
+		this.users.remove(olduser);
+		this.users.add(newuser);
+		save();
 	}
 	
 	public String getAccountID() {
