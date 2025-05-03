@@ -31,9 +31,9 @@ public class CustomerAccount {
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.password = password;
-		this.associated_ba=new ArrayList<String>();
-		for (int i = 0; i < assoc_ba.size(); i++) {
-		      this.associated_ba.add(assoc_ba.get(i));
+		this.bankAccounts = new ArrayList<String>();
+		for (int i = 0; i < bankAccounts.size(); i++) {
+		      this.bankAccounts.add(bankAccounts.get(i));
 		}
 		// ****IMPORTANT****
 		// server must change inAccess field to true in CustAcc file whenever this constructor is called
@@ -68,47 +68,48 @@ public class CustomerAccount {
 //	}
 	
 	public void removeBankAccount(String accID) {
-		this.associated_ba.remove(accID);
+		this.bankAccounts.remove(accID);
 		save();
 	}
 	
 	public void addBankAccount(String accID) {
-		this.associated_ba.add(accID);
+		this.bankAccounts.add(accID);
 		save();
 	}
 	
 	public void updateAddress(String address) {
-		this.address=address;
+		this.address = address;
 		save();
 	}
 	
 	public void updatePassword(String password) {
-		this.password=password;
+		this.password = password;
 		save();
 	}
 
-	//todo
+	// TODO
 	public void updateName(String newName) {
-		for (int i = 0; i < assoc_ba.size(); i++) {
-		      String accc= this.associated_ba.get(i);
-			//go to each acc file and 
-			//do users.remove(fullname+phoneNumber)
-			//users.add(newname+phoneNumber)
+		for (int i = 0; i < bankAccounts.size(); i++) {
+			String acc = this.bankAccounts.get(i);
+			// go to each account file and 
+			// do users.remove(fullname+phoneNumber)
+			// users.add(newname+phoneNumber)
 		}
 		// and now we can change name
-		this.fullname=newName;
+		this.fullName = newName;
 		save();
 	}
-	//todo
+	
+	// TODO
 	public void updatePhoneNumber(String newNumber) {
-		for (int i = 0; i < assoc_ba.size(); i++) {
-		      String accc= this.associated_ba.get(i);
-			//go to each acc file and 
-			//do users.remove(fullname+phoneNumber)
-			//users.add(fullname+newNumber)
+		for (int i = 0; i < bankAccounts.size(); i++) {
+			String acc = this.bankAccounts.get(i);
+			// go to each account file and 
+			// do users.remove(fullName+phoneNumber)
+			// users.add(fullname+newNumber)
 		}
 		// and now we can change number
-		this.phoneNumber=newNumber;
+		this.phoneNumber = newNumber;
 		save();
 	}
 	
@@ -125,11 +126,12 @@ public class CustomerAccount {
 	}
 
 	public ArrayList<String> getAssociatedBA(){
-		return this.associated_ba;
+		return this.bankAccounts;
 	}
-	//todo
+	
+	// TODO
 	public void save() {
-		//save to file
-		//just like dvdcollection
+		// save to file
+		// just like DVDCollection
 	}
 }
