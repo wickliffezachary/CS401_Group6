@@ -18,20 +18,20 @@ public class BankAccount {
 	// BankAccount - Constructor
 	// this constructor is used when creating a new bank account
 	public BankAccount(String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs) {
-		this.accountID=accid;
-		this.acc_type=t;
-		this.date_created=d;
-		this.curr_balance=cb;
-		this.tranction_hist=th;
-		//this.in_access=true;
-		//****IMPORTANT****
-		//server must change in_access field to true in CustAcc file whenever this constr is called
-		//and back to false when in exitCA function
-		//******END OF IMPORTANT*****
-		//do we want to have server handle all that directlhy
-		//or have checkaccess, switchaccess, save funcs here???????????????
-		//if we have save, we can also use it to update custacc file when we update any cust info, add/del bankaccs etc
-		this.users=new ArrayList<String>();
+		this.accountID = accid;
+		this.accType = t;
+		this.dateCreated = d;
+		this.currBalance = cb;
+		this.tranctionHist = th;
+		//this.in_access = true;
+		// ****IMPORTANT****
+		// server must change inAccess field to true in CustAcc file whenever this constructor is called
+		// and back to false when in exitCA function
+		// ******END OF IMPORTANT*****
+		//do we want to have server handle all that directly?
+		//or have checkAccess, switchAccess, save methods here?
+		//if we have save, we can also use it to update custAcc file when we update any customer info, add/del bankaccs, etc.
+		this.users = new ArrayList<String>();
 		for (int i = 0; i < usrs.size(); i++) {
 		      this.users.add(usrs.get(i));
 		}
@@ -41,18 +41,18 @@ public class BankAccount {
 	// this constructor is used when loading from file
 	public BankAccount(String user, AccType type) {
 			id+=1;
-			this.accountID=id+"0";
-			this.acc_type=type;
-			this.users=new ArrayList<String>();
+			this.accountID = id + "0";
+			this.accType = type;
+			this.users = new ArrayList<String>();
 			users.add(user);
-			this.date_created=new Date();
-			this.tranction_hist="";
+			this.dateCreated = new Date();
+			this.tranctionHist = "";
 	}
 	
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public BankAccount() {
-		//errrrrrrrrr
+		
 	}
 	
 	public void addUser (String user) {
@@ -66,48 +66,48 @@ public class BankAccount {
 	}
 	
 	public void renameUser(String olduser, String newuser) {
-		// bool #helper meth for when we update customer name or ph num because custID=name+phnum..uses add and rem user
+		// bool #helper method for when we update customer name or phone number because custID=name+phnum..uses add and rem user
 	}
 	
-	public String get_accID() {
+	public String getAccountID() {
 		return this.accountID;
 	}
 	
-	public ArrayList<String> get_users(){
+	public ArrayList<String> getUsers(){
 		return this.users;
 	}
 	
-	public double get_balance() {
-		return this.curr_balance;
+	public double getBalance() {
+		return this.currBalance;
 	}
 	
-	public String get_hist() {
-		return this.tranction_hist;
+	public String getHistory() {
+		return this.tranctionHist;
 	}
 	
-	public AccType get_type() {
-		return this.acc_type;
+	public AccType getType() {
+		return this.accType;
 	}
 	
-	public void update_bal(double new_bal) {
-		this.curr_balance=new_bal;
+	public void updateBalance(double newBalance) {
+		this.currBalance = newBalance;
 		save();
 	}
 	
-	public void update_hist(String entry) {
-		this.tranction_hist=this.tranction_hist+entry;
+	public void updateHistory(String entry) {
+		this.tranctionHist = this.tranctionHist + entry;
 		save();
 	}
 	
-	public Boolean check_in_active_access() {
-		return this.in_access;
+	public Boolean checkInActiveAccess() {
+		return this.inAccess;
 	}
 	
-	public void switch_access() {
-		this.in_access=!this.in_access;
+	public void switchAccess() {
+		this.inAccess = !this.inAccess;
 	}
 	
-	//todo
+	// TODO
 	public void save() {
 		//save to file
 		//just like dvdcollection
