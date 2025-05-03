@@ -12,79 +12,105 @@ public class BankAccount {
 	private ArrayList<String> users;
 	private Date dateCreated;
 	private double currBalance;
-	private boolean inAccess;
+	private boolean inAccess=false;
 	private String tranctionHist;
-	
-	// BankAccount - Constructor
-	// this constructor is used when loading from file
-	public BankAccount(String accid, String th, AccType t) {
-		
-	}
-	
+
 	// BankAccount - Constructor
 	// this constructor is used when creating a new bank account
+	public BankAccount(String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs) {
+		this.accountID=accid;
+		this.acc_type=t;
+		this.date_created=d;
+		this.curr_balance=cb;
+		this.tranction_hist=th;
+		//this.in_access=true;
+		//****IMPORTANT****
+		//server must change in_access field to true in CustAcc file whenever this constr is called
+		//and back to false when in exitCA function
+		//******END OF IMPORTANT*****
+		//do we want to have server handle all that directlhy
+		//or have checkaccess, switchaccess, save funcs here???????????????
+		//if we have save, we can also use it to update custacc file when we update any cust info, add/del bankaccs etc
+		this.users=new ArrayList<String>();
+		for (int i = 0; i < usrs.size(); i++) {
+		      this.users.add(usrs.get(i));
+		}
+	}
+
+	// BankAccount - Constructor
+	// this constructor is used when loading from file
 	public BankAccount(String user, AccType type) {
-		
+			id+=1;
+			this.accountID=id+"0";
+			this.acc_type=type;
+			this.users=new ArrayList<String>();
+			users.add(user);
+			this.date_created=new Date();
+			this.tranction_hist="";
 	}
 	
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public BankAccount() {
-		
+		//errrrrrrrrr
 	}
 	
-	public void addUser (String userID) {
-		
+	public void addUser (String user) {
+		this.users.add(user);
+		save();
 	}
 	
-	public void removeUser(String userID) {
-		
+	public void removeUser(String user) {
+		this.users.remove(user);
+		save();
 	}
 	
 	public void renameUser(String olduser, String newuser) {
 		// bool #helper meth for when we update customer name or ph num because custID=name+phnum..uses add and rem user
 	}
 	
-	public String getAccountID() {
-		// TODO
-		return null;
+	public String get_accID() {
+		return this.accountID;
 	}
 	
-	public ArrayList<String> getUsers(){
-		// TODO
-		return null;
+	public ArrayList<String> get_users(){
+		return this.users;
 	}
 	
-	public double getBalance() {
-		// TODO
-		return 0.0;
-		
+	public double get_balance() {
+		return this.curr_balance;
 	}
 	
-	public String getHistory() {
-		// TODO
-		return null;
+	public String get_hist() {
+		return this.tranction_hist;
 	}
 	
-	public AccType getType() {
-		// TODO
-		return null;
+	public AccType get_type() {
+		return this.acc_type;
 	}
 	
-	public void updateBalance(double newBalance) {
-		
+	public void update_bal(double new_bal) {
+		this.curr_balance=new_bal;
+		save();
 	}
 	
-	public void updateHist(String entry) {
-		
+	public void update_hist(String entry) {
+		this.tranction_hist=this.tranction_hist+entry;
+		save();
 	}
 	
-	public boolean checkInActiveStatus() {
-		// TODO
-		return false;
+	public Boolean check_in_active_access() {
+		return this.in_access;
 	}
 	
-	public void switchAccess() {
-		
+	public void switch_access() {
+		this.in_access=!this.in_access;
+	}
+	
+	//todo
+	public void save() {
+		//save to file
+		//just like dvdcollection
 	}
 }
+
