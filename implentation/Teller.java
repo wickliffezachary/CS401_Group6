@@ -95,6 +95,11 @@ public class Teller {
 		//else err
 	}
 	
+	// method that returns whether or not a teller is logged in
+	public boolean isLoggedInTeller() {
+		return loggedInTeller;
+	}
+	
 	// TODO
 	// method that allows a teller to select a customer account
 	public void selectCustomer() {
