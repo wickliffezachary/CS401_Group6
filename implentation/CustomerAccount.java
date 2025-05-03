@@ -47,7 +47,11 @@ public class CustomerAccount {
 	// CustomerAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public CustomerAccount() {
-		// TODO
+		this.fullName = "Invalid constructor";
+		this.phoneNumber = "Invalid constructor";
+		this.address = "Invalid constructor";
+		this.password = "Invalid constructor";
+		this.bankAccounts = new ArrayList<String>();
 	}
 	
 //	public boolean validatePassword(String password) {
@@ -129,9 +133,16 @@ public class CustomerAccount {
 		return this.bankAccounts;
 	}
 	
-	// TODO
+	// save to file after update
 	public void save() {
-		// save to file
-		// just like DVDCollection
+		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber;
+		try{
+			FileWriter writer = new FileWriter(sourceName);
+			w.write("Namee: " + this.fullName + "\nPhone_number: " + this.phoneNumber + "\nAddress: " + this.address
+				+ "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
+			w.close()
+		}
+		catch (IOException e){}
+	}
 	}
 }
