@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 
 // TODO - determine if server needs to be up before launching tests or if it can be launched through tests
-class ATMTests {
+public class ATMTests {
 	private final String address = "localhost";
 	private final int port = 1234;
 	
@@ -71,7 +71,7 @@ class ATMTests {
 	}
 	
 	@Test
-	void testLogout() {
+	public void testLogout() {
 		testLogin();
 		try {
 			atm.logout();
