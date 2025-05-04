@@ -309,8 +309,14 @@ public class Server {
 			scheduler.scheduleAtFixedRate(
 				()->{sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));},
 				midnight, 1440, TimeUnit.MINUTES);
+			}	
 		}
-			
+		
+		// the monthly
+		private void monthlyUpkeep(){
+			// schedule addInterest monthly
+		}
+		
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -404,13 +410,60 @@ public class Server {
 			
 		}
 
+		private void addInterest() {
+		    double interestRate = 3.50 / 100.00;
+		
+		    File[] files = bankAccounts.listFiles();
+		    for (File file : files) {
+		        if (file.isFile()) {
+		            List<String> lines = new ArrayList<>();
+		            boolean toChange = false;
+		
+		            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+		                String line;
+		                while ((line = reader.readLine()) != null) {
+		                    String[] temp = line.split(" ");
+		                    String frst = temp[0];
+		                    String second = temp[1];
+		
+		                    if (frst.equalsIgnoreCase("Account_type:") && second.equalsIgnoreCase("SAVINGS")) {
+		                        toChange = true;
+		                        lines.add(line);
+		                        continue; // skip to next line in case of "SAVINGS" account
+		                    }
+		
+		                    if (toChange && frst.equalsIgnoreCase("Current_balance:")) {
+		                        // Add interest to the balance
+		                        double bal = Double.parseDouble(second);
+		                        lines.add(frst + " " + String.valueOf(bal + bal * interestRate));
+		                        toChange = false;  // stop entering this block after the first update
+		                        continue;  
+		                    }
+		                    lines.add(line);  // add line as is
+		                }
+		            } catch (IOException e) {
+		                e.printStackTrace();
+		                continue;  // skip to next file 
+		            }
+		
+		            // write back
+		            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+		                for (String updatedLine : lines) {
+		                    writer.write(updatedLine);
+		                    writer.newLine();  // preserve line breaks
+		                }
+		            } catch (IOException e) {
+		                e.printStackTrace();
+		            }
+		        }
+	    	}
+		}
 	}
 
 	// helper methods for Server:
 	
-	private void monthlyUpdate() {
-		// TODO - a separate thread should run this once a month
-		// this method is used for things like interest, etc.
-	}
 
+		
 }
+
+
