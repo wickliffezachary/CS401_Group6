@@ -102,7 +102,11 @@ public class Teller {
 	
 	// TODO
 	// method that allows a teller to select a customer account
-	public void selectCustomer() {
+	public void selectCustomer(String customerUsername) throws IOException {
+		sendMessage(new Message(id, "Server", customerUsername, Message.Type.ACCESSCAREQ));
+		
+		Message resp = parseReceivedMessage();
+	    if (listener != null) { listener.receivedMessage(resp); }
 		
 	}
 	
@@ -148,10 +152,12 @@ public class Teller {
 		
 	}
 	
-	// TODO
 	// method that allows a teller to create a new customer account for a customer
-	public void createNewCustomer() {
-		
+	public void createNewCustomer(String first, String last,String phone, String address, String password) throws IOException {
+		String data = String.join(",", first, last, phone, address, password);
+		sendMessage(new Message(id, "Server", data, Message.Type.CREATCBACCREQ));
+		Message resp = parseReceivedMessage();
+		if (listener != null) listener.receivedMessage(resp);
 	}
 	
 	// TODO

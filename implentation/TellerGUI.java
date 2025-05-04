@@ -40,13 +40,30 @@ public class TellerGUI extends JFrame  implements Teller.TellerListener{
 	    JButton logoutBtn = new JButton("Logout");
 	    
 	    selectCustomerBtn.addActionListener(e -> {
-	        // placeholder
-	        System.out.println("Select Customer clicked");
+	        String uname = JOptionPane.showInputDialog(this, "Enter customer username:");
+	        if (uname != null && !uname.isBlank()) {
+	            try {
+	                teller.selectCustomer(uname);
+	            } catch(IOException ex) {
+	                ex.printStackTrace();
+	            }
+	        }
 	    });
 
 	    createCustomerBtn.addActionListener(e -> {
-	        // placeholder
-	        System.out.println("Create New Customer clicked");
+	        String first   = JOptionPane.showInputDialog(this, "First Name:");
+	        String last    = JOptionPane.showInputDialog(this, "Last Name:");
+	        String phone   = JOptionPane.showInputDialog(this, "Phone No.:");
+	        String address = JOptionPane.showInputDialog(this, "Address:");
+	        String pswd    = JOptionPane.showInputDialog(this, "Password:");
+	        if (first!=null && last!=null && phone!=null 
+	         && address!=null && pswd!=null) {
+	            try {
+	                teller.createNewCustomer(first, last, phone, address, pswd);
+	            } catch (IOException ex) {
+	                ex.printStackTrace();
+	            }
+	        }
 	    });
 
 	    viewActivityBtn.addActionListener(e -> {

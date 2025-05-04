@@ -185,6 +185,66 @@ public class Server {
 		        	    continue;
 		        	}
 		        	
+		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATCBACCREQ) {
+		        	    String[] p = message.getData().split(",", 5);
+		        	    if (p.length == 5) {
+		        	        String first   = p[0].trim();
+		        	        String last    = p[1].trim();
+		        	        String phone   = p[2].trim();
+		        	        String address = p[3].trim();
+		        	        String pswd    = p[4].trim();
+		        	        // filename = first+last+phone
+		        	        String username = first + last + phone;
+		        	        File f = new File(customerAccounts, username + ".txt");
+		        	        if (f.exists()) {
+		        	            sendMessage(new Message("Server",
+		        	                clientSocket.getInetAddress().toString(),
+		        	                "Customer already exists",
+		        	                Message.Type.CREATECACCDONE));
+		        	        } else {
+		        	            String content = String.join("\n",
+		        	                "0",                       // access flag
+		        	                first + " " + last,       // display name
+		        	                phone,                    // phone
+		        	                address,                  // address
+		        	                pswd,                     // password
+		        	                ""                        // empty related account list
+		        	            );
+		        	            Files.write(f.toPath(), content.getBytes());
+		        	            sendMessage(new Message("Server",
+		        	                clientSocket.getInetAddress().toString(),
+		        	                "Customer created: " + username,
+		        	                Message.Type.CREATECACCDONE));
+		        	        }
+		        	    } else {
+		        	        sendMessage(new Message("Server",
+		        	            clientSocket.getInetAddress().toString(),
+		        	            "Bad data for create customer",
+		        	            Message.Type.ERROR));
+		        	    }
+		        	    continue;
+		        	}
+		        	
+		        	// Handle selectCustomer();
+		        	if (VERIFIED && isTeller && !LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
+		        	    String username = message.getData();
+		        	    File f = new File(customerAccounts, username + ".txt");
+		        	    if (f.exists()) {
+		        	        LOGGEDIN = true;
+		        	        User     = username;
+		        	        sendMessage(new Message("Server",
+		        	            clientSocket.getInetAddress().toString(),
+		        	            "Customer selected",
+		        	            Message.Type.ACCESSCAREQGRANTED));
+		        	    } else {
+		        	        sendMessage(new Message("Server",
+		        	            clientSocket.getInetAddress().toString(),
+		        	            "No such customer",
+		        	            Message.Type.ACCESSCAREQDENIED));
+		        	    }
+		        	    continue;
+		        	}
+		        	
 		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
 		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
 		        			    isTeller   = false;
