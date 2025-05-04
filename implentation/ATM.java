@@ -251,8 +251,8 @@ public class ATM {
 		if (serverResponse.getType() == Message.Type.DEPOSITDONE) {
 			// TODO - ???
 		}
-		// else, if the response message is of type ERROR, then trigger an error pop-up on the GUI
-		else if (serverResponse.getType() == Message.Type.ERROR) {
+		// else, if the response message is of type INVALID, then trigger an error pop-up on the GUI
+		else if (serverResponse.getType() == Message.Type.INVALID) {
 			// TODO - error pop-up on GUI
 		}
 	}
