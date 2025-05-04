@@ -98,6 +98,7 @@ public class Server {
 			Boolean VERIFIED = false;			//determines if the client has verified its identity
 			Boolean isTeller = false;			//determines if the client is an atm or teller
 			String User = "";					//TODO: change this to be based on customer data
+			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
 		        while((message = (Message) objectInputStream.readObject()) != null) {
@@ -297,7 +298,19 @@ public class Server {
 		}
 
 		// helper methods for ClientHander:
-
+		
+		// schedules ATM refill to run once daily at midnight, starting from next midnight 
+		// reference: stackoverflow
+		// correctness not verified
+		private void dailyUpkeep() {
+			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+			long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
+			try{
+			scheduler.scheduleAtFixedRate(
+				()->{sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));},
+				midnight, 1440, TimeUnit.MINUTES);
+		}
+			
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -394,15 +407,6 @@ public class Server {
 	}
 
 	// helper methods for Server:
-	// schedules ATM refill to run once daily at midnight, starting from next midnight 
-	// refernce: stackoverflow
-	private void dailyUpkeep() {
-		scheduler = Executors.newScheduledThreadPool(1);
-		Long midnight=LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
-		scheduler.scheduleAtFixedRate(
-			()->{sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));},
-			midnight, 1440, TimeUnit.MINUTES);
-	}
 	
 	private void monthlyUpdate() {
 		// TODO - a separate thread should run this once a month
