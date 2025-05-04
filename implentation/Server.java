@@ -394,9 +394,14 @@ public class Server {
 	}
 
 	// helper methods for Server:
-	
+	// schedules ATM refill to run once daily at midnight, starting from next midnight 
+	// refernce: stackoverflow
 	private void dailyUpkeep() {
-		// TODO - a separate thread should run this once a day 
+		scheduler = Executors.newScheduledThreadPool(1);
+		Long midnight=LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
+		scheduler.scheduleAtFixedRate(
+			()->{sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));},
+			midnight, 1440, TimeUnit.MINUTES);
 	}
 	
 	private void monthlyUpdate() {
