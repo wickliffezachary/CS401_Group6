@@ -30,7 +30,7 @@ public class Message implements Serializable{
 		DELBAREQ, DELBADONE, 								// close bank account messages
 
 		// getting and modifying account messages
-		GETREQ, GETREQGRANTED,								// get customer info message
+		GETREQ, GETREQGRANTED, GETBALREQGRANTED, GETHISTREQGRANTED,								// get customer info message
 		CHANGECUSTOMERINFOREQ, CHANGECUSTOMERINFODONE, 		// change customer info message
 
 		// is this one necessary?
