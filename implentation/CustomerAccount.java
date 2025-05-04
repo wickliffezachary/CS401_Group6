@@ -145,10 +145,10 @@ public class CustomerAccount {
 	public void save() {
 		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber;
 		try{
-			FileWriter writer = new FileWriter(sourceName);
-			w.write("Access_status " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
+			FileWriter fwriter = new FileWriter(sourceName);
+			fwriter.write("Access_status " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
 				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
-			w.close()
+			fwriter.close()
 		}
 		catch (IOException e){}
 	}
