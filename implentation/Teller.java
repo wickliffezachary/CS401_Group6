@@ -13,9 +13,16 @@ public class Teller {
 	private String id;
 	private static int count = 0;
 	private boolean loggedInTeller;
+	private boolean connected;	//is Teller connected to Server?
 
 	public interface TellerListener {
         void receivedMessage(Message msg);
+	}
+	
+	//default constructor for unit testing
+	public Teller() {
+		count++;
+		id = "Teller" + count;
 	}
 	
 	// Teller - Constructor
@@ -181,6 +188,17 @@ public class Teller {
 	// method that allows a teller to call a manager
 	public void callManager() {
 		
+	}
+	
+	public int getCount() {
+		return count;
+	}
+	public String getID() {
+		return id;
+	}
+	
+	public boolean isLoggedInTeller() {
+		return loggedInTeller;
 	}
 
 	// test method for logging in
