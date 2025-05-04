@@ -225,6 +225,7 @@ public class ATM {
 		
 		// if the response message is of type GET_REQ_GRANTED, then send the account balance to the GUI 
 		if (serverResponse.getType() == Message.Type.GETREQGRANTED) {
+			String bal = serverREsponse.getData();
 			// TODO - send current balance to GUI
 		}
 		// else, if the response message is of any other type, then trigger an error pop-up on the GUI
@@ -247,9 +248,10 @@ public class ATM {
 		// get the response message back from the server
 		Message serverResponse = parseReceivedMessage();
 		
-		// if the response message is of type GET_REQ_GRANTED, then send the account balance to the GUI 
+		// if the response message is of type GET_REQ_GRANTED, then send the transaction history to the GUI 
 		if (serverResponse.getType() == Message.Type.GETREQGRANTED) {
-			// TODO - send current balance to GUI
+			String hist = serverREsponse.getData();
+			// TODO - send history to GUI
 		}
 		// else, if the response message is of any other type, then trigger an error pop-up on the GUI
 		else {
