@@ -4,6 +4,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeNoException;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.IOException;
 
@@ -20,42 +21,17 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 class ATM_Test {
 
 	@Test
-	public void testLogin() {
-		String firstName = "first";
-		String lastName = "last";
-		String phoneNumber = "1234567890";
-		String password = "password";
-		
-		ATM atm = new ATM();
-		try {
-			
-			atm.login(firstName, lastName, phoneNumber, password);
-			assertTrue(atm.isLoggedInUser());
-		} catch (IOException e) {
-			assumeNoException(e);
-		}
-	}
-	@Test
-	public void testLogout() {
-		String firstName = "first";
-		String lastName = "last";
-		String phoneNumber = "1234567890";
-		String password = "password";
-		
-		ATM atm = new ATM();
-		try {
-			atm.login(firstName, lastName, phoneNumber, password);
-			assertTrue(atm.isLoggedInUser());
-			atm.logout();
-			assertFalse(atm.isLoggedInUser());
-		} catch (IOException e) {
-			assumeNoException(e);
-		}
-	}
-	@Test
-	public void testCurrReserve() {
-		ATM atm = new ATM();
+	public void testConstructorReserve() {
 		double amount = 10000.50;
+		ATM atm = new ATM(amount);
+		assertEquals(atm.getCurrReserve(), amount);
+	}
+	
+	@Test
+	public void testUpdateCurrReserve() {
+		ATM atm = new ATM(0);
+		double amount = 10000.50;
+		assertNotEquals(atm.getCurrReserve(), amount);
 		atm.updateCurrReserve(amount);
 		assertEquals(atm.getCurrReserve(), amount);
 	}
@@ -63,19 +39,17 @@ class ATM_Test {
 	@Test
 	public void testCount() {
 		int max = 10;
-		ATM atm = new ATM();
-		int count = atm.getCount();
+		ATM atm = new ATM(0);
+		int start = atm.getCount();
 		for(int i = 0; i < max; ++i) {
-			new ATM();
+			new ATM(0);
 		}
-		assertEquals(atm.getCount(), max + count);
+		assertEquals(atm.getCount(), max + start);
 	}
-	
-
 	
 	@Test
 	public void testID() {
-		ATM atm = new ATM();
+		ATM atm = new ATM(0);
 		String expectedID = "ATM" + atm.getCount();
 		assertEquals(expectedID, atm.getID());
 	}

@@ -24,6 +24,16 @@ public class ATM {
     private double cashInMachine = 0.0;
 	private static int count = 0;
 	private boolean loggedInUser;
+	private boolean connected;	//is ATM connected to server?
+	
+	//constructor for unit testing
+	public ATM(double initialReserve) {
+		count++;
+		id = "ATM" + count;
+		loggedInUser = false;
+		cashInMachine = initialReserve;
+		connected = false;
+	}
 	
     // ATM - Constructor
 	// when an ATM is created, connect it to the server and listener
@@ -37,10 +47,12 @@ public class ATM {
 		this.id = "ATM" + count;
 		this.loggedInUser = false;
 		this.cashInMachine=initialReserve;
+		connected = true;
 	}
 
 	// helper method for sending messages to server
 	private void sendMessage(Message message) throws IOException {
+		if(!connected) {return;}	//if ATM is not connected to server, do not attempt to send message
 		
 		// write an output object to the server
 		objectOutputStream.writeObject(message);
@@ -293,6 +305,13 @@ public class ATM {
 	// (refillAmount is sent by the server in the data field of message, extracted by the thread when message is received, and passed to this funvtion)
 	public void updateCurrReserve(double refillAmount) {
 		this.cashInMachine = refillAmount;
+	}
+	
+	public int getCount() {
+		return count;
+	}
+	public String getID() {
+		return id;
 	}
 	
 	// test method for logging in
