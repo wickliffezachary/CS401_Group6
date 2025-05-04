@@ -24,19 +24,11 @@ public class ATM {
     private double cashInMachine = 0.0;
 	private static int count = 0;
 	private boolean loggedInUser;
-	private boolean connected;	//is ATM connected to server
-	
-	public ATM() {
-		//Default constructor for unit testing
-		count++;
-		id = "ATM" + count;
-		loggedInUser = false;
-		connected = false;
-	}
 	
     // ATM - Constructor
 	// when an ATM is created, connect it to the server and listener
-	public ATM(String host, int port, ATMListener listener) throws IOException {
+	// and give it some money
+	public ATM(String host, int port, ATMListener listener, double initialReserve) throws IOException {
 		this.listener = listener;
 		this.socket = new Socket(host, port);
 	    this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -44,12 +36,12 @@ public class ATM {
 	    count += 1;
 		this.id = "ATM" + count;
 		this.loggedInUser = false;
-		connected = true;
+		this.cashInMachine=initialReserve;
 	}
 
 	// helper method for sending messages to server
 	private void sendMessage(Message message) throws IOException {
-		if(!connected) {return;}	//if ATM is not connected do not send a message
+		
 		// write an output object to the server
 		objectOutputStream.writeObject(message);
 		
@@ -75,7 +67,6 @@ public class ATM {
 		return temp;
 	}
 	
-	// TODO 
 	// method that logs a user in
 	public void login(String firstName, String lastName,String phoneNumber, String password) throws IOException {
 		// received the customer's name, phone number, and password from the GUI 
@@ -83,28 +74,50 @@ public class ATM {
 		
 		// send a message to the server that the user is requesting to log in
 		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQATM));
-		//wait for server response message
-		//if loginok type message, 
-		loggedInUser=true;
-		//and trigger gui by also sending contents of data field (list of bank accounts of customer) of message 
-		//and spawn gui thread for autologout
-		//elif logindenied type message, trigger gui to display error
+		
+		// wait for server response message
+		Message serverResponse = parseReceivedMessage();
+		
+		// if the response message is of type LOGIN_OK, then the user is logged in and the GUI is triggered
+		if (serverResponse.getType() == Message.Type.LOGINOK){
+			loggedInUser = true;
+			// and spawn a GUI thread for auto-logout
+			// trigger GUI to next frame and show available bank accounts
+			String acc = serverResponse.getData();
+			// send these on to the GUI
+		}
+		// else, if the response message is of type LOGIN_DENIED, then the user entered incorrect credentials
+		else if (serverResponse.getType() == Message.Type.LOGINDENIED) {
+			// trigger relevant error popup on GUI
+		}
+		// else, if the response message is of any other type
+		else{
+			// trigger generic error poup on GUI
+		}
 	}
 
-	// TODO
 	// method that logs a user out
 	public void logout() throws IOException {
 		// send a message to the server that the user is requesting to log out
 		sendMessage(new Message(id, "Server", "Requesting Logout", Message.Type.LOGOUTREQATM));
-		//wait for server ok or not?
-		//if logoutok type message, 
-		loggedInUser=false;
-		//kill autologout timer thread
-		//send gui to login page
+		// get the response message back from the server
+		Message serverResponse = parseReceivedMessage();
+		
+		// if the response message is of type LOGOUT_OK, then the user is logged out
+		if (serverResponse.getType() == Message.Type.LOGOUTOK){
+			loggedInUser = false;
+			// kill the auto-logout timer thread
+			// send the GUI to the login page
+		}
+		// else, if the response message is of any other type, then print out an error message
+		else {
+			// trigger GUI with error popup and a callManager ption that, frankly, does nothing
+		}
 	}
 
 	// TODO
-	//must be on its own thread
+	// triggered by GUI
+	// where it must be on its own thread
 	public void autoLogout() {
 	
 	}
@@ -116,7 +129,7 @@ public class ATM {
 	
 	// method that allows a user to select a financial account
 	// (the account number is supplied when user action triggers GUI event that calls this method)
-	public void selectAccount(String accnum) throws IOException {
+	public void selectAccount(String accNum) throws IOException {
 		// if the user is not logged in, then they should not be allowed to select any account
 		// so exit this method call
 		if (!loggedInUser) {
@@ -124,7 +137,7 @@ public class ATM {
 		}
 		
 		// send a message to the server that the user is requesting to access a financial account
-		sendMessage(new Message(id, "Server", accnum, Message.Type.ACCESSBAREQ));
+		sendMessage(new Message(id, "Server", accNum, Message.Type.ACCESSBAREQ));
 		
 		// get the response message back from the server
 		Message serverResponse = parseReceivedMessage();
@@ -211,6 +224,7 @@ public class ATM {
 		
 		// if the response message is of type GET_REQ_GRANTED, then send the account balance to the GUI 
 		if (serverResponse.getType() == Message.Type.GETREQGRANTED) {
+			String bal = serverResponse.getData();
 			// TODO - send current balance to GUI
 		}
 		// else, if the response message is of any other type, then trigger an error pop-up on the GUI
@@ -233,9 +247,10 @@ public class ATM {
 		// get the response message back from the server
 		Message serverResponse = parseReceivedMessage();
 		
-		// if the response message is of type GET_REQ_GRANTED, then send the account balance to the GUI 
+		// if the response message is of type GET_REQ_GRANTED, then send the transaction history to the GUI 
 		if (serverResponse.getType() == Message.Type.GETREQGRANTED) {
-			// TODO - send current balance to GUI
+			String hist = serverResponse.getData();
+			// TODO - send history to GUI
 		}
 		// else, if the response message is of any other type, then trigger an error pop-up on the GUI
 		else {
@@ -261,8 +276,8 @@ public class ATM {
 		if (serverResponse.getType() == Message.Type.DEPOSITDONE) {
 			// TODO - ???
 		}
-		// else, if the response message is of type ERROR, then trigger an error pop-up on the GUI
-		else if (serverResponse.getType() == Message.Type.ERROR) {
+		// else, if the response message is of type INVALID, then trigger an error pop-up on the GUI
+		else if (serverResponse.getType() == Message.Type.INVALID) {
 			// TODO - error pop-up on GUI
 		}
 	}
@@ -272,19 +287,12 @@ public class ATM {
 		return this.cashInMachine;
 	}
 
+	// TODOOO
 	// method that updates the cash reserves in the ATM machine
 	// (this method is triggered by a separate thread which is always listening for the server's refill message)
-	// (refillAmount is sent by the server)
+	// (refillAmount is sent by the server in the data field of message, extracted by the thread when message is received, and passed to this funvtion)
 	public void updateCurrReserve(double refillAmount) {
 		this.cashInMachine = refillAmount;
-	}
-	
-	public String getID() {
-		return id;
-	}
-	
-	public int getCount() {
-		return count;
 	}
 	
 	// test method for logging in
