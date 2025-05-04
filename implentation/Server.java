@@ -7,7 +7,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class Server {
@@ -80,7 +80,7 @@ public class Server {
 		private final Socket clientSocket;
 		private final ObjectInputStream objectInputStream;
 		private final ObjectOutputStream objectOutputStream;
-
+		private String currentAccessor;
 		// ClientHandler - Constructor
 		// this will initialize the ClientSocket and the input/output streams
 		public ClientHandler(Socket socket) throws IOException {
@@ -185,6 +185,37 @@ public class Server {
 		        	    continue;
 		        	}
 		        	
+		        	if (VERIFIED && isTeller && !LOGGEDIN
+		        		    && message.getType() == Message.Type.ACCESSCAREQ) {
+
+		        		    String username = message.getData();
+		        		    File custFile = new File(customerAccounts, username + ".txt");
+		        		    if (!custFile.exists()) {
+		        		        sendMessage(new Message(
+		        		          "Server",
+		        		          clientSocket.getInetAddress().toString(),
+		        		          "No such customer",
+		        		          Message.Type.ACCESSCAREQDENIED
+		        		        ));
+		        		    } else {
+		        		        LOGGEDIN = true;
+		        		        User = username;
+		        		        List<String> lines = Files.readAllLines(custFile.toPath());
+		        		        String baList = lines.size() >= 6 ? lines.get(5).trim() : "";
+		        		        sendMessage(new Message(
+		        		          "Server",
+		        		          clientSocket.getInetAddress().toString(),
+		        		          baList,
+		        		          Message.Type.ACCESSCAREQGRANTED
+		        		        ));
+		        		    }
+		        		    continue;
+		        		}
+
+
+
+		        	
+		        	
 		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATCBACCREQ) {
 		        	    String[] p = message.getData().split(",", 5);
 		        	    if (p.length == 5) {
@@ -195,7 +226,9 @@ public class Server {
 		        	        String pswd    = p[4].trim();
 		        	        // filename = first+last+phone
 		        	        String username = first + last + phone;
-		        	        File f = new File(customerAccounts, username + ".txt");
+		        	        File f = new File(bankAccounts, username + ".txt");
+
+
 		        	        if (f.exists()) {
 		        	            sendMessage(new Message("Server",
 		        	                clientSocket.getInetAddress().toString(),
@@ -211,6 +244,10 @@ public class Server {
 		        	                ""                        // empty related account list
 		        	            );
 		        	            Files.write(f.toPath(), content.getBytes());
+		        	      
+		        	            File customerBAFolder = new File(bankAccounts, username);
+		        	            customerBAFolder.mkdirs();  // now data/bankAccounts/<username>/ exists
+
 		        	            sendMessage(new Message("Server",
 		        	                clientSocket.getInetAddress().toString(),
 		        	                "Customer created: " + username,
