@@ -73,8 +73,6 @@ public class Teller {
 		// get the response message back from the server
 		Message serverResp = parseReceivedMessage();
 		
-		if (listener != null) listener.receivedMessage(serverResp);
-		
 		// if the response message is of type LOGIN_OK, then the teller is logged in and the GUI is triggered
 		if (serverResp.getType() == Message.Type.LOGINOK) {
 			loggedInTeller=true;
@@ -100,11 +98,6 @@ public class Teller {
 		this.loggedInTeller = false;
 		//send gui to login page
 		//else err
-	}
-	
-	// method that returns whether or not a teller is logged in
-	public boolean isLoggedInTeller() {
-		return loggedInTeller;
 	}
 	
 	// TODO

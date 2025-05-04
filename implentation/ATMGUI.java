@@ -1,8 +1,24 @@
+import java.awt.BorderLayout;
+import java.awt.Panel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.OverlayLayout;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 @SuppressWarnings("serial")
 public class ATMGUI extends JFrame implements ATM.ATMListener {
@@ -34,7 +50,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	// and initialize all the GUI elements
 	public ATMGUI() {
 		try {
-			atm = new ATM("localhost", 1234, this, 10000.00);		// connect to the server
+			atm = new ATM("localhost", 1234, this);		// connect to the server
 	
 			this.addMouseListener(new MouseAdapter() {
 				@Override
