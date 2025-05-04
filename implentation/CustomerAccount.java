@@ -147,11 +147,7 @@ public class CustomerAccount {
 		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName + this.phoneNumber;
 		try {
 			FileWriter writer = new FileWriter(sourceName);
-<<<<<<< Updated upstream
-			writer.write("Access_status: " + this.inAccess + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
-=======
 			writer.write("Access_status " + this.inAccess + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
->>>>>>> Stashed changes
 				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
 			writer.close();
 		}

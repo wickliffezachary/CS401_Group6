@@ -107,6 +107,14 @@ public class Teller {
 		return loggedInTeller;
 	}
 	
+	public int getCount() {
+		return count;
+	}
+	
+	public String getID() {
+		return id;
+	}
+	
 	// TODO
 	// method that allows a teller to select a customer account
 	public void selectCustomer() {
@@ -197,16 +205,7 @@ public class Teller {
 		
 	}
 	
-	public int getCount() {
-		return count;
-	}
-	public String getID() {
-		return id;
-	}
-	
-	public boolean isLoggedInTeller() {
-		return loggedInTeller;
-	}
+
 
 	// test method for logging in
 	// (for use until the GUI is implemented)

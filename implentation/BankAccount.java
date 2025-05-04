@@ -127,11 +127,7 @@ public class BankAccount {
 		String sourceName = System.getProperty("user.dir") + "/data/bankAccounts/" + this.accountID;
 		try{
 			FileWriter writer = new FileWriter(sourceName);
-<<<<<<< Updated upstream
-			writer.write("Access_status: " + inAccess + "\nAccount_type: " + this.accType + "\nDate_created: " + this.dateCreated
-=======
 			writer.write("Account_type: " + this.accType + "\nDate_created: " + this.dateCreated
->>>>>>> Stashed changes
 				+ "\nUsers: " + users.toString() + "\nCurrent_balance: " + currBalance + "\nTransaction_history: " + transactionHist); 
 			writer.close();
 		}
