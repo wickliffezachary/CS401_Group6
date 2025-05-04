@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 
 public class CustomerAccount {
@@ -28,7 +29,7 @@ public class CustomerAccount {
 	// (parameters are sent by the server from a text file)
 	// accesssor is the ATM or Teller who sent the request to server
 	public CustomerAccount(String access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts, String accessor) {
-		this.inAccess = access;
+		//this.inAccess = access;		// 'access' is string but 'inAccess' is boolean
 		this.fullName = name;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
@@ -143,14 +144,16 @@ public class CustomerAccount {
 	
 	// save to file after update
 	public void save() {
-		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber;
-		try{
-			FileWriter fwriter = new FileWriter(sourceName);
-			fwriter.write("Access_status " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
+		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName + this.phoneNumber;
+		try {
+			FileWriter writer = new FileWriter(sourceName);
+			writer.write("Access_status " + this.inAccess + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
 				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
-			fwriter.close()
+			writer.close();
 		}
-		catch (IOException e){}
+		catch (IOException error) {
+			error.printStackTrace();
+		}
 	}
-	}
+	
 }

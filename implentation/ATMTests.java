@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 public class ATMTests {
 	private final String address = "localhost";
 	private final int port = 1234;
+	private final double initialReserve = 10000.00;
 	
 	private String firstName = "first";
 	private String lastName = "last";
@@ -37,7 +38,7 @@ public class ATMTests {
 	@BeforeEach
 	public void init() {
 		try {
-			atm = new ATM(address, port, listener);
+			atm = new ATM(address, port, listener, initialReserve);
 		} 
 		catch (IOException error) {
 			error.printStackTrace();

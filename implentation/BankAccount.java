@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.io.*;
 import java.util.*;
 import java.time.*;
 
@@ -13,7 +13,7 @@ public class BankAccount {
 	private Date dateCreated;
 	private double currBalance;
 	private boolean inAccess = false;
-	private String tranctionHist;
+	private String transactionHist;
 	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can not if file is in access
 	
 	// BankAccount - Constructor
@@ -25,19 +25,19 @@ public class BankAccount {
 			this.users = new ArrayList<String>();
 			users.add(user);
 			this.dateCreated = new Date();
-			this.tranctionHist = "";
+			this.transactionHist = "";
 	}
 
 	// BankAccount - Constructor
 	// this constructor is used when loading from file
 	// accessor is customerAccount which we're in when we create this object
 	public BankAccount(String access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
-		this.inAccess = access;
+		//this.inAccess = access;		// 'access' is string but 'inAccess' is boolean
 		this.accountID = accid;
 		this.accType = t;
 		this.dateCreated = d;
 		this.currBalance = cb;
-		this.tranctionHist = th;
+		this.transactionHist = th;
 		this.users = new ArrayList<String>();
 		for (int i = 0; i < usrs.size(); i++) {
 		      this.users.add(usrs.get(i));
@@ -95,7 +95,7 @@ public class BankAccount {
 	}
 	
 	public String getHistory() {
-		return this.tranctionHist;
+		return this.transactionHist;
 	}
 	
 	public AccType getType() {
@@ -112,7 +112,7 @@ public class BankAccount {
 	}
 	
 	public void updateHistory(String entry) {
-		this.tranctionHist = this.tranctionHist + entry;
+		this.transactionHist = this.transactionHist + entry;
 		save();
 	}
 	
@@ -122,16 +122,18 @@ public class BankAccount {
 	}
 	
 	// save to file
-	// just like dvdcollection
+	// just like DVDCollection
 	public void save() {
-		String sourceName=System.getProperty("user.dir")+"/data/bankAccounts/"+this.accountID;
+		String sourceName = System.getProperty("user.dir") + "/data/bankAccounts/" + this.accountID;
 		try{
 			FileWriter writer = new FileWriter(sourceName);
-			w.write("Account_type: " + this.accType + "\nDate_created: " + this.dateCreated
+			writer.write("Account_type: " + this.accType + "\nDate_created: " + this.dateCreated
 				+ "\nUsers: " + users.toString() + "\nCurrent_balance: " + currBalance + "\nTransaction_history: " + transactionHist); 
-			w.close()
+			writer.close();
 		}
-		catch (IOException e){}
+		catch (IOException error) {
+			error.printStackTrace();
+		}
 	}
 }
 

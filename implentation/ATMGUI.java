@@ -34,7 +34,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	// and initialize all the GUI elements
 	public ATMGUI() {
 		try {
-			atm = new ATM("localhost", 1234, this);		// connect to the server
+			atm = new ATM("localhost", 1234, this, 10000.00);		// connect to the server
 	
 			this.addMouseListener(new MouseAdapter() {
 				@Override

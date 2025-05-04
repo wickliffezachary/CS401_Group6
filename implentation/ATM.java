@@ -114,7 +114,6 @@ public class ATM {
 			// trigger GUI with error popup and a callManager ption that, frankly, does nothing
 		}
 	}
-	}
 
 	// TODO
 	// triggered by GUI
@@ -225,7 +224,7 @@ public class ATM {
 		
 		// if the response message is of type GET_REQ_GRANTED, then send the account balance to the GUI 
 		if (serverResponse.getType() == Message.Type.GETREQGRANTED) {
-			String bal = serverREsponse.getData();
+			String bal = serverResponse.getData();
 			// TODO - send current balance to GUI
 		}
 		// else, if the response message is of any other type, then trigger an error pop-up on the GUI
@@ -250,7 +249,7 @@ public class ATM {
 		
 		// if the response message is of type GET_REQ_GRANTED, then send the transaction history to the GUI 
 		if (serverResponse.getType() == Message.Type.GETREQGRANTED) {
-			String hist = serverREsponse.getData();
+			String hist = serverResponse.getData();
 			// TODO - send history to GUI
 		}
 		// else, if the response message is of any other type, then trigger an error pop-up on the GUI
