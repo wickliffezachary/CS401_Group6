@@ -125,7 +125,8 @@ public class Server {
 			Boolean LOGGEDIN = false;			//determines if you are currently accessing a Customer Account
 			Boolean VERIFIED = false;			//determines if the client has verified its identity
 			Boolean isTeller = false;			//determines if the client is an atm or teller
-			String User = "";					//keeps track of current user
+			CustomerAccount user = null;		//updated method of tracking current customer
+			BankAccount BankAcc = null;			//updated method of tracking current bank account	//TODO: use this
 			String BA = "";						//keeps track of current bank account
 			dailyUpkeep();
 	        try {
@@ -137,7 +138,7 @@ public class Server {
 		        			//display ip of client
 		        			"Client <" + clientSocket.getInetAddress() + "> "
 		        			//if the client is logged in include their name
-		        			+ (LOGGEDIN? "[" + User + "]: " : ": ")
+		        			+ (LOGGEDIN? "[" + user.getName() + "]: " : ": ")
 		        			//display the message type
 		        			+ "Request " + message.getType().name() + " "
 		        			//display any extra info sent with the message
@@ -234,12 +235,9 @@ public class Server {
 		        	if(!LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
 		        		
 		        		//attempt to log in
-		        		LOGGEDIN = login(message);
+		        		LOGGEDIN = login(message, user);
 		        		//if login was successful
 		        		if(LOGGEDIN == true) {
-		        			
-		        			//set the current user to the username of the account
-		        			User = message.getData().split(",")[0];
 			        		//respond that the login was successful
 			        		sendMessage(
 			        				new Message(
@@ -269,11 +267,7 @@ public class Server {
 						// TODO - log out of customer account
 					}
 
-
-					// Below this is where commands for logged-in users go.
-					// To prevent invalid commands like an ATM trying to create accounts,
-					// only allow commands based on whether they are a teller or an ATM.
-
+					
 					// --------------commands allowed for Tellers--------------------------
 					if (isTeller) {
 						switch(message.getType().name()) {
@@ -284,6 +278,9 @@ public class Server {
 								break;
 						}
 					}
+//					--------------------------------------------------TELLER COMMANDS ABOVE---------------------------------------------------------
+					
+
 					// ----------------commands allowed for ATMs------------------------------
 					else {
 						
@@ -296,7 +293,7 @@ public class Server {
 			        				new Message(
 			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
 							
-						}
+						}						
 						
 						// ATM will only be able to select a bank account to make transactions from or logout
 						if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
@@ -357,6 +354,8 @@ public class Server {
 						}
 					}
 
+//						--------------------------------------------------ATM COMMANDS ABOVE---------------------------------------------------------------
+					
 					// this will be below all other request types and should only be reachable
 					// if a message with an incorrect or invalid type is sent
 					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
@@ -371,6 +370,19 @@ public class Server {
 			} catch (ClassNotFoundException error) {
 				error.printStackTrace();
 			}
+	        //make sure accounts become free even in the event of a forced closure
+	        finally {
+				if(user != null) {
+					//if the user was still being accessed
+					if(user.checkAccessStatus()) {
+						//free up access to the account
+						user.switchAccess();
+					}
+				}
+				if(BankAcc != null) {
+					//TODO: free account based on class
+				}
+	        }
 		}
 
 		// helper methods for ClientHander:
@@ -409,12 +421,22 @@ public class Server {
 		}
 
 		// login method that is synchronized in order to prevent duplicated logins
-		private synchronized boolean login(Message msg) throws IOException {
+		private synchronized boolean login(Message msg, CustomerAccount user) throws IOException {
 			// account data will be sent as "username,password" so split it
 			String args[] = msg.getData().split(",");
 			
 			// get the list of customer accounts
 			File[] list = customerAccounts.listFiles();
+			
+			CustomerAccount tempAcc = null;
+			Boolean access = false;
+			String name = "";
+			String phoneNumber = "";
+			String address = "";
+			String password = "";
+			ArrayList<String> bankAccounts = new ArrayList<String>();
+			
+			
 			
 			// determine if the customer account is valid
 			boolean found = false;
@@ -427,42 +449,74 @@ public class Server {
 					if(file.getName().equals(args[0] + ".txt")) {
 						// create a scanner to move through the file
 						Scanner scanner = new Scanner(file);
-						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
-						if(scanner.nextLine().equals("1")) {
+						
+						//new version
+
+						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+							String line;
+							//read in entire file to corresponding variables
+							while ((line = reader.readLine()) != null) {
+			                    String[] temp = line.split(" ");
+			                    String frst = temp[0];
+			                    String second = temp[1];
+			                    
+			                    if(frst.equalsIgnoreCase("Access_status:")) {
+			                    	if(second.equalsIgnoreCase("0")) {
+			                    		access = false;
+			                    	}
+			                    	else {
+			                    		access = true;
+			                    	}
+			                    	
+			                    }
+			                    if(frst.equalsIgnoreCase("Name:")){
+			                    	name = second;
+			                    }
+								if(frst.equalsIgnoreCase("Phone_number:")){
+									phoneNumber = second;
+								}
+								if(frst.equalsIgnoreCase("Address:")){
+									address = second;
+								}
+								if(frst.equalsIgnoreCase("Password:")){
+									password = second;
+								}
+								if(frst.equalsIgnoreCase("Bank_accounts:")){
+									String[] accs = second.split(",");
+									for(String item : accs) {
+										bankAccounts.add(item);
+									}
+								}
+							}//while going through file
+							reader.close();
+						}//try reading
+						
+						//create a temporary account with all the info
+						tempAcc = new CustomerAccount(access, name, phoneNumber, address, password, bankAccounts);
+						
+						//if the account is already being used
+						if(tempAcc.checkAccessStatus() == true) {
 							scanner.close();
 							return false;
 						}
-						// if the file is not being accessed
-						// since the password is located on the 5th line we need to move past the next 3 lines
-						for(int i = 0; i < 3; i++) {
-							scanner.nextLine();
+						
+						//validate the password
+						if(tempAcc.validatePassword(args[1])) {
+							scanner.close();
+							return false;
 						}
-						// check to see if the password is correct
-						if(scanner.nextLine().equals(args[1])) {
-							// if it is, then the login is valid
-
-							// update the file-access indicator in the file:
-							// first, store the entire file in a string
-							String info = new String(Files.readAllBytes(Paths.get(file.toString())));
-							// then, replace the first char and append the rest of the string back
-							info = "1" + info.substring(1);
-							// finally, write the file back out
-							Files.write(Paths.get(file.toString()), info.getBytes());
-
-							found = true;
-						}
-						else {
-							// otherwise, it is invalid
-							found = false;
-						}
-
+						
+						//now that we have verified the password lock the account
+						tempAcc.switchAccess();
+						//verify that the account is logged in
+						found = true;
+						//return the account to the server
+						user = tempAcc;
 						scanner.close();
-						return found;
-
 					}
 				}
 			} // end 'for'
-			// if the file isn't found, then the account doesn't exist, so no login
+			// if the file isnt found, or if login fully validates return result
 			return found;
 		}
 		
