@@ -349,17 +349,39 @@ public class Server {
 						
 						// ATM will only be able to select a bank account to make transactions from or logout
 						if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
+							
 							//attempt login
 							AccessingBankAccount = loginBank(message);
 			        		//if login was successful
 			        		if(AccessingBankAccount == true) {
+			        			String[] args = message.getData().split(",");
+			        			File[] list = bankAccounts.listFiles();
 			        			
+			        			// determine if the customer account is valid
+			        			String build = "";
+			        			// compare each file in the list
+			        			for (File file : list) {
+			        				// do not include folders
+			        				if (file.isFile()) {
+			        					// if the file is found in the list
+			        					if(file.getName().equals(args[0] + ".txt")) {
+			        						// create a scanner to move through the file
+			        						Scanner scanner = new Scanner(file);
+			        						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
+			        						while(scanner.hasNextLine()) {
+			        							build += scanner.nextLine() + "\n";
+			        						}
+			        						scanner.close();
+			        					}
+			        				}
+			        			} 
 			        			//set the current user to the username of the account
 			        			BA = message.getData();
-				        		//respond that the login was successful
+				        		AccessingBankAccount = true;
+			        			//respond that the login was successful
 				        		sendMessage(
 				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSBAREQGRANTED));
+				        						"Server", clientSocket.getInetAddress().toString(), build, Message.Type.ACCESSBAREQGRANTED));
 			        		}
 			        		//if login failed
 			        		else{

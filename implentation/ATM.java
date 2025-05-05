@@ -159,6 +159,8 @@ public class ATM {
 			return;
 		}
 		
+		
+		
 		// send a message to the server that the user is requesting to access a financial account
 		sendMessage(new Message(id, "Server", accNum, Message.Type.ACCESSBAREQ));
 		
