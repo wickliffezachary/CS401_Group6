@@ -3,10 +3,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class ATMTests {
-
-
-class ATM_Test {
-
 	@Test
 	public void testConstructorReserve() {
 		double amount = 10000.50;
@@ -41,7 +37,4 @@ class ATM_Test {
 		String expectedID = "ATM" + atm.getCount();
 		assertEquals(expectedID, atm.getID());
 	}
-}
-
-
 }

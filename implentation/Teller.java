@@ -106,7 +106,7 @@ public class Teller {
 	public boolean isLoggedInTeller() {
 		return loggedInTeller;
 	}
-	
+
 	public int getCount() {
 		return count;
 	}

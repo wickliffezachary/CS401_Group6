@@ -127,6 +127,7 @@ public class Server {
 			Boolean isTeller = false;			//determines if the client is an atm or teller
 			String User = "";					//keeps track of current user
 			String BA = "";						//keeps track of current bank account
+
 			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
@@ -237,7 +238,6 @@ public class Server {
 		        		LOGGEDIN = login(message);
 		        		//if login was successful
 		        		if(LOGGEDIN == true) {
-
 			        		//respond with customer account data
 		        			
 		        			File[] list = customerAccounts.listFiles();
@@ -263,6 +263,7 @@ public class Server {
 			        		sendMessage(
 			        				new Message(
 			        						"Server", clientSocket.getInetAddress().toString(), caData, Message.Type.ACCESSCAREQGRANTED));
+
 		        		}
 		        		else{
 		        			sendMessage(
@@ -349,7 +350,6 @@ public class Server {
 						
 						// ATM will only be able to select a bank account to make transactions from or logout
 						if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
-							
 							//attempt login
 							AccessingBankAccount = loginBank(message);
 			        		//if login was successful
@@ -454,7 +454,6 @@ public class Server {
 				
 			}
 		}
-		
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -648,8 +647,4 @@ public class Server {
 		        }
 	    		}
 		}
-
-		
 }
-
-

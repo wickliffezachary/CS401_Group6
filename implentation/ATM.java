@@ -47,6 +47,7 @@ public class ATM {
 		this.id = "ATM" + count;
 		this.loggedInUser = false;
 		this.cashInMachine=initialReserve;
+
 		connected = true;
 		
 		//login request
@@ -57,13 +58,11 @@ public class ATM {
 	// helper method for sending messages to server
 	private void sendMessage(Message message) throws IOException {
 		if(!connected) {return;}	//if ATM is not connected to server, do not attempt to send message
-		
 		// write an output object to the server
 		objectOutputStream.writeObject(message);
 		
 		// flush the output stream to keep it clear
 		objectOutputStream.flush();
-	
 	}
 	
 	// helper method to read a received message 
