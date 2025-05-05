@@ -30,7 +30,7 @@ public class Server {
 
 		// initialize a ServerSocket variable and set it to NULL
 		ServerSocket server = null;
-
+		monthlyUpkeep();
 		// attempt to create the directories if they do not already exist, and print out whether they were created or they already exist
 		System.out.println("Customer Accounts Directory: " + ((customerAccounts.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("Bank Accounts Directory: " + ((bankAccounts.mkdirs()) ? "Created" : "Exists"));
@@ -76,6 +76,34 @@ public class Server {
 
 	}
 
+	// the monthly (5thof each month at 23:59...deals with variable length months
+	// currently used for interest only
+	// may also be used to remove old logs etc. or a similar logic with a different time length may be used
+	private static void monthlyUpkeep(){		
+	    Runnable interestTask = new Runnable() {
+	        public void run() {
+	            addInterest(); // schedule addInterest monthly
+	            scheduleMonthlyInterest();  // Reschedule for next month
+	        }
+	    };
+
+	    long delay = computeDelayUntilNext5th2359();
+	    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+	    scheduler.schedule(interestTask, delay, TimeUnit.MILLISECONDS);
+	}
+
+	private static long computeDelayUntilNext5th2359() {
+	    LocalDateTime now = LocalDateTime.now();
+	    LocalDateTime nextRun = now.withDayOfMonth(5).withHour(23).withMinute(59).withSecond(0).withNano(0);
+	
+	    if (now.compareTo(nextRun) >= 0) {
+	        nextRun = nextRun.plusMonths(1);
+	    }
+	
+	    return Duration.between(now, nextRun).toMillis();
+	}
+
+	
 	// ClientHandler class
 	private static class ClientHandler implements Runnable{
 
@@ -320,9 +348,8 @@ public class Server {
 			}catch(NullPointerException e) {
 				
 			}
-
 		}
-			
+		
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -419,10 +446,56 @@ public class Server {
 	}
 
 	// helper methods for Server:
-	
-	private void monthlyUpdate() {
-		// TODO - a separate thread should run this once a month
-		// this method is used for things like interest, etc.
-	}
+	private static void addInterest() {
+		    double interestRate = 3.50 / 100.00;
+		
+		    File[] files = bankAccounts.listFiles();
+		    for (File file : files) {
+		        if (file.isFile()) {
+		            List<String> lines = new ArrayList<>();
+		            boolean toChange = false;
+		
+		            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+		                String line;
+		                while ((line = reader.readLine()) != null) {
+		                    String[] temp = line.split(" ");
+		                    String frst = temp[0];
+		                    String second = temp[1];
+		
+		                    if (frst.equalsIgnoreCase("Account_type:") && second.equalsIgnoreCase("SAVINGS")) {
+		                        toChange = true;
+		                        lines.add(line);
+		                        continue; // skip to next line in case of "SAVINGS" account
+		                    }
+		
+		                    if (toChange && frst.equalsIgnoreCase("Current_balance:")) {
+		                        // Add interest to the balance
+		                        double bal = Double.parseDouble(second);
+		                        lines.add(frst + " " + String.valueOf(bal + bal * interestRate));
+		                        toChange = false;  // stop entering this block after the first update
+		                        continue;  
+		                    }
+		                    lines.add(line);  // add line as is
+		                }
+		            } catch (IOException e) {
+		                e.printStackTrace();
+		                continue;  // skip to next file 
+		            }
+		
+		            // write back
+		            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+		                for (String updatedLine : lines) {
+		                    writer.write(updatedLine);
+		                    writer.newLine();  // preserve line breaks
+		                }
+		            } catch (IOException e) {
+		                e.printStackTrace();
+		            }
+		        }
+	    		}
+		}
 
+		
 }
+
+
