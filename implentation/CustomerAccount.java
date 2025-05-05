@@ -104,7 +104,7 @@ public class CustomerAccount {
 
 	public void updateName(String newName) {
 		//  go to each associated customer account 
-		ArrayList<String> templist = bankAccounts;
+		ArrayList<String> templist = new ArrayList<>(bankAccounts);
 		while (templist.get(0)!=null) {
 			String acc = this.templist.get(0);
 			// Method 1: ideally I would want to switch access status here to make sure noone can get in 
