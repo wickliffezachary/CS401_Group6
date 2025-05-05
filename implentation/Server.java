@@ -333,10 +333,23 @@ public class Server {
 						
 						switch(message.getType().name()) {
 							case "WITHDRAWREQ":
-								
+								Boolean success = withdraw(BA, message.getData());
+								if(success) {
+									sendMessage(
+					        				new Message(
+					        						"Server", clientSocket.getInetAddress().toString(), "Money Withdrawn Successfully", Message.Type.WITHDRAWREQACCEPTED));
+								}
+								else {
+									sendMessage(
+					        				new Message(
+					        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
+								}
 								break;
 							case "DEPOSITREQ":
-								
+								deposit(BA, message.getData());
+								sendMessage(
+				        				new Message(
+				        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.DEPOSITDONE));
 								break;
 							default: /*invalid command*/
 								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
@@ -347,8 +360,6 @@ public class Server {
 					// this will be below all other request types and should only be reachable
 					// if a message with an incorrect or invalid type is sent
 					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-
-					objectOutputStream.flush();
 					
 				} // end 'while'
 			} // end 'try'
@@ -507,7 +518,7 @@ public class Server {
 		// TODO
 		// method that allows a teller to create a new financial account
 		private void createBankAccount() {
-			
+
 		}
 		
 		// TODO
@@ -516,16 +527,92 @@ public class Server {
 			
 		}
 		
-		// TODO
-		private void withdraw() {
-			
+		private Boolean withdraw(String account, String amount) throws IOException {
+			// get the list of customer accounts
+			File[] list = bankAccounts.listFiles();
+			Boolean Valid = true;
+			// compare each file in the list
+			for (File file : list) {
+				// do not include folders
+				if (file.isFile()) {
+					// if the file is found in the list
+					if(file.getName().equals(account + ".txt")) {
+						
+						// create a scanner to move through the file
+						List<String> lines = new ArrayList<>();
+						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+							String line;
+							while ((line = reader.readLine()) != null) {
+			                    String[] temp = line.split(" ");
+			                    String frst = temp[0];
+			                    String second = temp[1];
+			                    if (frst.equalsIgnoreCase("Current_balance:")) {
+			                        double bal = Double.parseDouble(second);
+			                        //if the current balance is greater than the withdraw amount
+			                        if(bal > Double.parseDouble(amount)) {
+			                        	lines.add(frst + " " + String.valueOf(bal - Double.parseDouble(amount)));
+			                        }
+			                        else {
+			                        	lines.add(line);	// add line as is
+			                        	Valid = false;		//if amount is greater than bal then money cannot be withdrawn
+			                        }
+			                        continue; // skip to next line in case of "SAVINGS" account
+			                    }//if current balance line
+			                    lines.add(line);  // add line as is
+							}//while going through file
+							reader.close();
+						}//try reading
+						try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+			                for (String updatedLine : lines) {
+			                    writer.write(updatedLine);
+			                    writer.newLine();  // preserve line breaks
+			                }
+			                writer.close();
+			            }//try writing
+					}//if the name is right
+				}//if it is a file
+			}//for each file
+			return Valid;
 		}
 		
 		// TODO
-		private void deposit() {
-			
+		private void deposit(String account, String amount) throws IOException {
+			// get the list of customer accounts
+			File[] list = bankAccounts.listFiles();
+			// compare each file in the list
+			for (File file : list) {
+				// do not include folders
+				if (file.isFile()) {
+					// if the file is found in the list
+					if(file.getName().equals(account + ".txt")) {
+						// create a scanner to move through the file
+						List<String> lines = new ArrayList<>();
+						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+							String line;
+							while ((line = reader.readLine()) != null) {
+			                    String[] temp = line.split(" ");
+			                    String frst = temp[0];
+			                    String second = temp[1];
+			                    if (frst.equalsIgnoreCase("Current_balance:")) {
+			                        double bal = Double.parseDouble(second);
+			                        lines.add(frst + " " + String.valueOf(bal + Double.parseDouble(amount)));
+			                        continue; // skip to next line in case of "SAVINGS" account
+			                    }//if current balance line
+			                    lines.add(line);  // add line as is
+							}//while going through file
+							reader.close();
+						}//try reading
+						try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+			                for (String updatedLine : lines) {
+			                    writer.write(updatedLine);
+			                    writer.newLine();  // preserve line breaks
+			                }
+			                writer.close();
+			            }//try writing
+					}//if the name is right
+				}//if it is a file
+			}//for each file
 		}
-
 	}
 
 	// helper methods for Server:
