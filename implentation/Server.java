@@ -236,7 +236,10 @@ public class Server {
 		        	if(!LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
 		        		
 		        		//attempt to log in
-		        		LOGGEDIN = login(message, user);
+		        		user = login(message);
+		        		if(user != null) {
+		        			LOGGEDIN = true;
+		        		}
 		        		//if login was successful
 		        		if(LOGGEDIN == true) {
 
@@ -250,12 +253,13 @@ public class Server {
 		        					//also append a comma
 		        					caData += ",";
 		        				}
-
+		        				
 			        		//respond that the login was successful
 			        		sendMessage(
 			        				new Message(
 			        						"Server", clientSocket.getInetAddress().toString(), caData, Message.Type.ACCESSCAREQGRANTED));
 
+		        		}
 		        		}
 		        		else{
 		        			sendMessage(
@@ -264,7 +268,7 @@ public class Server {
 		        		
 		        		//go back to waiting for new message
 		        		continue;
-		        	}	
+		        	}
 			        
 		        	//if a message is sent but they are not logged in just throw back an error because its not correct
 		        	if(!LOGGEDIN) {
@@ -280,29 +284,9 @@ public class Server {
 					if(message.getType() == Message.Type.EXITCAREQ) {
 						// TODO - log out of customer account
 						if(LOGGEDIN) {
-							File[] list = customerAccounts.listFiles();
-							//find file
-		        			for (File file : list) {
-		        				// do not include folders
-		        				if (file.isFile()) {
-		        					// if the file is found in the list
-		        					if(file.getName().contains(User )) {
-		        						// create a scanner to move through the file
-		        						String build = "0";
-		        						Scanner scanner = new Scanner(file);
-		        						scanner.nextLine();
-		        						while(scanner.hasNextLine()) {
-		        							build += '\n' + scanner.nextLine();
-		        						}
-		        						FileOutputStream fout = new FileOutputStream(file);
-		        						fout.write(build.getBytes());
-		        						fout.close();
-		        						scanner.close();
-		        					}
-		        				}
-		        			}
-		        			LOGGEDIN = false;
-		        			User = "";
+							user.switchAccess();	//this also updates to file
+		        			user = null;			//we are no longer logged in
+		        			LOGGEDIN = false;		//reflect it
 		        			sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA granted", Message.Type.EXITCAREQGRANTED));
 		        			
 						}else {
@@ -483,7 +467,7 @@ public class Server {
 		}
 
 		// login method that is synchronized in order to prevent duplicated logins
-		private synchronized boolean login(Message msg, CustomerAccount user) throws IOException {
+		private synchronized CustomerAccount login(Message msg) throws IOException {
 			// account data will be sent as "username,password" so split it
 			String args[] = msg.getData().split(",");
 			
@@ -498,10 +482,7 @@ public class Server {
 			String password = "";
 			ArrayList<String> bankAccounts = new ArrayList<String>();
 			
-			
-			
-			// determine if the customer account is valid
-			boolean found = false;
+
 			
 			// compare each file in the list
 			for (File file : list) {
@@ -559,27 +540,23 @@ public class Server {
 						//if the account is already being used
 						if(tempAcc.checkAccessStatus() == true) {
 							scanner.close();
-							return false;
+							return null;
 						}
 						
-						//validate the password
-						if(tempAcc.validatePassword(args[1])) {
+						//validate the password. will run if password fails
+						if(!tempAcc.validatePassword(args[1])) {
 							scanner.close();
-							return false;
+							return null;
 						}
 						
 						//now that we have verified the password lock the account
 						tempAcc.switchAccess();
-						//verify that the account is logged in
-						found = true;
-						//return the account to the server
-						user = tempAcc;
 						scanner.close();
 					}
 				}
 			} // end 'for'
-			// if the file isnt found, or if login fully validates return result
-			return found;
+			//if the file isnt found will return null, if it is found then this will return the object
+			return tempAcc;
 		}
 		
 		private synchronized boolean loginBank(Message msg) throws IOException {
