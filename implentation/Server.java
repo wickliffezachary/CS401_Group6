@@ -7,7 +7,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 
 public class Server {
@@ -306,9 +309,18 @@ public class Server {
 			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 			long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
 			try{
-			scheduler.scheduleAtFixedRate(
-				()->{sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));},
-				midnight, 1440, TimeUnit.MINUTES);
+				scheduler.scheduleAtFixedRate(
+					//this inner try catch is required according to eclipse
+					()->{try {
+						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}},
+					midnight, 1440, TimeUnit.MINUTES);
+			}catch(NullPointerException e) {
+				
+			}
+
 		}
 			
 		// method that sends messages cleanly
