@@ -214,18 +214,18 @@ public class Server {
 		        	    sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid login type", Message.Type.INVALID));
 		        	    continue;
 		        	}
-		        	
+
 		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
-		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
-		        			    isTeller   = false;
-		        			    VERIFIED   = false;
-                
-                	//if a user is currently being accessed then it needs to be logged out
-                  if(LOGGEDIN) {
-		        			  //TODO: logout CA, this includes resetting the access modifier
-		        		  }
-		        			    sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
-		        			    break;  // exit
+		        			|| message.getType() == Message.Type.LOGOUTREQATM) {
+		        		isTeller   = false;
+		        		VERIFIED   = false;
+
+		        		//if a user is currently being accessed then it needs to be logged out
+		        		if(LOGGEDIN) {
+		        			//TODO: logout CA, this includes resetting the access modifier
+		        		}
+		        		sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
+		        		break;  // exit
 		        	}
 		        	
 		        	
@@ -237,13 +237,32 @@ public class Server {
 		        		LOGGEDIN = login(message);
 		        		//if login was successful
 		        		if(LOGGEDIN == true) {
+
+			        		//respond with customer account data
 		        			
-		        			//set the current user to the username of the account
-		        			User = message.getData().split(",")[0];
-			        		//respond that the login was successful
+		        			File[] list = customerAccounts.listFiles();
+		        			String caData = "";
+		        			// compare each file in the list
+		        			for (File file : list) {
+		        				// do not include folders
+		        				if (file.isFile()) {
+		        					// if the file is found in the list
+		        					if(file.getName().contains(User )) {
+		        						// create a scanner to move through the file
+		        						Scanner scanner = new Scanner(file);
+		        						
+		        						while(scanner.hasNext()) {
+		        							caData += scanner.nextLine() + "\n";
+		        						}
+		        						scanner.close();
+		        					}
+		        				}
+		        			} 
+		        			
+		        			
 			        		sendMessage(
 			        				new Message(
-			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSCAREQGRANTED));
+			        						"Server", clientSocket.getInetAddress().toString(), caData, Message.Type.ACCESSCAREQGRANTED));
 		        		}
 		        		else{
 		        			sendMessage(

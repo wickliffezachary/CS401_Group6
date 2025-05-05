@@ -48,6 +48,10 @@ public class ATM {
 		this.loggedInUser = false;
 		this.cashInMachine=initialReserve;
 		connected = true;
+		
+		//login request
+		sendMessage(new Message(id, "Server", "", Message.Type.LOGINREQATM));
+		parseReceivedMessage();
 	}
 
 	// helper method for sending messages to server
@@ -69,8 +73,9 @@ public class ATM {
 		try {
 			// read the received message
 			temp = (Message) objectInputStream.readObject();
+			
 			// //pass message to GUI so GUI can update accordingly
-			// listener.receivedMessage(temp);
+			listener.receivedMessage(temp);
 		}
 		catch (ClassNotFoundException error) {
 			error.printStackTrace();
@@ -82,24 +87,25 @@ public class ATM {
 	// method that logs a user in
 	public void login(String firstName, String lastName,String phoneNumber, String password) throws IOException {
 		// received the customer's name, phone number, and password from the GUI 
-		String loginCreds = "username=" + firstName + lastName + phoneNumber + ",password=" + password;
+		String loginCreds = firstName + lastName + phoneNumber + "," + password;
 		
 		// send a message to the server that the user is requesting to log in
-		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQATM));
+		sendMessage(new Message(id, "Server", loginCreds, Message.Type.ACCESSCAREQ));
 		
 		// wait for server response message
 		Message serverResponse = parseReceivedMessage();
 		
 		// if the response message is of type LOGIN_OK, then the user is logged in and the GUI is triggered
-		if (serverResponse.getType() == Message.Type.LOGINOK){
+		if (serverResponse.getType() == Message.Type.ACCESSCAREQGRANTED){
 			loggedInUser = true;
 			// and spawn a GUI thread for auto-logout
 			// trigger GUI to next frame and show available bank accounts
 			String acc = serverResponse.getData();
+			
 			// send these on to the GUI
 		}
 		// else, if the response message is of type LOGIN_DENIED, then the user entered incorrect credentials
-		else if (serverResponse.getType() == Message.Type.LOGINDENIED) {
+		else if (serverResponse.getType() == Message.Type.ACCESSCAREQDENIED) {
 			// trigger relevant error popup on GUI
 		}
 		// else, if the response message is of any other type
