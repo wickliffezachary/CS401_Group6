@@ -14,6 +14,7 @@ public class Teller {
 	private static int count = 0;
 	private boolean loggedInTeller;
 	private String currentUsername;
+	private BankAccount currentBankAccount;
 
 	
 	public interface TellerListener {
@@ -110,7 +111,7 @@ public class Teller {
 	    Message resp = parseReceivedMessage();
 	    if (listener != null) listener.receivedMessage(resp);
 	}
-
+	
 	
 	// TODO
 	// method that allows a teller to exit a customer account
@@ -120,12 +121,8 @@ public class Teller {
 	
 	// TODO
 	// method that allows a teller to select a customer's financial account
-	public void selectAccount(String baId) throws IOException {
-	    
-	    sendMessage(new Message(id, "Server", baId, Message.Type.ACCESSBAREQ));
-	    
-	    Message resp = parseReceivedMessage();
-	    if (listener != null) {listener.receivedMessage(resp);}
+	public void selectAccount(String baId) throws IOException, ClassNotFoundException {
+	    currentBankAccount = BankAccount.loadFromFile(baId);
 	}
 	
 	// TODO
@@ -176,7 +173,9 @@ public class Teller {
 	}
 
 	
-
+	public BankAccount getCurrentBankAccount() {
+	    return currentBankAccount;
+	}
 	
 	// TODO
 	// method that allows a teller to close a customer's financial account

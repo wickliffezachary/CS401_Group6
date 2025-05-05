@@ -262,6 +262,46 @@ public class Server {
 		        	    continue;
 		        	}
 		        	
+		        	
+		        	// Handle bank account creation 
+		        	if (VERIFIED && isTeller && LOGGEDIN && message.getType() == Message.Type.CREATEBACCREQ) {
+		        	    // data = "customerUsername,accountType"
+		        	    String[] parts = message.getData().split(",", 2);
+
+		        	    // simple mapping for account type (default SAVINGS)
+		        	    BankAccount.AccType typeEnum = BankAccount.AccType.SAVINGS;
+		        	    if ("CHECKING".equalsIgnoreCase(parts[1].trim())) {
+		        	        typeEnum = BankAccount.AccType.CHECKING;
+		        	    }
+
+		        	    BankAccount ba = new BankAccount(parts[0], typeEnum);
+		        	    ba.save();  // creates data/bankAccounts/<accountID>.txt
+
+		        	    // manual update of customer's file without load()
+		        	    File custFile = new File(customerAccounts, parts[0] + ".txt");
+		        	    List<String> lines = Files.readAllLines(custFile.toPath());
+		        	    while (lines.size() < 6) lines.add("");  // ensure 6 lines
+		        	    String related = lines.get(5).trim();
+		        	    if (related.isEmpty()) {
+		        	        related = ba.getAccountID();
+		        	    } else {
+		        	        related = related + "," + ba.getAccountID();
+		        	    }
+		        	    lines.set(5, related);
+		        	    Files.write(custFile.toPath(), lines);
+
+		        	    sendMessage(new Message(
+		        	        "Server",
+		        	        clientSocket.getInetAddress().toString(),
+		        	        "Bank account created: " + ba.getAccountID(),
+		        	        Message.Type.CREATEBACCDONE
+		        	    ));
+		        	    continue;
+		        	}
+
+
+
+		        	
 		        	// Handle selectCustomer();
 		        	if (VERIFIED && isTeller && !LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
 		        	    String username = message.getData();

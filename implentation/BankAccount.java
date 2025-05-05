@@ -1,5 +1,12 @@
 import java.util.ArrayList;
 import java.util.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.*;
 
 public class BankAccount {
@@ -31,7 +38,7 @@ public class BankAccount {
 	// BankAccount - Constructor
 	// this constructor is used when loading from file
 	// accessor is customerAccount which we're in when we create this object
-	public BankAccount(String access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
+	/*public BankAccount(String access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
 		this.inAccess = access;
 		this.accountID = accid;
 		this.accType = t;
@@ -48,7 +55,7 @@ public class BankAccount {
 			this.currentAccessor = accessor; 
 		}
 	}
-	
+	 */
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public BankAccount() {
@@ -121,17 +128,90 @@ public class BankAccount {
 		save();
 	}
 	
+	public static BankAccount loadFromFile(String id) throws IOException {
+	    String path = System.getProperty("user.dir")
+	                + "/data/bankAccounts/" + id + ".txt";
+	    List<String> lines = Files.readAllLines(Paths.get(path));
+
+	    // type
+	    String typeStr = lines.get(0).split(":",2)[1].trim().toUpperCase();
+	    AccType accType = AccType.valueOf(typeStr);
+
+	    // skip file’s date—use now
+	    Date dateCreated = new Date();
+
+	    // users
+	    String usersLine = lines.get(2).split(":",2)[1].trim()
+	                          .replace("[","").replace("]","");
+	    ArrayList<String> users = new ArrayList<>();
+	    if (!usersLine.isEmpty()) {
+	        String[] parts = usersLine.split(",");
+	        for (String u : parts) {
+	            u = u.trim();
+	            if (!u.isEmpty()) users.add(u);
+	        }
+	    }
+
+	    // balance
+	    double currBalance = Double.parseDouble(
+	        lines.get(3).split(":",2)[1].trim()
+	    );
+
+	    // history
+	    String tranHist = "";
+	    if (lines.size() > 4) {
+	        tranHist = lines.get(4).split(":",2)[1].trim();
+	    }
+
+	    BankAccount ba = new BankAccount(); 
+	    ba.accountID = id;
+	    ba.accType = accType;
+	    ba.dateCreated = dateCreated;
+	    ba.users = users;
+	    ba.currBalance = currBalance;
+	    ba.tranctionHist = tranHist;
+	    return ba;
+	}
+
+
+
+
+
+	public void deposit(double amount) {
+	    this.currBalance += amount;
+	    this.tranctionHist += "Deposited: " + amount + "\n";
+	    save();
+	}
+
+	public void withdraw(double amount) {
+	    this.currBalance -= amount;
+	    this.tranctionHist += "Withdrew: " + amount + "\n";
+	    save();
+	}
+
+	
 	// save to file
 	// just like dvdcollection
+	// save to file
 	public void save() {
-		String sourceName=System.getProperty("user.dir")+"/data/bankAccounts/"+this.accountID;
-		try{
-			FileWriter writer = new FileWriter(sourceName);
-			w.write("Account_type: " + this.accType + "\nDate_created: " + this.dateCreated
-				+ "\nUsers: " + users.toString() + "\nCurrent_balance: " + currBalance + "\nTransaction_history: " + transactionHist); 
-			w.close()
-		}
-		catch (IOException e){}
+	    String sourceName = System.getProperty("user.dir")
+	                      + "/data/bankAccounts/"
+	                      + this.accountID
+	                      + ".txt";
+	    SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    List<String> lines = Arrays.asList(
+	        "Account_type: " + this.accType,
+	        "Date_created: " + fmt.format(this.dateCreated),
+	        "Users: " + this.users.toString(),
+	        "Current_balance: " + this.currBalance,
+	        "Transaction_history: " + this.tranctionHist
+	    );
+	    try {
+	        Files.write(Paths.get(sourceName), lines);
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
 	}
+
 }
 

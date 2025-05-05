@@ -172,15 +172,26 @@ public class TellerGUI extends JFrame  implements Teller.TellerListener{
 
     	  
     	  createBA.addActionListener(e -> {
-    		    String type = JOptionPane.showInputDialog(this, "Type (SAVINGS/CHECKING):");
-    		    if (type != null && !type.isBlank()) {
+    		    String[] options = { "SAVINGS", "CHECKING" };
+    		    int choice = JOptionPane.showOptionDialog(
+    		        this,
+    		        "Select account type:",
+    		        "New Bank Account",
+    		        JOptionPane.DEFAULT_OPTION,
+    		        JOptionPane.PLAIN_MESSAGE,
+    		        null,
+    		        options,
+    		        options[0]
+    		    );
+    		    if (choice >= 0) {
     		        try {
-    		            teller.createNewBankAccount(type.trim());
+    		            teller.createNewBankAccount(options[choice]);
     		        } catch (IOException ex) {
     		            ex.printStackTrace();
     		        }
     		    }
     		});
+
 
 
     	  updateUI.addActionListener(e -> {
@@ -211,20 +222,82 @@ public class TellerGUI extends JFrame  implements Teller.TellerListener{
     	    JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
     	    row.add(new JLabel(a));
     	    JButton btn = new JButton("Select");
+    	    
     	    btn.addActionListener(e -> {
-    	      try {
-				teller.selectAccount(a);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+    	        try {
+    	            teller.selectAccount(a);
+    	            BankAccount ba = teller.getCurrentBankAccount();
+
+    	            String[] options = {
+    	                "View Balance",
+    	                "Withdraw",
+    	                "Deposit",
+    	                "Transaction History"
+    	            };
+    	            int choice = JOptionPane.showOptionDialog(
+    	                this,
+    	                "Choose action for account “" + a + "”:",
+    	                "Account Actions",
+    	                JOptionPane.DEFAULT_OPTION,
+    	                JOptionPane.PLAIN_MESSAGE,
+    	                null,
+    	                options,
+    	                options[0]
+    	            );
+    	            if (choice < 0) return;
+
+    	            switch (choice) {
+    	                case 0: // View Balance
+    	                    JOptionPane.showMessageDialog(
+    	                        this,
+    	                        "Balance: " + ba.getBalance()
+    	                    );
+    	                    break;
+    	                case 1: // Withdraw
+    	                    String w = JOptionPane.showInputDialog(this, "Amount to withdraw:");
+    	                    if (w != null) {
+    	                        double amt = Double.parseDouble(w);
+    	                        ba.withdraw(amt);
+    	                        ba.save();
+    	                        JOptionPane.showMessageDialog(
+    	                            this,
+    	                            "New Balance: " + ba.getBalance()
+    	                        );
+    	                    }
+    	                    break;
+    	                case 2: // Deposit
+    	                    String d = JOptionPane.showInputDialog(this, "Amount to deposit:");
+    	                    if (d != null) {
+    	                        double amt2 = Double.parseDouble(d);
+    	                        ba.deposit(amt2);
+    	                        ba.save();
+    	                        JOptionPane.showMessageDialog(
+    	                            this,
+    	                            "New Balance: " + ba.getBalance()
+    	                        );
+    	                    }
+    	                    break;
+    	                case 3: // Transaction History
+    	                    JOptionPane.showMessageDialog(
+    	                        this,
+    	                        "History:\n" + ba.getHistory()
+    	                    );
+    	                    break;
+    	            }
+    	        } catch (Exception ex) {
+    	            ex.printStackTrace();
+    	        }
     	    });
+    	   
+
     	    row.add(btn);
     	    bankAccountsPanel.add(row);
     	  }
     	  bankAccountsPanel.revalidate();
     	  bankAccountsPanel.repaint();
     	}
+    
+    
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {

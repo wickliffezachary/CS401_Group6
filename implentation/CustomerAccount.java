@@ -1,4 +1,8 @@
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CustomerAccount {
 
@@ -140,6 +144,38 @@ public class CustomerAccount {
 	public ArrayList<String> getAssociatedBA(){
 		return this.bankAccounts;
 	}
+	
+	public static CustomerAccount load(String username, String accessor) throws IOException {
+	    Path path = Paths.get(
+	        System.getProperty("user.dir"),
+	        "data/customerAccounts",
+	        username + ".txt"
+	    );
+	    List<String> lines = Files.readAllLines(path);
+	    boolean inAccess = lines.get(0).trim().equals("1");
+	    String name    = lines.get(1).split(":", 2)[1].trim();
+	    String phone   = lines.get(2).split(":", 2)[1].trim();
+	    String address = lines.get(3).split(":", 2)[1].trim();
+	    String pwd     = lines.get(4).split(":", 2)[1].trim();
+	    ArrayList<String> bas = new ArrayList<>();
+	    if (lines.size() > 5) {
+	        String data = lines.get(5).split(":", 2)[1].trim();
+	        for (String s : data.split(",")) {
+	            if (!s.isBlank()) bas.add(s.trim());
+	        }
+	    }
+	    return new CustomerAccount(
+	        String.valueOf(inAccess),
+	        name,
+	        phone,
+	        address,
+	        pwd,
+	        bas,
+	        accessor
+	    );
+	}
+
+	
 	
 	// save to file after update
 	public void save() {
