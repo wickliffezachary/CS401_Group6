@@ -125,7 +125,8 @@ public class Server {
 			Boolean LOGGEDIN = false;			//determines if you are currently accessing a Customer Account
 			Boolean VERIFIED = false;			//determines if the client has verified its identity
 			Boolean isTeller = false;			//determines if the client is an atm or teller
-			String User = "";					//TODO: change this to be based on customer data
+			String User = "";					//keeps track of current user
+			String BA = "";						//keeps track of current bank account
 			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
@@ -273,7 +274,7 @@ public class Server {
 					// To prevent invalid commands like an ATM trying to create accounts,
 					// only allow commands based on whether they are a teller or an ATM.
 
-					// commands allowed for Tellers
+					// --------------commands allowed for Tellers--------------------------
 					if (isTeller) {
 						switch(message.getType().name()) {
 							case "WITHDRAWREQ": break;
@@ -283,11 +284,42 @@ public class Server {
 								break;
 						}
 					}
-					// commands allowed for ATMs
+					// ----------------commands allowed for ATMs------------------------------
 					else {
+						
+						// when logged in first process if a message is a logout request
+						if(message.getType() == Message.Type.EXITBAREQ) {
+							// TODO - log-out of financial account
+							AccessingBankAccount = false;
+							BA = "";
+							sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
+							
+						}
+						
 						// ATM will only be able to select a bank account to make transactions from or logout
 						if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
-							// TODO - log-in to financial account
+							//attempt login
+							AccessingBankAccount = loginBank(message);
+			        		//if login was successful
+			        		if(AccessingBankAccount == true) {
+			        			
+			        			//set the current user to the username of the account
+			        			BA = message.getData();
+				        		//respond that the login was successful
+				        		sendMessage(
+				        				new Message(
+				        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSBAREQGRANTED));
+			        		}
+			        		//if login failed
+			        		else{
+			        			sendMessage(
+				        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSBAREQDENIED));
+			        		}
+			        		
+			        		//go back to waiting for new message
+			        		continue;
 						}
 						// ATM should only be able to log out of customer account (handled before) or log in to financial account
 						// otherwise invalid
@@ -298,9 +330,14 @@ public class Server {
 							continue;
 						}		        		
 
+						
 						switch(message.getType().name()) {
-							case "WITHDRAWREQ":break;
-							case "DEPOSITREQ":break;
+							case "WITHDRAWREQ":
+								
+								break;
+							case "DEPOSITREQ":
+								
+								break;
 							default: /*invalid command*/
 								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
 								break;
@@ -417,6 +454,55 @@ public class Server {
 			// if the file isn't found, then the account doesn't exist, so no login
 			return found;
 		}
+		
+		private synchronized boolean loginBank(Message msg) throws IOException {
+			// account data will be sent as "username,password" so split it
+			String args[] = msg.getData().split(",");
+			
+			// get the list of customer accounts
+			File[] list = bankAccounts.listFiles();
+			
+			// determine if the customer account is valid
+			boolean found = false;
+			
+			// compare each file in the list
+			for (File file : list) {
+				// do not include folders
+				if (file.isFile()) {
+					// if the file is found in the list
+					if(file.getName().equals(args[0] + ".txt")) {
+						// create a scanner to move through the file
+						Scanner scanner = new Scanner(file);
+						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
+						if(scanner.nextLine().equals("1")) {
+							scanner.close();
+							return false;
+						}
+						else {
+							// otherwise, the login is valid
+							// update the file-access indicator in the file:
+							// first, store the entire file in a string
+							String info = new String(Files.readAllBytes(Paths.get(file.toString())));
+							// then, replace the first char and append the rest of the string back
+							info = "1" + info.substring(1);
+							// finally, write the file back out
+							Files.write(Paths.get(file.toString()), info.getBytes());
+							found = true;
+						}
+
+
+						scanner.close();
+						return found;
+					}
+				}
+			} // end 'for'
+			// if the file isn't found, then the account doesn't exist, so no login
+			return found;
+		}
+		
+		
+		
+		
 
 		// TODO
 		// method that allows a teller to create a new financial account
