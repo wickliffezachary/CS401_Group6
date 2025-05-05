@@ -128,6 +128,7 @@ public class Server {
 			CustomerAccount user = null;		//updated method of tracking current customer
 			BankAccount BankAcc = null;			//updated method of tracking current bank account	//TODO: use this
 			String BA = "";						//keeps track of current bank account
+
 			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
@@ -215,18 +216,18 @@ public class Server {
 		        	    sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid login type", Message.Type.INVALID));
 		        	    continue;
 		        	}
-		        	
+
 		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
-		        			 || message.getType() == Message.Type.LOGOUTREQATM) {
-		        			    isTeller   = false;
-		        			    VERIFIED   = false;
-                
-                	//if a user is currently being accessed then it needs to be logged out
-                  if(LOGGEDIN) {
-		        			  //TODO: logout CA, this includes resetting the access modifier
-		        		  }
-		        			    sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
-		        			    break;  // exit
+		        			|| message.getType() == Message.Type.LOGOUTREQATM) {
+		        		isTeller   = false;
+		        		VERIFIED   = false;
+
+		        		//if a user is currently being accessed then it needs to be logged out
+		        		if(LOGGEDIN) {
+		        			//TODO: logout CA, this includes resetting the access modifier
+		        		}
+		        		sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
+		        		break;  // exit
 		        	}
 		        	
 		        	
@@ -238,10 +239,23 @@ public class Server {
 		        		LOGGEDIN = login(message, user);
 		        		//if login was successful
 		        		if(LOGGEDIN == true) {
+
+		        			String caData = user.getName() + '\n' + user.getPhoneNumber() + '\n' + user.getAddress() + '\n';
+		        			//for every bank account attached to the customer account
+		        			for(int i = 1; i <= user.getAssociatedBA().size(); i++) {
+		        				//append the account number to the string
+		        				caData += user.getAssociatedBA().get(i);
+		        				//if the current account is not the final one
+		        				if(i != user.getAssociatedBA().size()) {
+		        					//also append a comma
+		        					caData += ",";
+		        				}
+
 			        		//respond that the login was successful
 			        		sendMessage(
 			        				new Message(
-			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSCAREQGRANTED));
+			        						"Server", clientSocket.getInetAddress().toString(), caData, Message.Type.ACCESSCAREQGRANTED));
+
 		        		}
 		        		else{
 		        			sendMessage(
@@ -265,9 +279,37 @@ public class Server {
 					// if they are logged in, then see if they want to log out first
 					if(message.getType() == Message.Type.EXITCAREQ) {
 						// TODO - log out of customer account
+						if(LOGGEDIN) {
+							File[] list = customerAccounts.listFiles();
+							//find file
+		        			for (File file : list) {
+		        				// do not include folders
+		        				if (file.isFile()) {
+		        					// if the file is found in the list
+		        					if(file.getName().contains(User )) {
+		        						// create a scanner to move through the file
+		        						String build = "0";
+		        						Scanner scanner = new Scanner(file);
+		        						scanner.nextLine();
+		        						while(scanner.hasNextLine()) {
+		        							build += '\n' + scanner.nextLine();
+		        						}
+		        						FileOutputStream fout = new FileOutputStream(file);
+		        						fout.write(build.getBytes());
+		        						fout.close();
+		        						scanner.close();
+		        					}
+		        				}
+		        			}
+		        			LOGGEDIN = false;
+		        			User = "";
+		        			sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA granted", Message.Type.EXITCAREQGRANTED));
+		        			
+						}else {
+							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA denied", Message.Type.EXITCAREQDENIED));
+						}
 					}
 
-					
 					// --------------commands allowed for Tellers--------------------------
 					if (isTeller) {
 						switch(message.getType().name()) {
@@ -301,13 +343,34 @@ public class Server {
 							AccessingBankAccount = loginBank(message);
 			        		//if login was successful
 			        		if(AccessingBankAccount == true) {
+			        			String[] args = message.getData().split(",");
+			        			File[] list = bankAccounts.listFiles();
 			        			
+			        			// determine if the customer account is valid
+			        			String build = "";
+			        			// compare each file in the list
+			        			for (File file : list) {
+			        				// do not include folders
+			        				if (file.isFile()) {
+			        					// if the file is found in the list
+			        					if(file.getName().equals(args[0] + ".txt")) {
+			        						// create a scanner to move through the file
+			        						Scanner scanner = new Scanner(file);
+			        						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
+			        						while(scanner.hasNextLine()) {
+			        							build += scanner.nextLine() + "\n";
+			        						}
+			        						scanner.close();
+			        					}
+			        				}
+			        			} 
 			        			//set the current user to the username of the account
 			        			BA = message.getData();
-				        		//respond that the login was successful
+				        		AccessingBankAccount = true;
+			        			//respond that the login was successful
 				        		sendMessage(
 				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSBAREQGRANTED));
+				        						"Server", clientSocket.getInetAddress().toString(), build, Message.Type.ACCESSBAREQGRANTED));
 			        		}
 			        		//if login failed
 			        		else{
@@ -406,7 +469,6 @@ public class Server {
 				
 			}
 		}
-		
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -718,8 +780,4 @@ public class Server {
 		        }
 	    		}
 		}
-
-		
 }
-
-
