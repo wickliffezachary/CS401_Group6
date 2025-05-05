@@ -11,7 +11,9 @@ public class CustomerAccount {
 	private String password;
 	private boolean inAccess = false;
 	private BankAccount bankAccInUse = null;
-	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can nt if file is in access
+	
+	//this isn't needed because the thread managing this bank account knows who they are
+	//private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can nt if file is in access
 	
 	// CustomerAccount - Constructor
 	// this constructor is used when creating a new customer account for the first time
@@ -28,21 +30,24 @@ public class CustomerAccount {
 	// this constructor is used when loading pre-existing customer account information from a file
 	// (parameters are sent by the server from a text file)
 	// accesssor is the ATM or Teller who sent the request to server
-	public CustomerAccount(String access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts, String accessor) {
-		//this.inAccess = access;		// 'access' is string but 'inAccess' is boolean
+	public CustomerAccount(Boolean access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
+		this.inAccess = access;
 		this.fullName = name;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.password = password;
-		this.bankAccounts = new ArrayList<String>();
-		for (int i = 0; i < bankAccounts.size(); i++) {
-		      this.bankAccounts.add(bankAccounts.get(i));
-		}
-		if (!this.inAccess) // no existing access when this object is created
-		{
-			switchAccess(); // change access status here and on file
-			this.currentAccessor = accessor; 
-		}
+		this.bankAccounts = bankAccounts;
+		
+		//we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
+//		this.bankAccounts = new ArrayList<String>();
+//		for (int i = 0; i < bankAccounts.size(); i++) {
+//		      this.bankAccounts.add(bankAccounts.get(i));
+//		}
+//		if (!this.inAccess) // no existing access when this object is created
+//		{
+//			switchAccess(); // change access status here and on file
+//			this.currentAccessor = accessor; 
+//		}
 	}
 
 	// CustomerAccount - Default Constructor
@@ -61,7 +66,7 @@ public class CustomerAccount {
 			return true;
 		} 
 		else {
-			return true;
+			return false;
 		}
 	}
 
