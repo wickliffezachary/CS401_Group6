@@ -286,7 +286,37 @@ public class Server {
 					// if they are logged in, then see if they want to log out first
 					if(message.getType() == Message.Type.EXITCAREQ) {
 						// TODO - log out of customer account
+						if(LOGGEDIN) {
+							File[] list = customerAccounts.listFiles();
+							//find file
+		        			for (File file : list) {
+		        				// do not include folders
+		        				if (file.isFile()) {
+		        					// if the file is found in the list
+		        					if(file.getName().contains(User )) {
+		        						// create a scanner to move through the file
+		        						String build = "0";
+		        						Scanner scanner = new Scanner(file);
+		        						scanner.nextLine();
+		        						while(scanner.hasNextLine()) {
+		        							build += '\n' + scanner.nextLine();
+		        						}
+		        						FileOutputStream fout = new FileOutputStream(file);
+		        						fout.write(build.getBytes());
+		        						fout.close();
+		        						scanner.close();
+		        					}
+		        				}
+		        			}
+		        			LOGGEDIN = false;
+		        			User = "";
+		        			sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA granted", Message.Type.EXITCAREQGRANTED));
+		        			
+						}else {
+							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA denied", Message.Type.EXITCAREQDENIED));
+						}
 					}
+
 
 
 					// Below this is where commands for logged-in users go.

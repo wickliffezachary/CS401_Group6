@@ -614,7 +614,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						atm.logout();;
+						atm.logoutCustomer();
 					} catch (IOException e1) {e1.printStackTrace();}
 				}
 			});
@@ -759,7 +759,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	public void receivedMessage(Message msg) {
 		System.out.println("type:"+msg.getType().name()+",msg text:"+msg.getData());
 		switch(msg.getType()) {
-			case LOGOUTOK: 
+			case EXITCAREQGRANTED: 
 				// clear all user data from panels
 				loginPanel.clearFields();
 				customerPanel.clearFields();

@@ -145,6 +145,11 @@ public class ATM {
 		return loggedInUser;
 	}
 	
+	public void logoutCustomer() throws IOException {
+		sendMessage(new Message(id, "Server", "Request CA exit", Message.Type.EXITCAREQ));
+		parseReceivedMessage();
+	}
+	
 	// method that allows a user to select a financial account
 	// (the account number is supplied when user action triggers GUI event that calls this method)
 	public void selectAccount(String accNum) throws IOException {
