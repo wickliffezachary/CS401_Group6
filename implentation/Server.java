@@ -1,19 +1,13 @@
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.Scanner;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 public class Server {
@@ -33,7 +27,7 @@ public class Server {
 
 		// initialize a ServerSocket variable and set it to NULL
 		ServerSocket server = null;
-
+		monthlyUpkeep();
 		// attempt to create the directories if they do not already exist, and print out whether they were created or they already exist
 		System.out.println("Customer Accounts Directory: " + ((customerAccounts.mkdirs()) ? "Created" : "Exists"));
 		System.out.println("Bank Accounts Directory: " + ((bankAccounts.mkdirs()) ? "Created" : "Exists"));
@@ -79,6 +73,34 @@ public class Server {
 
 	}
 
+	// the monthly (5thof each month at 23:59...deals with variable length months
+	// currently used for interest only
+	// may also be used to remove old logs etc. or a similar logic with a different time length may be used
+	private static void monthlyUpkeep(){		
+	    Runnable interestTask = new Runnable() {
+	        public void run() {
+	            addInterest(); // schedule addInterest monthly
+//	            scheduleMonthlyInterest();  // Reschedule for next month
+	        }
+	    };
+
+	    long delay = computeDelayUntilNext5th2359();
+	    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+	    scheduler.schedule(interestTask, delay, TimeUnit.MILLISECONDS);
+	}
+
+	private static long computeDelayUntilNext5th2359() {
+	    LocalDateTime now = LocalDateTime.now();
+	    LocalDateTime nextRun = now.withDayOfMonth(5).withHour(23).withMinute(59).withSecond(0).withNano(0);
+	
+	    if (now.compareTo(nextRun) >= 0) {
+	        nextRun = nextRun.plusMonths(1);
+	    }
+	
+	    return Duration.between(now, nextRun).toMillis();
+	}
+
+	
 	// ClientHandler class
 	private static class ClientHandler implements Runnable{
 
@@ -103,7 +125,8 @@ public class Server {
 			Boolean LOGGEDIN = false;			//determines if you are currently accessing a Customer Account
 			Boolean VERIFIED = false;			//determines if the client has verified its identity
 			Boolean isTeller = false;			//determines if the client is an atm or teller
-			String User = "";					//TODO: change this to be based on customer data
+			String User = "";					//keeps track of current user
+			String BA = "";						//keeps track of current bank account
 			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
@@ -251,7 +274,7 @@ public class Server {
 					// To prevent invalid commands like an ATM trying to create accounts,
 					// only allow commands based on whether they are a teller or an ATM.
 
-					// commands allowed for Tellers
+					// --------------commands allowed for Tellers--------------------------
 					if (isTeller) {
 						switch(message.getType().name()) {
 							case "WITHDRAWREQ": break;
@@ -261,11 +284,42 @@ public class Server {
 								break;
 						}
 					}
-					// commands allowed for ATMs
+					// ----------------commands allowed for ATMs------------------------------
 					else {
+						
+						// when logged in first process if a message is a logout request
+						if(message.getType() == Message.Type.EXITBAREQ) {
+							// TODO - log-out of financial account
+							AccessingBankAccount = false;
+							BA = "";
+							sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
+							
+						}
+						
 						// ATM will only be able to select a bank account to make transactions from or logout
 						if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
-							// TODO - log-in to financial account
+							//attempt login
+							AccessingBankAccount = loginBank(message);
+			        		//if login was successful
+			        		if(AccessingBankAccount == true) {
+			        			
+			        			//set the current user to the username of the account
+			        			BA = message.getData();
+				        		//respond that the login was successful
+				        		sendMessage(
+				        				new Message(
+				        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.ACCESSBAREQGRANTED));
+			        		}
+			        		//if login failed
+			        		else{
+			        			sendMessage(
+				        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSBAREQDENIED));
+			        		}
+			        		
+			        		//go back to waiting for new message
+			        		continue;
 						}
 						// ATM should only be able to log out of customer account (handled before) or log in to financial account
 						// otherwise invalid
@@ -276,9 +330,14 @@ public class Server {
 							continue;
 						}		        		
 
+						
 						switch(message.getType().name()) {
-							case "WITHDRAWREQ":break;
-							case "DEPOSITREQ":break;
+							case "WITHDRAWREQ":
+								
+								break;
+							case "DEPOSITREQ":
+								
+								break;
 							default: /*invalid command*/
 								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
 								break;
@@ -312,11 +371,19 @@ public class Server {
 			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 			long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
 			try{
-			scheduler.scheduleAtFixedRate(
-				()->{sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));},
-				midnight, 1440, TimeUnit.MINUTES);
+				scheduler.scheduleAtFixedRate(
+					//this inner try catch is required according to eclipse
+					()->{try {
+						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}},
+					midnight, 1440, TimeUnit.MINUTES);
+			}catch(NullPointerException e) {
+				
+			}
 		}
-			
+		
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -387,6 +454,55 @@ public class Server {
 			// if the file isn't found, then the account doesn't exist, so no login
 			return found;
 		}
+		
+		private synchronized boolean loginBank(Message msg) throws IOException {
+			// account data will be sent as "username,password" so split it
+			String args[] = msg.getData().split(",");
+			
+			// get the list of customer accounts
+			File[] list = bankAccounts.listFiles();
+			
+			// determine if the customer account is valid
+			boolean found = false;
+			
+			// compare each file in the list
+			for (File file : list) {
+				// do not include folders
+				if (file.isFile()) {
+					// if the file is found in the list
+					if(file.getName().equals(args[0] + ".txt")) {
+						// create a scanner to move through the file
+						Scanner scanner = new Scanner(file);
+						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
+						if(scanner.nextLine().equals("1")) {
+							scanner.close();
+							return false;
+						}
+						else {
+							// otherwise, the login is valid
+							// update the file-access indicator in the file:
+							// first, store the entire file in a string
+							String info = new String(Files.readAllBytes(Paths.get(file.toString())));
+							// then, replace the first char and append the rest of the string back
+							info = "1" + info.substring(1);
+							// finally, write the file back out
+							Files.write(Paths.get(file.toString()), info.getBytes());
+							found = true;
+						}
+
+
+						scanner.close();
+						return found;
+					}
+				}
+			} // end 'for'
+			// if the file isn't found, then the account doesn't exist, so no login
+			return found;
+		}
+		
+		
+		
+		
 
 		// TODO
 		// method that allows a teller to create a new financial account
@@ -413,10 +529,56 @@ public class Server {
 	}
 
 	// helper methods for Server:
-	
-	private void monthlyUpdate() {
-		// TODO - a separate thread should run this once a month
-		// this method is used for things like interest, etc.
-	}
+	private static void addInterest() {
+		    double interestRate = 3.50 / 100.00;
+		
+		    File[] files = bankAccounts.listFiles();
+		    for (File file : files) {
+		        if (file.isFile()) {
+		            List<String> lines = new ArrayList<>();
+		            boolean toChange = false;
+		
+		            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+		                String line;
+		                while ((line = reader.readLine()) != null) {
+		                    String[] temp = line.split(" ");
+		                    String frst = temp[0];
+		                    String second = temp[1];
+		
+		                    if (frst.equalsIgnoreCase("Account_type:") && second.equalsIgnoreCase("SAVINGS")) {
+		                        toChange = true;
+		                        lines.add(line);
+		                        continue; // skip to next line in case of "SAVINGS" account
+		                    }
+		
+		                    if (toChange && frst.equalsIgnoreCase("Current_balance:")) {
+		                        // Add interest to the balance
+		                        double bal = Double.parseDouble(second);
+		                        lines.add(frst + " " + String.valueOf(bal + bal * interestRate));
+		                        toChange = false;  // stop entering this block after the first update
+		                        continue;  
+		                    }
+		                    lines.add(line);  // add line as is
+		                }
+		            } catch (IOException e) {
+		                e.printStackTrace();
+		                continue;  // skip to next file 
+		            }
+		
+		            // write back
+		            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+		                for (String updatedLine : lines) {
+		                    writer.write(updatedLine);
+		                    writer.newLine();  // preserve line breaks
+		                }
+		            } catch (IOException e) {
+		                e.printStackTrace();
+		            }
+		        }
+	    		}
+		}
 
+		
 }
+
+
