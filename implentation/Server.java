@@ -231,7 +231,7 @@ public class Server {
 		        			String pswd    = p[4].trim();
 		        			// filename = first+last+phone
 		        			String username = first + last + phone;
-		        			File f = new File(bankAccounts, username + ".txt");
+		        			File f = new File(customerAccounts, username + ".txt");
 
 		        			//verify if file exists
 		        			if (f.exists()) {
@@ -282,7 +282,7 @@ public class Server {
 		        	    ba.save();  // creates data/bankAccounts/<accountID>.txt
 
 		        	    // manual update of customer's file without load()
-		        	    File custFile = new File(customerAccounts, parts[0] + ".txt");
+		        	    File custFile = new File(bankAccounts, parts[0] + ".txt");
 		        	    List<String> lines = Files.readAllLines(custFile.toPath());
 		        	    while (lines.size() < 6) lines.add("");  // ensure 6 lines
 		        	    String related = lines.get(5).trim();
