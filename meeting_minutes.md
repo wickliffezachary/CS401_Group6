@@ -160,12 +160,39 @@ Next Meeting: TBD
 
 ### Dev Meeting 4/28
 
-Start:
-
-End:
-
 Attendees:
 - Jaishnoor Kaur
 - Aidan Tirado
 
+Discussed: Server code status, cleared up some questions
+
+
+### Intermittent Meetings via Discord
+
+Attendees: Vary
+
+Discussed: 
+- 4/22
+    - Reached consensus on procedure for pushing code (work on branches and PRs for new code)
+- 4/29
+    - Discussed changes to Message Type, confirmed communication protocol for operations (Message sequence) (defined originally in design whiteboarding alongside expected data for each)
+    - Agreed to have isLoggedIn checks for ATM options as extra safety measure even though we do not expect fetaures to be available without login
+    - Agreed to simplify Withdraw protocol by removing intermediate steps
+    - Reduced priority of ATM refill
+
+
+ ### Meeting 5/6
+
+ Attendees:
+ - Zach
+ - Aidan
+ - Nechar
+ - Jaishnoor
+ - Harven
+
 Discussed:
+- Product demo test with multiple clients running on different devices and off-site server
+- Finalized slides and presentation plan
+
+Next Meeting:
+5/8
