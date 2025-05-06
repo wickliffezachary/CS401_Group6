@@ -1,6 +1,6 @@
-0
-John Doe
-1234
-123 street
-12345
-10,20,30
+Access_status: true
+Name: JohnDoe
+Phone_number: 1234
+Address: 123 street
+Password: abcd
+Bank_accounts: [Bank_accounts: Bank_accounts: [], 10, 20]

@@ -131,9 +131,13 @@ public class Teller {
 	
 	// TODO
 	// method that allows a teller to exit a customer account
-	public void exitCustomer() {
-		
+	public void exitCustomer() throws IOException {
+	    sendMessage(new Message(id, "Server", currentUsername, Message.Type.EXITCAREQ));
+	    Message resp = parseReceivedMessage();
+	    if (listener!=null) listener.receivedMessage(resp);
+	    currentUsername = null;
 	}
+
 	
 	// TODO
 	// method that allows a teller to select a customer's financial account
@@ -172,12 +176,14 @@ public class Teller {
 	}
 	
 	// method that allows a teller to create a new customer account for a customer
-	public void createNewCustomer(String first, String last,String phone, String address, String password) throws IOException {
-		String data = String.join(",", first, last, phone, address, password);
-		sendMessage(new Message(id, "Server", data, Message.Type.CREATCBACCREQ));
-		Message resp = parseReceivedMessage();
+	public void createNewCustomer(String first, String last, String phone, String address, String password) throws IOException {
+		String data = first + "\n" + last + "\n" + phone + "\n" + address + "\n" + password;
+		sendMessage(new Message(id, "Server", data, Message.Type.CREATECACCREQ));
+		    
+	    Message resp = parseReceivedMessage();
 		if (listener != null) listener.receivedMessage(resp);
 	}
+
 	
 	// TODO
 	// method that allows a teller to create a new financial account for a customer
@@ -225,6 +231,7 @@ public class Teller {
 	public void callManager() {
 		
 	}
+	
 	
 
 

@@ -1,5 +1,5 @@
-Account_type: SAVINGS
-Date_created: Mon May 05 15:40:39 PDT 2025
-Users: [JohnDoe1234]
+Account_type: CHECKING
+Date_created: 2025-05-05 20:55:42
+Users: [MaryJane1234]
 Current_balance: 0.0
 Transaction_history: 

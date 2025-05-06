@@ -1,0 +1,6 @@
+Access_status: true
+Name: PeterParker
+Phone_number: 1234
+Address: 123
+Password: abcd
+Bank_accounts: []

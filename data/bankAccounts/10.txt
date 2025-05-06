@@ -1,6 +1,6 @@
 Account_type: SAVINGS
-Date_created: 2025-05-05 16:19:40
-Users: [JohnDoe1234]
-Current_balance: 99878.0
-Transaction_history: Withdrew: 122.0Deposited: 100000.0
+Date_created: 2025-05-05 20:59:46
+Users: [MaryJane1234]
+Current_balance: 19000.0
+Transaction_history: Deposited: 20000.0Withdrew: 1000.0
 

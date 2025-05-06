@@ -217,107 +217,34 @@ public class Server {
 		        	    sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid login type", Message.Type.INVALID));
 		        	    continue;
 		        	}
-
-		        			        	
 		        	
-		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATECACCREQ) {
-                //split recieved string
-		        	    String[] p = message.getData().split("\n", 5);
-                //sort the data
-		        	    if (p.length == 5) {
-		        	        String first   = p[0].trim();
-		        	        String last    = p[1].trim();
-		        	        String phone   = p[2].trim();
-		        	        String address = p[3].trim();
-		        	        String pswd    = p[4].trim();
-		        	        // filename = first+last+phone
-		        	        String username = first + last + phone;
-		        	        File f = new File(bankAccounts, username + ".txt");
-
-                      //verify if file exists
-		        	        if (f.exists()) {
-                        //if it does tell them we wont create it
-		        	            sendMessage(new Message("Server",
-		        	                clientSocket.getInetAddress().toString(),
-		        	                "Customer already exists",
-		        	                Message.Type.CREATECACCDONE));
-		        	        } 
-                    //otherwise create  new account
-                    else {
-                      //create the file to write to
-                      f.createNewFile();
-                      //create the object to store the data in
-                      //dont assign to user because we are not logging in
-                      CustomerAccount temp = new CustomerAccount(first+last, phone, address, pswd);
-                      temp.save();
-
-		        	            sendMessage(new Message("Server",
-		        	                clientSocket.getInetAddress().toString(),
-		        	                "Customer created: " + username,
-		        	                Message.Type.CREATECACCDONE));
-		        	        }
-		        	    } else {
-		        	        sendMessage(new Message("Server",
+		        	
+		        	if (VERIFIED && isTeller && !LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
+		        	    String custUsername = message.getData();
+		        	    File custFile = new File(customerAccounts, custUsername + ".txt");
+		        	    if (!custFile.exists()) {
+		        	        sendMessage(new Message(
+		        	            "Server",
 		        	            clientSocket.getInetAddress().toString(),
-		        	            "Bad data for create customer",
-		        	            Message.Type.ERROR));
-		        	    }
-		        	    continue;
-		        	}
-
-		        	
-		        	// Handle bank account creation 
-		        	if (VERIFIED && isTeller && LOGGEDIN && message.getType() == Message.Type.CREATEBACCREQ) {
-		        	    // data = "customerUsername,accountType"
-		        	    String[] parts = message.getData().split(",", 2);
-
-		        	    // simple mapping for account type (default SAVINGS)
-		        	    BankAccount.AccType typeEnum = BankAccount.AccType.SAVINGS;
-		        	    if ("CHECKING".equalsIgnoreCase(parts[1].trim())) {
-		        	        typeEnum = BankAccount.AccType.CHECKING;
-		        	    }
-
-		        	    BankAccount ba = new BankAccount(parts[0], typeEnum);
-		        	    ba.save();  // creates data/bankAccounts/<accountID>.txt
-
-		        	    // manual update of customer's file without load()
-		        	    File custFile = new File(customerAccounts, parts[0] + ".txt");
-		        	    List<String> lines = Files.readAllLines(custFile.toPath());
-		        	    while (lines.size() < 6) lines.add("");  // ensure 6 lines
-		        	    String related = lines.get(5).trim();
-		        	    if (related.isEmpty()) {
-		        	        related = ba.getAccountID();
+		        	            "No such customer",
+		        	            Message.Type.ACCESSCAREQDENIED
+		        	        ));
 		        	    } else {
-		        	        related = related + "," + ba.getAccountID();
+		        	    	user = CustomerAccount.load(custUsername, clientSocket.getInetAddress().toString());
+		        	    	LOGGEDIN = true;
+		        	        // read the 6th line of the file (comma-separated BA IDs)
+		        	        List<String> lines = Files.readAllLines(custFile.toPath());
+		        	        String baList = lines.size() >= 6 ? lines.get(5).trim() : "";
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), baList, Message.Type.ACCESSCAREQGRANTED));
 		        	    }
-		        	    lines.set(5, related);
-		        	    Files.write(custFile.toPath(), lines);
-
-		        	    sendMessage(new Message(
-		        	        "Server",
-		        	        clientSocket.getInetAddress().toString(),
-		        	        "Bank account created: " + ba.getAccountID(),
-		        	        Message.Type.CREATEBACCDONE
-		        	    ));
 		        	    continue;
 		        	}
-		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
-		        			|| message.getType() == Message.Type.LOGOUTREQATM) {
-		        		isTeller   = false;
-		        		VERIFIED   = false;
 
-		        		//if a user is currently being accessed then it needs to be logged out
-		        		if(LOGGEDIN) {
-		        			//TODO: logout CA, this includes resetting the access modifier
-		        		}
-		        		sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
-		        		break;  // exit
-		        	}
-		        	
+
 		        	
 		        	
 		        	//once the client is connected it should attempt to access a customer account before being able to access more functionality
-		        	if(!LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
+		        	if (!LOGGEDIN && !isTeller && message.getType() == Message.Type.ACCESSCAREQ) {
 		        		
 		        		//attempt to log in
 		        		user = login(message);
@@ -353,6 +280,111 @@ public class Server {
 		        		//go back to waiting for new message
 		        		continue;
 		        	}
+		        	
+		        			        	
+		        	if (message.getType() == Message.Type.EXITCAREQ) {
+		        	    if (LOGGEDIN && user != null) {
+		        	        user.switchAccess();
+		        	        user = null;
+		        	        LOGGEDIN = false;
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA granted", Message.Type.EXITCAREQGRANTED));
+		        	    } else {
+		        	        sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA denied", Message.Type.EXITCAREQDENIED));
+		        	    }
+		        	    continue;
+		        	}
+
+		        	
+		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
+		        			|| message.getType() == Message.Type.LOGOUTREQATM) {
+		        		isTeller   = false;
+		        		VERIFIED   = false;
+
+		        		//if a user is currently being accessed then it needs to be logged out
+		        		if(LOGGEDIN) {
+		        			//TODO: logout CA, this includes resetting the access modifier
+		        		}
+		        		sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
+		        		break;  // exit
+		        	}
+		        	
+		        	
+		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATECACCREQ) {
+		        	    String[] p = message.getData().split("\n", 5);
+		        	    if (p.length == 5) {
+		        	        String first   = p[0].trim();
+		        	        String last    = p[1].trim();
+		        	        String phone   = p[2].trim();
+		        	        String address = p[3].trim();
+		        	        String pswd    = p[4].trim();
+		        	        String username = first + last + phone;
+		        	        File custFile = new File(customerAccounts, username + ".txt");
+		        	        if (custFile.exists()) {
+		        	            sendMessage(new Message(
+		        	                "Server",
+		        	                clientSocket.getInetAddress().toString(),
+		        	                "Customer already exists",
+		        	                Message.Type.CREATECACCDONE
+		        	            ));
+		        	        } else {
+		        	            CustomerAccount temp = new CustomerAccount(first + last, phone, address, pswd);
+		        	            temp.save();
+		        	            sendMessage(new Message(
+		        	                "Server",
+		        	                clientSocket.getInetAddress().toString(),
+		        	                "Customer created: " + username,
+		        	                Message.Type.CREATECACCDONE
+		        	            ));
+		        	        }
+		        	    } else {
+		        	        sendMessage(new Message(
+		        	            "Server",
+		        	            clientSocket.getInetAddress().toString(),
+		        	            "Bad data for create customer",
+		        	            Message.Type.ERROR
+		        	        ));
+		        	    }
+		        	    continue;
+		        	}
+
+
+				        	
+				        	// Handle bank account creation 
+				        	if (VERIFIED && isTeller && LOGGEDIN && message.getType() == Message.Type.CREATEBACCREQ) {
+				        	    // data = "customerUsername,accountType"
+				        	    String[] parts = message.getData().split(",", 2);
+
+				        	    // simple mapping for account type (default SAVINGS)
+				        	    BankAccount.AccType typeEnum = BankAccount.AccType.SAVINGS;
+				        	    if ("CHECKING".equalsIgnoreCase(parts[1].trim())) {
+				        	        typeEnum = BankAccount.AccType.CHECKING;
+				        	    }
+
+				        	    BankAccount ba = new BankAccount(parts[0], typeEnum);
+				        	    ba.save();  // creates data/bankAccounts/<accountID>.txt
+
+				        	    // manual update of customer's file without load()
+				        	    File custFile = new File(customerAccounts, parts[0] + ".txt");
+				        	    List<String> lines = Files.readAllLines(custFile.toPath());
+				        	    while (lines.size() < 6) lines.add("");  // ensure 6 lines
+				        	    String related = lines.get(5).trim();
+				        	    if (related.isEmpty()) {
+				        	        related = ba.getAccountID();
+				        	    } else {
+				        	        related = related + "," + ba.getAccountID();
+				        	    }
+				        	    lines.set(5, "Bank_accounts: " + related);
+				        	    Files.write(custFile.toPath(), lines);
+
+				        	    sendMessage(new Message(
+				        	        "Server",
+				        	        clientSocket.getInetAddress().toString(),
+				        	        "Bank account created: " + ba.getAccountID(),
+				        	        Message.Type.CREATEBACCDONE
+				        	    ));
+				        	    continue;
+				        	}
+		        	
 			        
 		        	//if a message is sent but they are not logged in just throw back an error because its not correct
 		        	if(!LOGGEDIN) {
@@ -619,7 +651,7 @@ public class Server {
 						}//try reading
 						
 						//create a temporary account with all the info
-						tempAcc = new CustomerAccount(access, name, phoneNumber, address, password, bankAccounts);
+						tempAcc = new CustomerAccount(name, phoneNumber, address, password);
 						
 						//if the account is already being used
 						if(tempAcc.checkAccessStatus() == true) {

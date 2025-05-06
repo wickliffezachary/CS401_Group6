@@ -32,13 +32,15 @@ public class CustomerAccount {
 	// this constructor is used when loading pre-existing customer account information from a file
 	// (parameters are sent by the server from a text file)
 	// accesssor is the ATM or Teller who sent the request to server
-	public CustomerAccount(String access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
+	public CustomerAccount(Boolean access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts, String currentAccessor) {
 		this.inAccess = access;
 		this.fullName = name;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.password = password;
     this.bankAccounts = bankAccounts;
+    this.currentAccessor = currentAccessor;
+	}
     
     //we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
 // 		this.bankAccounts = new ArrayList<String>();
@@ -150,26 +152,36 @@ public class CustomerAccount {
 	}
 	
 	public static CustomerAccount load(String username, String accessor) throws IOException {
-	    Path path = Paths.get(
-	        System.getProperty("user.dir"),
-	        "data/customerAccounts",
-	        username + ".txt"
-	    );
+	    Path path = Paths.get(System.getProperty("user.dir"),
+	                         "data/customerAccounts",
+	                         username + ".txt");
 	    List<String> lines = Files.readAllLines(path);
-	    boolean inAccess = lines.get(0).trim().equals("1");
+
+	    // parse Access_status: true/false
+	    String[] p0 = lines.get(0).split(":", 2);
+	    boolean inAccess = p0.length > 1 && Boolean.parseBoolean(p0[1].trim());
+
+	    // parse the next four labeled lines
 	    String name    = lines.get(1).split(":", 2)[1].trim();
 	    String phone   = lines.get(2).split(":", 2)[1].trim();
 	    String address = lines.get(3).split(":", 2)[1].trim();
 	    String pwd     = lines.get(4).split(":", 2)[1].trim();
+
+	    // parse Bank_accounts: [A,B,C]
 	    ArrayList<String> bas = new ArrayList<>();
 	    if (lines.size() > 5) {
-	        String data = lines.get(5).split(":", 2)[1].trim();
-	        for (String s : data.split(",")) {
+	        String raw = lines.get(5).split(":", 2)[1].trim();
+	        // remove surrounding brackets if present
+	        if (raw.startsWith("[") && raw.endsWith("]")) {
+	            raw = raw.substring(1, raw.length() - 1);
+	        }
+	        for (String s : raw.split(",")) {
 	            if (!s.isBlank()) bas.add(s.trim());
 	        }
 	    }
+
 	    return new CustomerAccount(
-	        String.valueOf(inAccess),
+	       inAccess,
 	        name,
 	        phone,
 	        address,
@@ -179,20 +191,23 @@ public class CustomerAccount {
 	    );
 	}
 
+
 	
 	
 	// save to file after update
 	public void save() {
-		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber + ".txt";
-		try{
-			FileWriter writer = new FileWriter(sourceName);
-			w.write("Access_status: " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
-				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
-			w.close()
-		}
-		catch (IOException e){
-    error.printStackTrace();
-    }
-	}
+	    String path = System.getProperty("user.dir")
+	                + "/data/customerAccounts/"
+	                + this.fullName + this.phoneNumber + ".txt";
+	    try (FileWriter writer = new FileWriter(path)) {
+	        writer.write("Access_status: " + this.inAccess + "\n");
+	        writer.write("Name: "          + this.fullName + "\n");
+	        writer.write("Phone_number: "  + this.phoneNumber + "\n");
+	        writer.write("Address: "       + this.address + "\n");
+	        writer.write("Password: "      + this.password + "\n");
+	        writer.write("Bank_accounts: " + this.bankAccounts.toString());
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
 	}
 }

@@ -1,0 +1,6 @@
+Access_status: false
+Name: MaryJane
+Phone_number: 1234
+Address: 23 street
+Password: abcdads
+Bank_accounts: []
