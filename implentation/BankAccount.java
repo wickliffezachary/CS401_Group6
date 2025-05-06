@@ -128,15 +128,14 @@ public class BankAccount {
 	    List<String> lines = Files.readAllLines(Paths.get(path));
 
 	    // type
-	    String typeStr = lines.get(0).split(":",2)[1].trim().toUpperCase();
+	    String typeStr = lines.get(1).split(":",2)[1].trim().toUpperCase();
 	    AccType accType = AccType.valueOf(typeStr);
 
 	    // skip file’s date—use now
 	    Date dateCreated = new Date();
 
 	    // users
-	    String usersLine = lines.get(2).split(":",2)[1].trim()
-	                          .replace("[","").replace("]","");
+	    String usersLine = lines.get(3).split(":",2)[1].trim().replace("[","").replace("]","");
 	    ArrayList<String> users = new ArrayList<>();
 	    if (!usersLine.isEmpty()) {
 	        String[] parts = usersLine.split(",");
@@ -148,13 +147,13 @@ public class BankAccount {
 
 	    // balance
 	    double currBalance = Double.parseDouble(
-	        lines.get(3).split(":",2)[1].trim()
+	        lines.get(4).split(":",2)[1].trim()
 	    );
 
 	    // history
 	    String tranHist = "";
-	    if (lines.size() > 4) {
-	        tranHist = lines.get(4).split(":",2)[1].trim();
+	    if (lines.size() > 5) {
+	        tranHist = lines.get(5).split(":",2)[1].trim();
 	    }
 
 	    BankAccount ba = new BankAccount(); 
