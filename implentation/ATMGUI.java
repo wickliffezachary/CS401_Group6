@@ -797,9 +797,16 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			case ACCESSBAREQGRANTED:
 				String[] baData = msg.getData().split("\n");
 				bankAccountPanel.setContents(customerPanel.getSelectedBankAccount());
-				currentBalancePanel.setContents((baData[4].split(" ")[1]));
-				transactionHistoryPanel.setContents((baData[5].split(" "))[1].split(","));
-				
+				if(baData.length >= 4) {
+					currentBalancePanel.setContents((baData[4].split(" ")[1]));
+					if(baData.length >= 5) {
+						String[] temp = baData[5].split(" ");
+						if(temp.length >= 2) {
+							String[] hist = temp[1].split(",");
+							transactionHistoryPanel.setContents(hist);
+						}
+					}				
+				}	
 				switchPanel(bankAccountPanel);
 				break;
 			case DEPOSITREQACCEPTED:
