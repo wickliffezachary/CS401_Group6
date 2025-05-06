@@ -32,13 +32,14 @@ public class CustomerAccount {
 	// this constructor is used when loading pre-existing customer account information from a file
 	// (parameters are sent by the server from a text file)
 	// accesssor is the ATM or Teller who sent the request to server
-	public CustomerAccount(String access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
+	public CustomerAccount(boolean access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
 		this.inAccess = access;
 		this.fullName = name;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.password = password;
-    this.bankAccounts = bankAccounts;
+		this.bankAccounts = bankAccounts;
+	}
     
     //we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
 // 		this.bankAccounts = new ArrayList<String>();
@@ -168,31 +169,22 @@ public class CustomerAccount {
 	            if (!s.isBlank()) bas.add(s.trim());
 	        }
 	    }
-	    return new CustomerAccount(
-	        String.valueOf(inAccess),
-	        name,
-	        phone,
-	        address,
-	        pwd,
-	        bas,
-	        accessor
-	    );
+	    return new CustomerAccount(inAccess, name, phone, address, pwd, bas);
 	}
 
 	
 	
 	// save to file after update
 	public void save() {
-		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber + ".txt";
-		try{
+		String sourceName = System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName + this.phoneNumber + ".txt";
+		try {
 			FileWriter writer = new FileWriter(sourceName);
-			w.write("Access_status: " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
+			writer.write("Access_status: " + this.inAccess + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
 				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
-			w.close()
+			writer.close();
 		}
-		catch (IOException e){
-    error.printStackTrace();
-    }
-	}
+		catch (IOException error) {
+			error.printStackTrace();
+		}
 	}
 }
