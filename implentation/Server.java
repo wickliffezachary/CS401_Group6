@@ -386,6 +386,10 @@ public class Server {
 						// TODO - log-out of financial account
 						AccessingBankAccount = false;
 						BA = "";
+						
+						BankAcc.switchAccess();
+						BankAcc = null;
+						
 						sendMessage(
 		        				new Message(
 		        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
@@ -396,7 +400,12 @@ public class Server {
 					// ATM will only be able to select a bank account to make transactions from or logout
 					if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
 						//attempt login
-						AccessingBankAccount = loginBank(message);
+						BankAcc = loginBank(message);
+						
+						if(BankAcc != null) {
+							AccessingBankAccount = true;
+						}
+						
 		        		//if login was successful
 		        		if(AccessingBankAccount == true) {
 		        			String[] args = message.getData().split(",");
@@ -412,7 +421,6 @@ public class Server {
 		        					if(file.getName().equals(args[0] + ".txt")) {
 		        						// create a scanner to move through the file
 		        						Scanner scanner = new Scanner(file);
-		        						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
 		        						while(scanner.hasNextLine()) {
 		        							build += scanner.nextLine() + "\n";
 		        						}
@@ -647,49 +655,60 @@ public class Server {
 			return tempAcc;
 		}
 		
-		private synchronized boolean loginBank(Message msg) throws IOException {
-			// account data will be sent as "username,password" so split it
-			String args[] = msg.getData().split(",");
+		private synchronized BankAccount loginBank(Message msg) throws IOException {
+			BankAccount temp = BankAccount.loadFromFile(msg.getData());
+			//if the account is in use just say no
+			if(temp.checkInActiveAccess()) {
+				return null;
+			}
+			//otherwise say the file is now innaccessable
+			temp.switchAccess();
+			//and give it to main
+			return temp;
 			
-			// get the list of customer accounts
-			File[] list = bankAccounts.listFiles();
-			
-			// determine if the customer account is valid
-			boolean found = false;
-			
-			// compare each file in the list
-			for (File file : list) {
-				// do not include folders
-				if (file.isFile()) {
-					// if the file is found in the list
-					if(file.getName().equals(args[0] + ".txt")) {
-						// create a scanner to move through the file
-						Scanner scanner = new Scanner(file);
-						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
-						if(scanner.nextLine().equals("1")) {
-							scanner.close();
-							return false;
-						}
-						else {
-							// otherwise, the login is valid
-							// update the file-access indicator in the file:
-							// first, store the entire file in a string
-							String info = new String(Files.readAllBytes(Paths.get(file.toString())));
-							// then, replace the first char and append the rest of the string back
-							info = "1" + info.substring(1);
-							// finally, write the file back out
-							Files.write(Paths.get(file.toString()), info.getBytes());
-							found = true;
-						}
-
-
-						scanner.close();
-						return found;
-					}
-				}
-			} // end 'for'
-			// if the file isn't found, then the account doesn't exist, so no login
-			return found;
+//			// account data will be sent as "username,password" so split it
+//			String args[] = msg.getData().split(",");
+//			
+//			// get the list of customer accounts
+//			File[] list = bankAccounts.listFiles();
+//			
+//			// determine if the customer account is valid
+//			boolean found = false;
+//			
+//			// compare each file in the list
+//			for (File file : list) {
+//				// do not include folders
+//				if (file.isFile()) {
+//					// if the file is found in the list
+//					if(file.getName().equals(args[0] + ".txt")) {
+//						// create a scanner to move through the file
+//						Scanner scanner = new Scanner(file);
+//						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
+//						if(scanner.nextLine().equals("Access_Status: 1")) {
+//							scanner.close();
+//							return false;
+//						}
+//						else {
+//							//TODO: FIX THIS QUICK
+//							// otherwise, the login is valid
+//							// update the file-access indicator in the file:
+//							// first, store the entire file in a string
+//							String info = new String(Files.readAllBytes(Paths.get(file.toString())));
+//							// then, replace the first char and append the rest of the string back
+//							info = "Access_Status: 1" + info.substring(1);
+//							// finally, write the file back out
+//							Files.write(Paths.get(file.toString()), info.getBytes());
+//							found = true;
+//						}
+//
+//
+//						scanner.close();
+//						return found;
+//					}
+//				}
+//			} // end 'for'
+//			// if the file isn't found, then the account doesn't exist, so no login
+//			return found;
 		}
 		
 		
@@ -723,6 +742,8 @@ public class Server {
 						List<String> lines = new ArrayList<>();
 						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 							String line;
+							//skipping first line means we need to hardcode some stuff
+							lines.add("Access_status: 1");
 							reader.readLine();
 
 							while ((line = reader.readLine()) != null) {
@@ -775,6 +796,7 @@ public class Server {
 						List<String> lines = new ArrayList<>();
 						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 							String line;
+							lines.add("Access_status: 1");
 							reader.readLine();
 							//skip looking for the second variable in the line after some lines to prevent crashing
 							while ((line = reader.readLine()) != null) {
