@@ -14,8 +14,8 @@ public class CustomerAccount {
 	private ArrayList<String> bankAccounts;
 	private String password;
 	private boolean inAccess = false;
-	private BankAccount bankAccInUse = null;
-	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can nt if file is in access
+//	private BankAccount bankAccInUse = null;
+//	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can nt if file is in access
 	
 	// CustomerAccount - Constructor
 	// this constructor is used when creating a new customer account for the first time
@@ -32,7 +32,7 @@ public class CustomerAccount {
 	// this constructor is used when loading pre-existing customer account information from a file
 	// (parameters are sent by the server from a text file)
 	// accesssor is the ATM or Teller who sent the request to server
-	public CustomerAccount(boolean access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
+	public CustomerAccount(Boolean access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
 		this.inAccess = access;
 		this.fullName = name;
 		this.phoneNumber = phoneNumber;
@@ -40,8 +40,10 @@ public class CustomerAccount {
 		this.password = password;
 		this.bankAccounts = bankAccounts;
 	}
+
     
-    //we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
+		//we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
+
 // 		this.bankAccounts = new ArrayList<String>();
 // 		for (int i = 0; i < bankAccounts.size(); i++) {
 // 		      this.bankAccounts.add(bankAccounts.get(i));
@@ -51,7 +53,7 @@ public class CustomerAccount {
 // 			switchAccess(); // change access status here and on file
 // 			this.currentAccessor = accessor; 
 // 		}
-// 	}
+ 	}
 
 	// CustomerAccount - Default Constructor
 	// this constructor is here so that the code does not crash
@@ -108,13 +110,23 @@ public class CustomerAccount {
 		save();
 	}
 
-	// TODO
 	public void updateName(String newName) {
-		for (int i = 0; i < bankAccounts.size(); i++) {
-			String acc = this.bankAccounts.get(i);
-			// go to each account file and 
-			// do users.remove(fullname+phoneNumber)
-			// users.add(newname+phoneNumber)
+		//go to each associated customer account
+		for(int i=0; i<this.bankAccounts.size(); i++) {
+			//verify we dont leave array
+			if(bankAccounts.get(i)!=null) {
+				//temporarily hold account name
+				String acc = this.bankAccounts.get(i);
+				
+				try {
+					BankAccount account = BankAccount.loadFromFile(acc);
+					//removes old name and changes to new name
+					account.renameUser(this.fullName+this.phoneNumber, newName+this.phoneNumber);	//this also saves to file
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		// and now we can change name
 		this.fullName = newName;
@@ -123,13 +135,24 @@ public class CustomerAccount {
 	
 	// TODO
 	public void updatePhoneNumber(String newNumber) {
-		for (int i = 0; i < bankAccounts.size(); i++) {
-			String acc = this.bankAccounts.get(i);
-			// go to each account file and 
-			// do users.remove(fullName+phoneNumber)
-			// users.add(fullname+newNumber)
+		//go to each associated customer account
+		for(int i=0; i<this.bankAccounts.size(); i++) {
+			//verify we dont leave array
+			if(bankAccounts.get(i)!=null) {
+				//temporarily hold account name
+				String acc = this.bankAccounts.get(i);
+				
+				try {
+					BankAccount account = BankAccount.loadFromFile(acc);
+					//removes old name and changes to new name
+					account.renameUser(this.fullName+this.phoneNumber, this.fullName+newNumber);	//this also saves to file
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
-		// and now we can change number
+		// and now we can change name
 		this.phoneNumber = newNumber;
 		save();
 	}
@@ -169,7 +192,14 @@ public class CustomerAccount {
 	            if (!s.isBlank()) bas.add(s.trim());
 	        }
 	    }
-	    return new CustomerAccount(inAccess, name, phone, address, pwd, bas);
+	    return new CustomerAccount(
+	        inAccess,
+	        name,
+	        phone,
+	        address,
+	        pwd,
+	        bas
+	    );
 	}
 
 	
@@ -179,12 +209,23 @@ public class CustomerAccount {
 		String sourceName = System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName + this.phoneNumber + ".txt";
 		try {
 			FileWriter writer = new FileWriter(sourceName);
-			writer.write("Access_status: " + this.inAccess + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
-				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
+
+			String access = "0";
+			if(this.inAccess) {
+				access = "1";
+			}
+			writer.write("Access_status: " + access + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
+				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: "); 
+			if(bankAccounts.size() > 0) {
+				writer.write(bankAccounts.get(0));
+				for(int i = 1; i < bankAccounts.size(); ++i) {
+					writer.write("," + bankAccounts.get(i));
+				}
+			}
 			writer.close();
 		}
-		catch (IOException error) {
-			error.printStackTrace();
+		catch (IOException e){
+			e.printStackTrace();
 		}
 	}
 }

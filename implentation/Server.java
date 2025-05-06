@@ -119,7 +119,7 @@ public class Server {
 		}
 
 		public void run() {
-
+			System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
 			// local variables to hold the data that changes
 			Message message;
 			Boolean AccessingBankAccount = false;
@@ -130,11 +130,10 @@ public class Server {
 			BankAccount BankAcc = null;			//updated method of tracking current bank account	//TODO: use this
 			String BA = "";						//keeps track of current bank account
 
-			dailyUpkeep();
+//			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
 		        while((message = (Message) objectInputStream.readObject()) != null) {
-		        	System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
 					//print the action requested by the client
 		        	System.out.println(
 		        			//display ip of client
@@ -222,47 +221,49 @@ public class Server {
 		        	
 		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATECACCREQ) {
 		        		//split recieved string
-		        	    String[] p = message.getData().split("\n", 5);
-		        	    //sort the data
-		        	    if (p.length == 5) {
-		        	        String first   = p[0].trim();
-		        	        String last    = p[1].trim();
-		        	        String phone   = p[2].trim();
-		        	        String address = p[3].trim();
-		        	        String pswd    = p[4].trim();
-		        	        // filename = first+last+phone
-		        	        String username = first + last + phone;
-		        	        File f = new File(bankAccounts, username + ".txt");
+		        		String[] p = message.getData().split("\n", 5);
+		        		//sort the data
+		        		if (p.length == 5) {
+		        			String first   = p[0].trim();
+		        			String last    = p[1].trim();
+		        			String phone   = p[2].trim();
+		        			String address = p[3].trim();
+		        			String pswd    = p[4].trim();
+		        			// filename = first+last+phone
+		        			String username = first + last + phone;
+		        			File f = new File(bankAccounts, username + ".txt");
 
-                      //verify if file exists
-		        	        if (f.exists()) {
-                        //if it does tell them we wont create it
-		        	            sendMessage(new Message("Server",
-		        	                clientSocket.getInetAddress().toString(),
-		        	                "Customer already exists",
-		        	                Message.Type.CREATECACCDONE));
-		        	        } 
-                    //otherwise create  new account
-                    else {
-                      //create the file to write to
-                      f.createNewFile();
-                      //create the object to store the data in
-                      //dont assign to user because we are not logging in
-                      CustomerAccount temp = new CustomerAccount(first + last, phone, address, pswd);
-                      temp.save();
+		        			//verify if file exists
+		        			if (f.exists()) {
+		        				//if it does tell them we wont create it
+		        				sendMessage(new Message("Server",
+		        						clientSocket.getInetAddress().toString(),
+		        						"Customer already exists",
+		        						Message.Type.CREATECACCDONE));
+		        				continue;
+		        			} 
+		        			//otherwise create  new account
+		        			else {
+		        				//create the file to write to
+		        				f.createNewFile();
+		        				//create the object to store the data in
+		        				//dont assign to user because we are not logging in
+		        				CustomerAccount temp = new CustomerAccount(first+last, phone, address, pswd);
+		        				temp.save();
 
-		        	            sendMessage(new Message("Server",
-		        	                clientSocket.getInetAddress().toString(),
-		        	                "Customer created: " + username,
-		        	                Message.Type.CREATECACCDONE));
-		        	        }
-		        	    } else {
-		        	        sendMessage(new Message("Server",
-		        	            clientSocket.getInetAddress().toString(),
-		        	            "Bad data for create customer",
-		        	            Message.Type.ERROR));
-		        	    }
-		        	    continue;
+		        				sendMessage(new Message("Server",
+		        						clientSocket.getInetAddress().toString(),
+		        						"Customer created: " + username,
+		        						Message.Type.CREATECACCDONE));
+		        				continue;
+		        			}
+		        		} else {
+		        			sendMessage(new Message("Server",
+		        					clientSocket.getInetAddress().toString(),
+		        					"Bad data for create customer",
+		        					Message.Type.ERROR));
+		        		}
+		        		continue;
 		        	}
 
 		        	
@@ -311,7 +312,7 @@ public class Server {
 		        			//TODO: logout CA, this includes resetting the access modifier
 		        		}
 		        		sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
-		        		break;  // exit
+		        		continue;// exit
 		        	}
 		        	
 		        	
@@ -329,21 +330,21 @@ public class Server {
 
 		        			String caData = user.getName() + '\n' + user.getPhoneNumber() + '\n' + user.getAddress() + '\n';
 		        			//for every bank account attached to the customer account
-		        			for(int i = 1; i <= user.getAssociatedBA().size(); i++) {
+		        			for(int i = 0; i < user.getAssociatedBA().size(); i++) {
 		        				//append the account number to the string
 		        				caData += user.getAssociatedBA().get(i);
 		        				//if the current account is not the final one
-		        				if(i != user.getAssociatedBA().size()) {
+		        				if(i != user.getAssociatedBA().size() - 1) {
 		        					//also append a comma
 		        					caData += ",";
 		        				}
-		        				
+		        			}
 			        		//respond that the login was successful
 			        		sendMessage(
 			        				new Message(
 			        						"Server", clientSocket.getInetAddress().toString(), caData, Message.Type.ACCESSCAREQGRANTED));
 
-		        		}
+		        		
 		        		}
 		        		else{
 		        			sendMessage(
@@ -372,9 +373,10 @@ public class Server {
 		        			user = null;			//we are no longer logged in
 		        			LOGGEDIN = false;		//reflect it
 		        			sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA granted", Message.Type.EXITCAREQGRANTED));
-		        			
+		        			continue;
 						}else {
 							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA denied", Message.Type.EXITCAREQDENIED));
+							continue;
 						}
 					}
 
@@ -385,7 +387,7 @@ public class Server {
 							case "DEPOSITREQ": break;
 							default: /*invalid command*/
 								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-								break;
+								continue;
 						}
 					}
 //					--------------------------------------------------TELLER COMMANDS ABOVE---------------------------------------------------------
@@ -403,6 +405,7 @@ public class Server {
 			        				new Message(
 			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
 							
+							continue;
 						}						
 						
 						// ATM will only be able to select a bank account to make transactions from or logout
@@ -439,15 +442,15 @@ public class Server {
 				        		sendMessage(
 				        				new Message(
 				        						"Server", clientSocket.getInetAddress().toString(), build, Message.Type.ACCESSBAREQGRANTED));
+				        		continue;
 			        		}
 			        		//if login failed
 			        		else{
 			        			sendMessage(
 				        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSBAREQDENIED));
+			        			continue;
 			        		}
 			        		
-			        		//go back to waiting for new message
-			        		continue;
 						}
 						// ATM should only be able to log out of customer account (handled before) or log in to financial account
 						// otherwise invalid
@@ -465,7 +468,7 @@ public class Server {
 								if(success) {
 									sendMessage(
 					        				new Message(
-					        						"Server", clientSocket.getInetAddress().toString(), "Money Withdrawn Successfully", Message.Type.WITHDRAWREQACCEPTED));
+					        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
 								}
 								else {
 									sendMessage(
@@ -477,10 +480,10 @@ public class Server {
 								deposit(BA, message.getData());
 								sendMessage(
 				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.DEPOSITDONE));
+				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
 								break;
 							default: /*invalid command*/
-								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid Request Sent", Message.Type.INVALID));
 								break;
 						}
 					}
@@ -521,22 +524,25 @@ public class Server {
 		// schedules ATM refill to run once daily at midnight, starting from next midnight 
 		// reference: stackoverflow
 		// correctness not verified
-		private void dailyUpkeep() {
-			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-			long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
-			try{
-				scheduler.scheduleAtFixedRate(
-					//this inner try catch is required according to eclipse
-					()->{try {
-						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}},
-					midnight, 1440, TimeUnit.MINUTES);
-			}catch(NullPointerException e) {
+		// only uncomment when ATM code to handle it is incorporated to prevent mismatch of messages in ATM-Server comms
+		// TODO: ensure this doresn't send messages to Teller
+		// private void dailyUpkeep() {
+		// 	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+		// 	long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
+		// 	try{
+		// 		scheduler.scheduleAtFixedRate(
+		// 			//this inner try catch is required according to eclipse
+		// 			()->{try {
+		// 				sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
+		// 			} catch (IOException e) {
+		// 				e.printStackTrace();
+		// 			}},
+		// 			midnight, 1440, TimeUnit.MINUTES);
+		// 	}catch(NullPointerException e) {
 				
-			}
-		}
+		// 	}
+		// }
+
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -566,7 +572,6 @@ public class Server {
 			String password = "";
 			ArrayList<String> bankAccounts = new ArrayList<String>();
 			
-
 			
 			// compare each file in the list
 			for (File file : list) {
@@ -588,7 +593,7 @@ public class Server {
 			                    String second = temp[1];
 			                    
 			                    if(frst.equalsIgnoreCase("Access_status:")) {
-			                    	if(second.equalsIgnoreCase("0")) {
+			                    	if(second.equalsIgnoreCase("0") || second.equalsIgnoreCase("false")) {
 			                    		access = false;
 			                    	}
 			                    	else {
@@ -596,19 +601,19 @@ public class Server {
 			                    	}
 			                    	
 			                    }
-			                    if(frst.equalsIgnoreCase("Name:")){
+			                    else if(frst.equalsIgnoreCase("Name:")){
 			                    	name = second;
 			                    }
-								if(frst.equalsIgnoreCase("Phone_number:")){
+			                    else if(frst.equalsIgnoreCase("Phone_number:")){
 									phoneNumber = second;
 								}
-								if(frst.equalsIgnoreCase("Address:")){
+			                    else if(frst.equalsIgnoreCase("Address:")){
 									address = second;
 								}
-								if(frst.equalsIgnoreCase("Password:")){
+			                    else if(frst.equalsIgnoreCase("Password:")){
 									password = second;
 								}
-								if(frst.equalsIgnoreCase("Bank_accounts:")){
+			                    else if(frst.equalsIgnoreCase("Bank_accounts:")){
 									String[] accs = second.split(",");
 									for(String item : accs) {
 										bankAccounts.add(item);

@@ -298,6 +298,7 @@ public class ATM {
 		
 		// if the response message is of type DEPOSIT_DONE, then ... (?)
 		if (serverResponse.getType() == Message.Type.DEPOSITDONE) {
+			
 			// TODO - ???
 		}
 		// else, if the response message is of type INVALID, then trigger an error pop-up on the GUI

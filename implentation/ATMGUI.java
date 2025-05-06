@@ -326,7 +326,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 								isGood = false;
 							}
 						}
-						if (Character.isDigit(token)) {
+						if (!Character.isDigit(token)) {
 							isGood = false;
 						}
 					}
@@ -357,6 +357,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			
 			this.add(buttonPanel);
 		}
+		public String getInput() {
+			return amountField.getText();
+		}
 		
 		public void clearFields() {
 			amountField.setText("");
@@ -383,8 +386,6 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String amount = amountField.getText();
-					// performing logic in GUI - seems bad
-					// maybe withdraw should accept string input and parse there?
 					int dotCount = 0;
 					boolean isGood = true;
 					for(char token : amount.toCharArray()) {
@@ -394,10 +395,11 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 								isGood = false;
 							}
 						}
-						if(Character.isDigit(token)) {
+						if(!Character.isDigit(token)) {
 							isGood = false;
 						}
 					}
+					System.out.println(isGood);
 					if(isGood) {
 						try {
 							atm.withdraw(Double.valueOf(amount));
@@ -425,7 +427,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			
 			this.add(buttonPanel);
 		}
-		
+		public String getInput() {
+			return "-"+amountField.getText();
+		}
 		public void clearFields() {
 			amountField.setText("");
 		}
@@ -491,7 +495,11 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 		}
 		
 		public void setContents(String amount) {
-			balance.setText(amount);			// (consider) should '$' symbol be added here or before?
+			balance.setText(amount);			
+		}
+		
+		public void updateContents(String amount) {
+			balance.setText(String.valueOf(Double.valueOf(balance.getText()) + Double.valueOf(amount)));
 		}
 		
 		public void clearFields() {
@@ -631,6 +639,10 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			for (int i = 0; i < data.length; ++i) {
 				bankAccountModel.add(i, data[i]);
 			}
+		}
+		
+		public String getSelectedBankAccount() {
+			return bankAccountList.getSelectedValue();
 		}
 		
 		public void clearFields() {
@@ -773,9 +785,8 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			case LOGINDENIED: switchPanel(loginFailPanel); break;
 			case ACCESSCAREQGRANTED:
 				String[] caData = msg.getData().split("\n");
-				if(caData.length >= 6) {
-					System.out.println(caData[5]);
-					String[] accounts = caData[5].split(",");
+				if(caData.length == 4) {
+					String[] accounts = caData[3].split(",");
 					customerPanel.setContents(accounts);
 				}else {
 					customerPanel.clearFields();
@@ -784,16 +795,19 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				break;
 			case ACCESSBAREQGRANTED:
 				String[] baData = msg.getData().split("\n");
-				//bankAccountPanel.setContents(baData[1]);
-				currentBalancePanel.setContents(baData[3]);
-				transactionHistoryPanel.setContents(baData[4].split(","));
+				bankAccountPanel.setContents(customerPanel.getSelectedBankAccount());
+				currentBalancePanel.setContents((baData[3].split(" ")[1]));
+				transactionHistoryPanel.setContents((baData[4].split(" "))[1].split(","));
+				
 				switchPanel(bankAccountPanel);
 				break;
-			case DEPOSITDONE:
+			case DEPOSITREQACCEPTED:
+				currentBalancePanel.updateContents(msg.getData());
 				depositPanel.clearFields();
 				switchPanel(depositGoodPanel);
 				break;
-			case WITHDRAWDONE: 
+			case WITHDRAWREQACCEPTED: 
+				currentBalancePanel.updateContents("-"+msg.getData());
 				withdrawPanel.clearFields();
 				switchPanel(withdrawGoodPanel);
 				break;
