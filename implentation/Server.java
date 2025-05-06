@@ -219,7 +219,7 @@ public class Server {
 		        	}
 		        	
 		        	
-		        	if (VERIFIED && isTeller && !LOGGEDIN && message.getType() == Message.Type.ACCESSCAREQ) {
+		        	if (VERIFIED && isTeller && message.getType() == Message.Type.ACCESSCAREQ) {
 		        	    String custUsername = message.getData();
 		        	    File custFile = new File(customerAccounts, custUsername + ".txt");
 		        	    if (!custFile.exists()) {

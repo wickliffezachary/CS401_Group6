@@ -1,5 +1,0 @@
-Account_type: CHECKING
-Date_created: 2025-05-05 20:55:42
-Users: [MaryJane1234]
-Current_balance: 0.0
-Transaction_history: 

@@ -1,0 +1,6 @@
+Access_status: false
+Name: ChrisSmith
+Phone_number: 12345
+Address: hayward street
+Password: abcde
+Bank_accounts: [Bank_accounts: [], 10]

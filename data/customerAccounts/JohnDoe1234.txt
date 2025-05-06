@@ -1,6 +1,6 @@
-Access_status: true
+Access_status: false
 Name: JohnDoe
 Phone_number: 1234
 Address: 123 street
 Password: abcd
-Bank_accounts: [Bank_accounts: Bank_accounts: [], 10, 20]
+Bank_accounts: Bank_accounts: [Bank_accounts: Bank_accounts: [], 10, 20],20
