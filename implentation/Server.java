@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 
+
 public class Server {
 
 	// the File fields below are where account information is stored in our file system
@@ -108,7 +109,7 @@ public class Server {
 		private final Socket clientSocket;
 		private final ObjectInputStream objectInputStream;
 		private final ObjectOutputStream objectOutputStream;
-
+		private String currentAccessor;
 		// ClientHandler - Constructor
 		// this will initialize the ClientSocket and the input/output streams
 		public ClientHandler(Socket socket) throws IOException {
@@ -217,6 +218,89 @@ public class Server {
 		        	    continue;
 		        	}
 
+		        			        	
+		        	
+		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATECACCREQ) {
+                //split recieved string
+		        	    String[] p = message.getData().split("\n", 5);
+                //sort the data
+		        	    if (p.length == 5) {
+		        	        String first   = p[0].trim();
+		        	        String last    = p[1].trim();
+		        	        String phone   = p[2].trim();
+		        	        String address = p[3].trim();
+		        	        String pswd    = p[4].trim();
+		        	        // filename = first+last+phone
+		        	        String username = first + last + phone;
+		        	        File f = new File(bankAccounts, username + ".txt");
+
+                      //verify if file exists
+		        	        if (f.exists()) {
+                        //if it does tell them we wont create it
+		        	            sendMessage(new Message("Server",
+		        	                clientSocket.getInetAddress().toString(),
+		        	                "Customer already exists",
+		        	                Message.Type.CREATECACCDONE));
+		        	        } 
+                    //otherwise create  new account
+                    else {
+                      //create the file to write to
+                      f.createNewFile();
+                      //create the object to store the data in
+                      //dont assign to user because we are not logging in
+                      CustomerAccount temp = new CustomerAccount(First+last, phone, address, pswd);
+                      temp.save();
+
+		        	            sendMessage(new Message("Server",
+		        	                clientSocket.getInetAddress().toString(),
+		        	                "Customer created: " + username,
+		        	                Message.Type.CREATECACCDONE));
+		        	        }
+		        	    } else {
+		        	        sendMessage(new Message("Server",
+		        	            clientSocket.getInetAddress().toString(),
+		        	            "Bad data for create customer",
+		        	            Message.Type.ERROR));
+		        	    }
+		        	    continue;
+		        	}
+
+		        	
+		        	// Handle bank account creation 
+		        	if (VERIFIED && isTeller && LOGGEDIN && message.getType() == Message.Type.CREATEBACCREQ) {
+		        	    // data = "customerUsername,accountType"
+		        	    String[] parts = message.getData().split(",", 2);
+
+		        	    // simple mapping for account type (default SAVINGS)
+		        	    BankAccount.AccType typeEnum = BankAccount.AccType.SAVINGS;
+		        	    if ("CHECKING".equalsIgnoreCase(parts[1].trim())) {
+		        	        typeEnum = BankAccount.AccType.CHECKING;
+		        	    }
+
+		        	    BankAccount ba = new BankAccount(parts[0], typeEnum);
+		        	    ba.save();  // creates data/bankAccounts/<accountID>.txt
+
+		        	    // manual update of customer's file without load()
+		        	    File custFile = new File(customerAccounts, parts[0] + ".txt");
+		        	    List<String> lines = Files.readAllLines(custFile.toPath());
+		        	    while (lines.size() < 6) lines.add("");  // ensure 6 lines
+		        	    String related = lines.get(5).trim();
+		        	    if (related.isEmpty()) {
+		        	        related = ba.getAccountID();
+		        	    } else {
+		        	        related = related + "," + ba.getAccountID();
+		        	    }
+		        	    lines.set(5, related);
+		        	    Files.write(custFile.toPath(), lines);
+
+		        	    sendMessage(new Message(
+		        	        "Server",
+		        	        clientSocket.getInetAddress().toString(),
+		        	        "Bank account created: " + ba.getAccountID(),
+		        	        Message.Type.CREATEBACCDONE
+		        	    ));
+		        	    continue;
+		        	}
 		        	if (message.getType() == Message.Type.LOGOUTREQTELLER
 		        			|| message.getType() == Message.Type.LOGOUTREQATM) {
 		        		isTeller   = false;

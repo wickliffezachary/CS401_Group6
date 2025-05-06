@@ -13,8 +13,12 @@ public class Teller {
 	private String id;
 	private static int count = 0;
 	private boolean loggedInTeller;
+
+	private String currentUsername;
+	private BankAccount currentBankAccount;
 	private boolean connected;	//is Teller connected to Server?
 
+	
 	public interface TellerListener {
         void receivedMessage(Message msg);
 	}
@@ -117,9 +121,13 @@ public class Teller {
 	
 	// TODO
 	// method that allows a teller to select a customer account
-	public void selectCustomer() {
-		
+	public void selectCustomer(String customerUsername) throws IOException {
+	    this.currentUsername = customerUsername;
+	    sendMessage(new Message(id, "Server", customerUsername, Message.Type.ACCESSCAREQ));
+	    Message resp = parseReceivedMessage();
+	    if (listener != null) listener.receivedMessage(resp);
 	}
+	
 	
 	// TODO
 	// method that allows a teller to exit a customer account
@@ -129,8 +137,8 @@ public class Teller {
 	
 	// TODO
 	// method that allows a teller to select a customer's financial account
-	public void selectAccount() {
-		
+	public void selectAccount(String baId) throws IOException, ClassNotFoundException {
+	    currentBankAccount = BankAccount.loadFromFile(baId);
 	}
 	
 	// TODO
@@ -163,16 +171,26 @@ public class Teller {
 		
 	}
 	
-	// TODO
 	// method that allows a teller to create a new customer account for a customer
-	public void createNewCustomer() {
-		
+	public void createNewCustomer(String first, String last,String phone, String address, String password) throws IOException {
+		String data = String.join(",", first, last, phone, address, password);
+		sendMessage(new Message(id, "Server", data, Message.Type.CREATCBACCREQ));
+		Message resp = parseReceivedMessage();
+		if (listener != null) listener.receivedMessage(resp);
 	}
 	
 	// TODO
 	// method that allows a teller to create a new financial account for a customer
-	public void createNewBankAccount() {
-		
+	public void createNewBankAccount(String accType) throws IOException {
+	    String data = currentUsername + "," + accType;
+	    sendMessage(new Message(id, "Server", data, Message.Type.CREATEBACCREQ));
+	    Message resp = parseReceivedMessage();
+	    if (listener != null) listener.receivedMessage(resp);
+	}
+
+	
+	public BankAccount getCurrentBankAccount() {
+	    return currentBankAccount;
 	}
 	
 	// TODO
@@ -195,8 +213,11 @@ public class Teller {
 	
 	// TODO
 	// method that allows a teller to update a customer's account information
-	public void updateCustomerInfo() {
-		
+	public void updateCustomerInfo(String field, String value) throws IOException {
+	    String data = currentUsername + "," + field + "," + value;
+	    sendMessage(new Message(id, "Server", data, Message.Type.CHANGECUSTOMERINFOREQ));
+	    Message resp = parseReceivedMessage();
+	    if (listener != null) listener.receivedMessage(resp);
 	}
 	
 	// TODO
