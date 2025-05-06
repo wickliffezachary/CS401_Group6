@@ -3,7 +3,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays; 
 import java.util.List;
 
 public class CustomerAccount {
@@ -110,52 +109,22 @@ public class CustomerAccount {
 	}
 
 	public void updateName(String newName) {
-		//  go to each associated customer account 
-		ArrayList<String> templist = new ArrayList<>(bankAccounts);
-		while (templist.get(0)!=null) {
-			String acc = this.templist.get(0);
-			// Method 1: ideally I would want to switch access status here to make sure noone can get in 
-			// could use open file -> create obj -> users.remove(fullname+phoneNumber) >> users.add(newname+phoneNumber)
-			// USED method 1
-			String path = System.getProperty("user.dir") + "/data/bankAccounts/" + acc + ".txt";
-	        try {
-	            List<String> lines = Files.readAllLines(Paths.get(path));
-				String acs = (lines[0].split(" "))[1];
-				// check if BA is in access. if yes, skip and come back
-				// else proceed
-	            if (acs.equalsIgnoreCase("0")) //not in access
-				{
-					templist.remove(0); 
-					// create object
-					AccType t = AccType.valueOf((lines[1].split(" "))[0]); 
-					String dt (lines[2].split(" "))[0]; 
-					Date d;
-					try {
-						SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-					    d = formatter.parse(dt);
-					} catch (ParseException e) {
-					    e.printStackTrace();
-					}
-					String u = (lines[3].split(" "))[0]; 
-					String[] usplit = u.split(",");
-					ArrayList<String> usrs = new ArrayList<String>(Arrays.asList(usplit)); 
-					double cb = Double.parseDouble((lines[4].split(" "))[0]);
-					String th = (lines[5].split(" "))[0];
-					String accessor = this.fullName;
-					BankAccount ba = new BankAccount(acs,acc,t,d,cb,th,usrs,accessor);
-					// remove oldname add newname
-					ba.renameUser(this.fullName+this.phoneNumber, newName+this.phoneNumber);
-				}
-				else{
-				// move it to back
-					templist.remove(0);
-					templist.add(acc);
-				}
+		//go to each associated customer account
+		for(int i=0; i<this.bankAccounts.size(); i++) {
+			//verify we dont leave array
+			if(bankAccounts.get(i)!=null) {
+				//temporarily hold account name
+				String acc = this.bankAccounts.get(i);
 				
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-				// orr Method2, eaiser method is: open file, write to file (NOT USED)
+				try {
+					BankAccount account = BankAccount.loadFromFile(acc);
+					//removes old name and changes to new name
+					account.renameUser(this.fullName+this.phoneNumber, newName+this.phoneNumber);	//this also saves to file
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		// and now we can change name
 		this.fullName = newName;
@@ -164,54 +133,24 @@ public class CustomerAccount {
 	
 	// TODO
 	public void updatePhoneNumber(String newNumber) {
-		//  go to each associated customer account 
-		ArrayList<String> templist = new ArrayList<>(bankAccounts);
-		while (templist.get(0)!=null) {
-			String acc = this.templist.get(0);
-			// Method 1: ideally I would want to switch access status here to make sure noone can get in 
-			// could use open file -> create obj -> users.remove(fullname+phoneNumber) >> users.add(newname+phoneNumber)
-			// USED method 1
-			String path = System.getProperty("user.dir") + "/data/bankAccounts/" + acc + ".txt";
-	        try {
-	            List<String> lines = Files.readAllLines(Paths.get(path));
-				String acs = (lines[0].split(" "))[1];
-				// check if BA is in access. if yes, skip and come back
-				// else proceed
-	            if (acs.equalsIgnoreCase("0")) //not in access
-				{
-					templist.remove(0); 
-					// create object
-					AccType t = AccType.valueOf((lines[1].split(" "))[0]); 
-					String dt (lines[2].split(" "))[0]; 
-					Date d;
-					try {
-						SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-					    d = formatter.parse(dt);
-					} catch (ParseException e) {
-					    e.printStackTrace();
-					}
-					String u = (lines[3].split(" "))[0]; 
-					String[] usplit = u.split(",");
-					ArrayList<String> usrs = new ArrayList<String>(Arrays.asList(usplit)); 
-					double cb = Double.parseDouble((lines[4].split(" "))[0]);
-					String th = (lines[5].split(" "))[0];
-					String accessor = this.fullName;
-					BankAccount ba = new BankAccount(acs,acc,t,d,cb,th,usrs,accessor);
-					// remove oldname add newname
-					ba.renameUser(this.fullName+this.phoneNumber, this.fullName+newNumber);
-				}
-				else{
-				// move it to back
-					templist.remove(0);
-					templist.add(acc);
-				}
+		//go to each associated customer account
+		for(int i=0; i<this.bankAccounts.size(); i++) {
+			//verify we dont leave array
+			if(bankAccounts.get(i)!=null) {
+				//temporarily hold account name
+				String acc = this.bankAccounts.get(i);
 				
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-				// orr Method2, eaiser method is: open file, write to file (NOT USED)
+				try {
+					BankAccount account = BankAccount.loadFromFile(acc);
+					//removes old name and changes to new name
+					account.renameUser(this.fullName+this.phoneNumber, this.fullName+newNumber);	//this also saves to file
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
-		// and now we can change number
+		// and now we can change name
 		this.phoneNumber = newNumber;
 		save();
 	}

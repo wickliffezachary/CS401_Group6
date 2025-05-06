@@ -198,13 +198,14 @@ public class BankAccount {
 	                      + "/data/bankAccounts/"
 	                      + this.accountID
 	                      + ".txt";
+	    //TODO: this changes date created to date last modified
 	    SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	    List<String> lines = Arrays.asList(
 	        "Account_type: " + this.accType,
 	        "Date_created: " + fmt.format(this.dateCreated),
 	        "Users: " + this.users.toString(),
 	        "Current_balance: " + this.currBalance,
-	        "Transaction_history: " + this.transactionHist
+	        "Transaction_history: \n" + this.transactionHist
 	    );
 	    try {
 	        Files.write(Paths.get(sourceName), lines);

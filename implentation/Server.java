@@ -130,7 +130,7 @@ public class Server {
 			BankAccount BankAcc = null;			//updated method of tracking current bank account	//TODO: use this
 			String BA = "";						//keeps track of current bank account
 
-			dailyUpkeep();
+//			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
 		        while((message = (Message) objectInputStream.readObject()) != null) {
