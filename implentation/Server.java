@@ -248,7 +248,7 @@ public class Server {
                       f.createNewFile();
                       //create the object to store the data in
                       //dont assign to user because we are not logging in
-                      CustomerAccount temp = new CustomerAccount(First+last, phone, address, pswd);
+                      CustomerAccount temp = new CustomerAccount(first+last, phone, address, pswd);
                       temp.save();
 
 		        	            sendMessage(new Message("Server",
