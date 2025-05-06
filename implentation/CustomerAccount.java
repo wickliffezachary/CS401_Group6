@@ -268,7 +268,13 @@ public class CustomerAccount {
 		try{
 			FileWriter writer = new FileWriter(sourceName);
 			writer.write("Access_status: " + this.inAccess + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
-				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
+				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: ");
+			if(bankAccounts.size() > 0) {
+				writer.write(bankAccounts.get(0));
+				for(int i = 1; i < bankAccounts.size(); ++i) {
+					writer.write("," + bankAccounts.get(i));
+				}
+			}
 			writer.close();
 		}
 		catch (IOException e){

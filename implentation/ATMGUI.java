@@ -773,9 +773,8 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			case LOGINDENIED: switchPanel(loginFailPanel); break;
 			case ACCESSCAREQGRANTED:
 				String[] caData = msg.getData().split("\n");
-				if(caData.length >= 6) {
-					System.out.println(caData[5]);
-					String[] accounts = caData[5].split(",");
+				if(caData.length == 4) {
+					String[] accounts = caData[3].split(",");
 					customerPanel.setContents(accounts);
 				}else {
 					customerPanel.clearFields();
