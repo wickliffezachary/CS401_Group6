@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.*;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
@@ -12,7 +11,6 @@ public class CustomerAccountTests {
 	private String phoneNumber = "5108853000";
 	private String address = "25800 Carlos Bee Blvd.";
 	private String password = "test";
-	private ArrayList<String> bankAccounts = new ArrayList<String>();
 	
 	@Test
 	public void ConstructorTest() {
