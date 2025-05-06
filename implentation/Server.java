@@ -221,9 +221,9 @@ public class Server {
 		        			        	
 		        	
 		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATECACCREQ) {
-                //split recieved string
+		        		//split recieved string
 		        	    String[] p = message.getData().split("\n", 5);
-                //sort the data
+		        	    //sort the data
 		        	    if (p.length == 5) {
 		        	        String first   = p[0].trim();
 		        	        String last    = p[1].trim();
@@ -248,7 +248,7 @@ public class Server {
                       f.createNewFile();
                       //create the object to store the data in
                       //dont assign to user because we are not logging in
-                      CustomerAccount temp = new CustomerAccount(First+last, phone, address, pswd);
+                      CustomerAccount temp = new CustomerAccount(first + last, phone, address, pswd);
                       temp.save();
 
 		        	            sendMessage(new Message("Server",
