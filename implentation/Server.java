@@ -221,48 +221,50 @@ public class Server {
 		        			        	
 		        	
 		        	if (VERIFIED && isTeller && message.getType() == Message.Type.CREATECACCREQ) {
-                //split recieved string
-		        	    String[] p = message.getData().split("\n", 5);
-                //sort the data
-		        	    if (p.length == 5) {
-		        	        String first   = p[0].trim();
-		        	        String last    = p[1].trim();
-		        	        String phone   = p[2].trim();
-		        	        String address = p[3].trim();
-		        	        String pswd    = p[4].trim();
-		        	        // filename = first+last+phone
-		        	        String username = first + last + phone;
-		        	        File f = new File(bankAccounts, username + ".txt");
+		        		//split recieved string
+		        		String[] p = message.getData().split("\n", 5);
+		        		//sort the data
+		        		if (p.length == 5) {
+		        			String first   = p[0].trim();
+		        			String last    = p[1].trim();
+		        			String phone   = p[2].trim();
+		        			String address = p[3].trim();
+		        			String pswd    = p[4].trim();
+		        			// filename = first+last+phone
+		        			String username = first + last + phone;
+		        			File f = new File(bankAccounts, username + ".txt");
 
-                      //verify if file exists
-		        	        if (f.exists()) {
-                        //if it does tell them we wont create it
-		        	            sendMessage(new Message("Server",
-		        	                clientSocket.getInetAddress().toString(),
-		        	                "Customer already exists",
-		        	                Message.Type.CREATECACCDONE));
-		        	        } 
-                    //otherwise create  new account
-                    else {
-                      //create the file to write to
-                      f.createNewFile();
-                      //create the object to store the data in
-                      //dont assign to user because we are not logging in
-                      CustomerAccount temp = new CustomerAccount(first+last, phone, address, pswd);
-                      temp.save();
+		        			//verify if file exists
+		        			if (f.exists()) {
+		        				//if it does tell them we wont create it
+		        				sendMessage(new Message("Server",
+		        						clientSocket.getInetAddress().toString(),
+		        						"Customer already exists",
+		        						Message.Type.CREATECACCDONE));
+		        				continue;
+		        			} 
+		        			//otherwise create  new account
+		        			else {
+		        				//create the file to write to
+		        				f.createNewFile();
+		        				//create the object to store the data in
+		        				//dont assign to user because we are not logging in
+		        				CustomerAccount temp = new CustomerAccount(first+last, phone, address, pswd);
+		        				temp.save();
 
-		        	            sendMessage(new Message("Server",
-		        	                clientSocket.getInetAddress().toString(),
-		        	                "Customer created: " + username,
-		        	                Message.Type.CREATECACCDONE));
-		        	        }
-		        	    } else {
-		        	        sendMessage(new Message("Server",
-		        	            clientSocket.getInetAddress().toString(),
-		        	            "Bad data for create customer",
-		        	            Message.Type.ERROR));
-		        	    }
-		        	    continue;
+		        				sendMessage(new Message("Server",
+		        						clientSocket.getInetAddress().toString(),
+		        						"Customer created: " + username,
+		        						Message.Type.CREATECACCDONE));
+		        				continue;
+		        			}
+		        		} else {
+		        			sendMessage(new Message("Server",
+		        					clientSocket.getInetAddress().toString(),
+		        					"Bad data for create customer",
+		        					Message.Type.ERROR));
+		        		}
+		        		continue;
 		        	}
 
 		        	
@@ -311,7 +313,7 @@ public class Server {
 		        			//TODO: logout CA, this includes resetting the access modifier
 		        		}
 		        		sendMessage(new Message("Server",clientSocket.getInetAddress().toString(),"Logout successful",Message.Type.LOGOUTOK));
-		        		break;  // exit
+		        		continue;// exit
 		        	}
 		        	
 		        	
@@ -372,9 +374,10 @@ public class Server {
 		        			user = null;			//we are no longer logged in
 		        			LOGGEDIN = false;		//reflect it
 		        			sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA granted", Message.Type.EXITCAREQGRANTED));
-		        			
+		        			continue;
 						}else {
 							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Exit CA denied", Message.Type.EXITCAREQDENIED));
+							continue;
 						}
 					}
 
@@ -385,7 +388,7 @@ public class Server {
 							case "DEPOSITREQ": break;
 							default: /*invalid command*/
 								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-								break;
+								continue;
 						}
 					}
 //					--------------------------------------------------TELLER COMMANDS ABOVE---------------------------------------------------------
@@ -403,6 +406,7 @@ public class Server {
 			        				new Message(
 			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
 							
+							continue;
 						}						
 						
 						// ATM will only be able to select a bank account to make transactions from or logout
@@ -465,23 +469,23 @@ public class Server {
 								if(success) {
 									sendMessage(
 					        				new Message(
-					        						"Server", clientSocket.getInetAddress().toString(), "Money Withdrawn Successfully", Message.Type.WITHDRAWREQACCEPTED));
+					        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
 								}
 								else {
 									sendMessage(
 					        				new Message(
 					        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
 								}
-								break;
+								continue;
 							case "DEPOSITREQ":
 								deposit(BA, message.getData());
 								sendMessage(
 				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.DEPOSITDONE));
-								break;
+				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
+								continue;
 							default: /*invalid command*/
 								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-								break;
+								continue;
 						}
 					}
 
