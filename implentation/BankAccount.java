@@ -38,7 +38,7 @@ public class BankAccount {
 	// BankAccount - Constructor
 	// this constructor is used when loading from file
 	// accessor is customerAccount which we're in when we create this object
-	/*public BankAccount(String access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
+	public BankAccount(Boolean access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
 		this.inAccess = access;
 		this.accountID = accid;
 		this.accType = t;
@@ -55,7 +55,6 @@ public class BankAccount {
 			this.currentAccessor = accessor; 
 		}
 	}
-	 */
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public BankAccount() {
@@ -102,7 +101,7 @@ public class BankAccount {
 	}
 	
 	public String getHistory() {
-		return this.tranctionHist;
+		return this.transactionHist;
 	}
 	
 	public AccType getType() {
@@ -169,7 +168,7 @@ public class BankAccount {
 	    ba.dateCreated = dateCreated;
 	    ba.users = users;
 	    ba.currBalance = currBalance;
-	    ba.tranctionHist = tranHist;
+	    ba.transactionHist = tranHist;
 	    return ba;
 	}
 
@@ -179,13 +178,13 @@ public class BankAccount {
 
 	public void deposit(double amount) {
 	    this.currBalance += amount;
-	    this.tranctionHist += "Deposited: " + amount + "\n";
+	    this.transactionHist += "Deposited: " + amount + "\n";
 	    save();
 	}
 
 	public void withdraw(double amount) {
 	    this.currBalance -= amount;
-	    this.tranctionHist += "Withdrew: " + amount + "\n";
+	    this.transactionHist += "Withdrew: " + amount + "\n";
 	    save();
 	}
 
@@ -204,7 +203,7 @@ public class BankAccount {
 	        "Date_created: " + fmt.format(this.dateCreated),
 	        "Users: " + this.users.toString(),
 	        "Current_balance: " + this.currBalance,
-	        "Transaction_history: " + this.tranctionHist
+	        "Transaction_history: " + this.transactionHist
 	    );
 	    try {
 	        Files.write(Paths.get(sourceName), lines);

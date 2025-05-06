@@ -14,7 +14,7 @@ public class CustomerAccount {
 	private ArrayList<String> bankAccounts;
 	private String password;
 	private boolean inAccess = false;
-	private BankAccount bankAccInUse = null;
+//	private BankAccount bankAccInUse = null;
 //	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can nt if file is in access
 	
 	// CustomerAccount - Constructor
@@ -38,9 +38,9 @@ public class CustomerAccount {
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.password = password;
-    this.bankAccounts = bankAccounts;
+		this.bankAccounts = bankAccounts;
     
-    //we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
+		//we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
 // 		this.bankAccounts = new ArrayList<String>();
 // 		for (int i = 0; i < bankAccounts.size(); i++) {
 // 		      this.bankAccounts.add(bankAccounts.get(i));
