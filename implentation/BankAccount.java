@@ -191,6 +191,7 @@ public class BankAccount {
 	    //TODO: this changes date created to date last modified
 	    SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	    List<String> lines = Arrays.asList(
+	    	"Access_status: " + ((this.inAccess) ? "1" : "0"),
 	        "Account_type: " + this.accType,
 	        "Date_created: " + fmt.format(this.dateCreated),
 	        "Users: " + this.users.toString(),

@@ -461,30 +461,32 @@ public class Server {
 							continue;
 						}		        		
 
-						
-						switch(message.getType().name()) {
-							case "WITHDRAWREQ":
-								Boolean success = withdraw(BA, message.getData());
-								if(success) {
-									sendMessage(
-					        				new Message(
-					        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
-								}
-								else {
-									sendMessage(
-					        				new Message(
-					        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
-								}
-								break;
-							case "DEPOSITREQ":
-								deposit(BA, message.getData());
+						if(AccessingBankAccount && message.getType() == Message.Type.WITHDRAWREQ) {
+							Boolean success = withdraw(BA, message.getData());
+							if(success) {
 								sendMessage(
 				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
-								break;
-							default: /*invalid command*/
+				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
+								continue;
+							}
+							else {
+								sendMessage(
+				        				new Message(
+				        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
+								continue;
+							}
+						}
+						
+						if(AccessingBankAccount && message.getType() == Message.Type.DEPOSITREQ) {
+							deposit(BA, message.getData());
+							sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
+							continue;
+						}
+						else { /*invalid command*/
 								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid Request Sent", Message.Type.INVALID));
-								break;
+								continue;
 						}
 					}
 
@@ -492,7 +494,7 @@ public class Server {
 					
 					// this will be below all other request types and should only be reachable
 					// if a message with an incorrect or invalid type is sent
-					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Final Error Boss", Message.Type.INVALID));
 					
 				} // end 'while'
 			} // end 'try'
@@ -515,6 +517,10 @@ public class Server {
 				}
 				if(BankAcc != null) {
 					//TODO: free account based on class
+					if(BankAcc.checkInActiveAccess()) {
+						//free up access to the account
+						BankAcc.switchAccess();
+					}
 				}
 	        }
 		}
@@ -724,10 +730,19 @@ public class Server {
 						List<String> lines = new ArrayList<>();
 						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 							String line;
+							reader.readLine();
+							Boolean skipSecond = false;
 							while ((line = reader.readLine()) != null) {
 			                    String[] temp = line.split(" ");
 			                    String frst = temp[0];
-			                    String second = temp[1];
+			                    String second = "";
+			                    //this is to prevent crashing just in case
+			                    if (frst.equalsIgnoreCase("Transaction_history:")){
+			                    	skipSecond = true;
+			                    }
+			                    if(!skipSecond) {
+			                    	second = temp[1];
+			                    }
 			                    if (frst.equalsIgnoreCase("Current_balance:")) {
 			                        double bal = Double.parseDouble(second);
 			                        //if the current balance is greater than the withdraw amount
@@ -771,10 +786,21 @@ public class Server {
 						List<String> lines = new ArrayList<>();
 						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 							String line;
+							reader.readLine();
+							//skip looking for the second variable in the line after some lines to prevent crashing
+							Boolean skipSecond = false;
 							while ((line = reader.readLine()) != null) {
 			                    String[] temp = line.split(" ");
 			                    String frst = temp[0];
-			                    String second = temp[1];
+			                    String second = "";
+			                    //this is to prevent crashing just in case
+			                    if (frst.equalsIgnoreCase("Transaction_history:")){
+			                    	skipSecond = true;
+			                    }
+			                    if(!skipSecond) {
+			                    	second = temp[1];
+			                    }
+			                    
 			                    if (frst.equalsIgnoreCase("Current_balance:")) {
 			                        double bal = Double.parseDouble(second);
 			                        lines.add(frst + " " + String.valueOf(bal + Double.parseDouble(amount)));

@@ -2,5 +2,5 @@ Access_status: 0
 Account_type: SAVINGS
 Date_created: 04/20/2025
 Users: Admin0001112222
-Current_balance: 1000.00
+Current_balance: 1000.0
 Transaction_history:

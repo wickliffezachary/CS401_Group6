@@ -53,7 +53,6 @@ public class CustomerAccount {
 // 			switchAccess(); // change access status here and on file
 // 			this.currentAccessor = accessor; 
 // 		}
- 	}
 
 	// CustomerAccount - Default Constructor
 	// this constructor is here so that the code does not crash
