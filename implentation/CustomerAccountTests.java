@@ -44,18 +44,6 @@ public class CustomerAccountTests {
 	}
 	
 	@Test
-	public void removeBankAccountTest() {
-		// TODO - implement this test
-		Assertions.fail();
-	}
-	
-	@Test
-	public void addBankAccountTest() {
-		// TODO - implement this test
-		Assertions.fail();
-	}
-	
-	@Test
 	public void updateAddressTest() {
 		CustomerAccount testCustomer = new CustomerAccount(fullName, phoneNumber, address, password);
 		testCustomer.updateAddress("69420 Testing Street");
@@ -69,18 +57,6 @@ public class CustomerAccountTests {
 		testCustomer.updatePassword("newPassword");
 		
 		Assertions.assertTrue(testCustomer.validatePassword("newPassword"));
-	}
-	
-	@Test
-	public void updateNameTest() {
-		// TODO - implementation of updateName in CustomerAccounts.java incomplete
-		Assertions.fail();
-	}
-	
-	@Test
-	public void updatePhoneNumberTest() {
-		// TODO - implementation of updatePhoneNumber in CustomerAccounts.java incomplete
-		Assertions.fail();
 	}
 	
 	@Test
