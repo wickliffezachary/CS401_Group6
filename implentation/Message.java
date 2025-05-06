@@ -24,7 +24,7 @@ public class Message implements Serializable{
 		REMOVEUSERREQ, REMOVEUSERDONE, 						// unlink BA to CA messages
 
 		// creating and deleting account messages
-		CREATCBACCREQ, CREATECACCDONE, 						// create customer account messages
+		CREATECACCREQ, CREATECACCDONE, 						// create customer account messages
 		DELCAREQ, DELCADONE, 								// close customer account messages
 		CREATEBACCREQ, CREATEBACCDONE, 						// create bank account messages
 		DELBAREQ, DELBADONE, 								// close bank account messages

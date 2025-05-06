@@ -614,7 +614,7 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						atm.logout();
+						atm.logoutCustomer();
 					} catch (IOException e1) {e1.printStackTrace();}
 				}
 			});
@@ -757,8 +757,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 	@Override
 	// this method is where we receive messages from ATM from server
 	public void receivedMessage(Message msg) {
+		System.out.println("type:"+msg.getType().name()+",msg text:"+msg.getData());
 		switch(msg.getType()) {
-			case LOGOUTOK: 
+			case EXITCAREQGRANTED: 
 				// clear all user data from panels
 				loginPanel.clearFields();
 				customerPanel.clearFields();
@@ -769,23 +770,23 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				transactionHistoryPanel.clearFields();
 				switchPanel(promptLoginPanel);
 				break;
-			case ACCESSCAREQGRANTED: 
-				String search = "BankAccounts:";
-				int pos = msg.getData().indexOf(search);
-				if (pos > -1) {
-					pos += search.length();
-					String[] accounts = msg.getData().substring(pos).split(",");
+			case LOGINDENIED: switchPanel(loginFailPanel); break;
+			case ACCESSCAREQGRANTED:
+				String[] caData = msg.getData().split("\n");
+				if(caData.length >= 6) {
+					System.out.println(caData[5]);
+					String[] accounts = caData[5].split(",");
 					customerPanel.setContents(accounts);
-				}
-				else {
+				}else {
 					customerPanel.clearFields();
 				}
 				switchPanel(customerPanel); 
 				break;
 			case ACCESSBAREQGRANTED:
-				bankAccountPanel.setContents(searchStringElement(msg.getData(), "AccountNumber:"));
-				currentBalancePanel.setContents(searchStringElement(msg.getData(), "Balance:"));
-				transactionHistoryPanel.setContents(searchStringArray(msg.getData(), "TransactionHistory:{"));
+				String[] baData = msg.getData().split("\n");
+				//bankAccountPanel.setContents(baData[1]);
+				currentBalancePanel.setContents(baData[3]);
+				transactionHistoryPanel.setContents(baData[4].split(","));
 				switchPanel(bankAccountPanel);
 				break;
 			case DEPOSITDONE:

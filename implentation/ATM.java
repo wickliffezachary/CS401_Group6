@@ -24,6 +24,16 @@ public class ATM {
     private double cashInMachine = 0.0;
 	private static int count = 0;
 	private boolean loggedInUser;
+	private boolean connected;	//is ATM connected to server?
+	
+	//constructor for unit testing
+	public ATM(double initialReserve) {
+		count++;
+		id = "ATM" + count;
+		loggedInUser = false;
+		cashInMachine = initialReserve;
+		connected = false;
+	}
 	
     // ATM - Constructor
 	// when an ATM is created, connect it to the server and listener
@@ -37,17 +47,22 @@ public class ATM {
 		this.id = "ATM" + count;
 		this.loggedInUser = false;
 		this.cashInMachine=initialReserve;
+
+		connected = true;
+		
+		//login request
+		sendMessage(new Message(id, "Server", "", Message.Type.LOGINREQATM));
+		parseReceivedMessage();
 	}
 
 	// helper method for sending messages to server
 	private void sendMessage(Message message) throws IOException {
-		
+		if(!connected) {return;}	//if ATM is not connected to server, do not attempt to send message
 		// write an output object to the server
 		objectOutputStream.writeObject(message);
 		
 		// flush the output stream to keep it clear
 		objectOutputStream.flush();
-	
 	}
 	
 	// helper method to read a received message 
@@ -57,8 +72,9 @@ public class ATM {
 		try {
 			// read the received message
 			temp = (Message) objectInputStream.readObject();
+			
 			// //pass message to GUI so GUI can update accordingly
-			// listener.receivedMessage(temp);
+			listener.receivedMessage(temp);
 		}
 		catch (ClassNotFoundException error) {
 			error.printStackTrace();
@@ -70,24 +86,25 @@ public class ATM {
 	// method that logs a user in
 	public void login(String firstName, String lastName,String phoneNumber, String password) throws IOException {
 		// received the customer's name, phone number, and password from the GUI 
-		String loginCreds = "username=" + firstName + lastName + phoneNumber + ",password=" + password;
+		String loginCreds = firstName + lastName + phoneNumber + "," + password;
 		
 		// send a message to the server that the user is requesting to log in
-		sendMessage(new Message(id, "Server", loginCreds, Message.Type.LOGINREQATM));
+		sendMessage(new Message(id, "Server", loginCreds, Message.Type.ACCESSCAREQ));
 		
 		// wait for server response message
 		Message serverResponse = parseReceivedMessage();
 		
 		// if the response message is of type LOGIN_OK, then the user is logged in and the GUI is triggered
-		if (serverResponse.getType() == Message.Type.LOGINOK){
+		if (serverResponse.getType() == Message.Type.ACCESSCAREQGRANTED){
 			loggedInUser = true;
 			// and spawn a GUI thread for auto-logout
 			// trigger GUI to next frame and show available bank accounts
 			String acc = serverResponse.getData();
+			
 			// send these on to the GUI
 		}
 		// else, if the response message is of type LOGIN_DENIED, then the user entered incorrect credentials
-		else if (serverResponse.getType() == Message.Type.LOGINDENIED) {
+		else if (serverResponse.getType() == Message.Type.ACCESSCAREQDENIED) {
 			// trigger relevant error popup on GUI
 		}
 		// else, if the response message is of any other type
@@ -127,6 +144,11 @@ public class ATM {
 		return loggedInUser;
 	}
 	
+	public void logoutCustomer() throws IOException {
+		sendMessage(new Message(id, "Server", "Request CA exit", Message.Type.EXITCAREQ));
+		parseReceivedMessage();
+	}
+	
 	// method that allows a user to select a financial account
 	// (the account number is supplied when user action triggers GUI event that calls this method)
 	public void selectAccount(String accNum) throws IOException {
@@ -135,6 +157,8 @@ public class ATM {
 		if (!loggedInUser) {
 			return;
 		}
+		
+		
 		
 		// send a message to the server that the user is requesting to access a financial account
 		sendMessage(new Message(id, "Server", accNum, Message.Type.ACCESSBAREQ));
@@ -293,6 +317,13 @@ public class ATM {
 	// (refillAmount is sent by the server in the data field of message, extracted by the thread when message is received, and passed to this funvtion)
 	public void updateCurrReserve(double refillAmount) {
 		this.cashInMachine = refillAmount;
+	}
+	
+	public int getCount() {
+		return count;
+	}
+	public String getID() {
+		return id;
 	}
 	
 	// test method for logging in
