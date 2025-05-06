@@ -1,0 +1,6 @@
+Access_status: 0
+Name: HarvenDhanota
+Phone_number: 5108853000
+Address: 25800CarlosBeeBlvd
+Password: test
+Bank_accounts: 
