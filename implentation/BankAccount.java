@@ -32,7 +32,7 @@ public class BankAccount {
 	// BankAccount - Constructor
 	// this constructor is used when loading from file
 	// accessor is customerAccount which we're in when we create this object
-	/*public BankAccount(String access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
+	public BankAccount(boolean access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
 		this.inAccess = access;
 		this.accountID = accid;
 		this.accType = t;
@@ -49,7 +49,6 @@ public class BankAccount {
 			this.currentAccessor = accessor; 
 		}
 	}
-	 */
 	
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
