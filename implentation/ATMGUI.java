@@ -399,7 +399,6 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 							isGood = false;
 						}
 					}
-					System.out.println(isGood);
 					if(isGood) {
 						try {
 							atm.withdraw(Double.valueOf(amount));
@@ -613,7 +612,9 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
 					try {
-						atm.selectAccount(bankAccountList.getSelectedValue());
+						if(!e.getValueIsAdjusting()) {
+							atm.selectAccount(bankAccountList.getSelectedValue());
+						}
 					} catch (IOException e1) {e1.printStackTrace();}
 				}
 			});
@@ -796,8 +797,8 @@ public class ATMGUI extends JFrame implements ATM.ATMListener {
 			case ACCESSBAREQGRANTED:
 				String[] baData = msg.getData().split("\n");
 				bankAccountPanel.setContents(customerPanel.getSelectedBankAccount());
-				currentBalancePanel.setContents((baData[3].split(" ")[1]));
-				transactionHistoryPanel.setContents((baData[4].split(" "))[1].split(","));
+				currentBalancePanel.setContents((baData[4].split(" ")[1]));
+				transactionHistoryPanel.setContents((baData[5].split(" "))[1].split(","));
 				
 				switchPanel(bankAccountPanel);
 				break;
