@@ -41,6 +41,7 @@ public class CustomerAccount {
 		this.bankAccounts = bankAccounts;
     
 		//we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
+
 // 		this.bankAccounts = new ArrayList<String>();
 // 		for (int i = 0; i < bankAccounts.size(); i++) {
 // 		      this.bankAccounts.add(bankAccounts.get(i));
@@ -197,5 +198,4 @@ public class CustomerAccount {
 			e.printStackTrace();
 		}
 	}
-
 }

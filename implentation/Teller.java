@@ -174,7 +174,7 @@ public class Teller {
 	// method that allows a teller to create a new customer account for a customer
 	public void createNewCustomer(String first, String last,String phone, String address, String password) throws IOException {
 		String data = String.join(",", first, last, phone, address, password);
-		sendMessage(new Message(id, "Server", data, Message.Type.CREATCBACCREQ));
+		sendMessage(new Message(id, "Server", data, Message.Type.CREATEBACCREQ));
 		Message resp = parseReceivedMessage();
 		if (listener != null) listener.receivedMessage(resp);
 	}
