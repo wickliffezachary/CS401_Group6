@@ -1,13 +1,7 @@
-import java.util.ArrayList;
+import java.io.*;
 import java.util.*;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
-import java.time.*;
 
 public class BankAccount {
 	
@@ -56,6 +50,7 @@ public class BankAccount {
 		}
 	}
 	 */
+	
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public BankAccount() {
@@ -102,7 +97,7 @@ public class BankAccount {
 	}
 	
 	public String getHistory() {
-		return this.tranctionHist;
+		return this.transactionHist;
 	}
 	
 	public AccType getType() {
@@ -169,23 +164,19 @@ public class BankAccount {
 	    ba.dateCreated = dateCreated;
 	    ba.users = users;
 	    ba.currBalance = currBalance;
-	    ba.tranctionHist = tranHist;
+	    ba.transactionHist = tranHist;
 	    return ba;
 	}
 
-
-
-
-
 	public void deposit(double amount) {
 	    this.currBalance += amount;
-	    this.tranctionHist += "Deposited: " + amount + "\n";
+	    this.transactionHist += "Deposited: " + amount + "\n";
 	    save();
 	}
 
 	public void withdraw(double amount) {
 	    this.currBalance -= amount;
-	    this.tranctionHist += "Withdrew: " + amount + "\n";
+	    this.transactionHist += "Withdrew: " + amount + "\n";
 	    save();
 	}
 
@@ -204,7 +195,7 @@ public class BankAccount {
 	        "Date_created: " + fmt.format(this.dateCreated),
 	        "Users: " + this.users.toString(),
 	        "Current_balance: " + this.currBalance,
-	        "Transaction_history: " + this.tranctionHist
+	        "Transaction_history: " + this.transactionHist
 	    );
 	    try {
 	        Files.write(Paths.get(sourceName), lines);
