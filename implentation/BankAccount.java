@@ -38,7 +38,7 @@ public class BankAccount {
 	// BankAccount - Constructor
 	// this constructor is used when loading from file
 	// accessor is customerAccount which we're in when we create this object
-	public BankAccount(String access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
+	public BankAccount(Boolean access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
 		this.inAccess = access;
 		this.accountID = accid;
 		this.accType = t;
@@ -55,7 +55,7 @@ public class BankAccount {
 			this.currentAccessor = accessor; 
 		}
 	}
-	 
+	
 	// BankAccount - Default Constructor
 	// this constructor is here so that the code does not crash
 	public BankAccount() {
@@ -198,13 +198,14 @@ public class BankAccount {
 	                      + "/data/bankAccounts/"
 	                      + this.accountID
 	                      + ".txt";
+	    //TODO: this changes date created to date last modified
 	    SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	    List<String> lines = Arrays.asList(
 	        "Account_type: " + this.accType,
 	        "Date_created: " + fmt.format(this.dateCreated),
 	        "Users: " + this.users.toString(),
 	        "Current_balance: " + this.currBalance,
-	        "Transaction_history: " + this.transactionHist
+	        "Transaction_history: \n" + this.transactionHist
 	    );
 	    try {
 	        Files.write(Paths.get(sourceName), lines);

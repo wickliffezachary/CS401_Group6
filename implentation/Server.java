@@ -130,7 +130,7 @@ public class Server {
 			BankAccount BankAcc = null;			//updated method of tracking current bank account	//TODO: use this
 			String BA = "";						//keeps track of current bank account
 
-			dailyUpkeep();
+//			dailyUpkeep();
 	        try {
 				//while the connection is still receiving messages
 		        while((message = (Message) objectInputStream.readObject()) != null) {
@@ -525,22 +525,25 @@ public class Server {
 		// schedules ATM refill to run once daily at midnight, starting from next midnight 
 		// reference: stackoverflow
 		// correctness not verified
-		private void dailyUpkeep() {
-			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-			long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
-			try{
-				scheduler.scheduleAtFixedRate(
-					//this inner try catch is required according to eclipse
-					()->{try {
-						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}},
-					midnight, 1440, TimeUnit.MINUTES);
-			}catch(NullPointerException e) {
+		// only uncomment when ATM code to handle it is incorporated to prevent mismatch of messages in ATM-Server comms
+		// TODO: ensure this doresn't send messages to Teller
+		// private void dailyUpkeep() {
+		// 	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+		// 	long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
+		// 	try{
+		// 		scheduler.scheduleAtFixedRate(
+		// 			//this inner try catch is required according to eclipse
+		// 			()->{try {
+		// 				sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
+		// 			} catch (IOException e) {
+		// 				e.printStackTrace();
+		// 			}},
+		// 			midnight, 1440, TimeUnit.MINUTES);
+		// 	}catch(NullPointerException e) {
 				
-			}
-		}
+		// 	}
+		// }
+
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
