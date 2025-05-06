@@ -15,7 +15,7 @@ public class CustomerAccount {
 	private String password;
 	private boolean inAccess = false;
 	private BankAccount bankAccInUse = null;
-	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can nt if file is in access
+//	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can nt if file is in access
 	
 	// CustomerAccount - Constructor
 	// this constructor is used when creating a new customer account for the first time
@@ -32,7 +32,7 @@ public class CustomerAccount {
 	// this constructor is used when loading pre-existing customer account information from a file
 	// (parameters are sent by the server from a text file)
 	// accesssor is the ATM or Teller who sent the request to server
-	public CustomerAccount(String access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
+	public CustomerAccount(Boolean access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
 		this.inAccess = access;
 		this.fullName = name;
 		this.phoneNumber = phoneNumber;
@@ -50,7 +50,7 @@ public class CustomerAccount {
 // 			switchAccess(); // change access status here and on file
 // 			this.currentAccessor = accessor; 
 // 		}
-// 	}
+ 	}
 
 	// CustomerAccount - Default Constructor
 	// this constructor is here so that the code does not crash
@@ -169,13 +169,12 @@ public class CustomerAccount {
 	        }
 	    }
 	    return new CustomerAccount(
-	        String.valueOf(inAccess),
+	        inAccess,
 	        name,
 	        phone,
 	        address,
 	        pwd,
-	        bas,
-	        accessor
+	        bas
 	    );
 	}
 
@@ -186,13 +185,17 @@ public class CustomerAccount {
 		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber + ".txt";
 		try{
 			FileWriter writer = new FileWriter(sourceName);
-			w.write("Access_status: " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
+			String access = "0";
+			if(this.inAccess) {
+				access = "1";
+			}
+			writer.write("Access_status: " + access + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
 				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
-			w.close()
+			writer.close();
 		}
 		catch (IOException e){
-    error.printStackTrace();
-    }
+			e.printStackTrace();
+		}
 	}
-	}
+
 }
