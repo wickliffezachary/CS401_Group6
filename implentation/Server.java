@@ -119,7 +119,7 @@ public class Server {
 		}
 
 		public void run() {
-
+			System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
 			// local variables to hold the data that changes
 			Message message;
 			Boolean AccessingBankAccount = false;
@@ -134,7 +134,6 @@ public class Server {
 	        try {
 				//while the connection is still receiving messages
 		        while((message = (Message) objectInputStream.readObject()) != null) {
-		        	System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
 					//print the action requested by the client
 		        	System.out.println(
 		        			//display ip of client
@@ -443,15 +442,15 @@ public class Server {
 				        		sendMessage(
 				        				new Message(
 				        						"Server", clientSocket.getInetAddress().toString(), build, Message.Type.ACCESSBAREQGRANTED));
+				        		continue;
 			        		}
 			        		//if login failed
 			        		else{
 			        			sendMessage(
 				        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSBAREQDENIED));
+			        			continue;
 			        		}
 			        		
-			        		//go back to waiting for new message
-			        		continue;
 						}
 						// ATM should only be able to log out of customer account (handled before) or log in to financial account
 						// otherwise invalid
@@ -476,16 +475,16 @@ public class Server {
 					        				new Message(
 					        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
 								}
-								continue;
+								break;
 							case "DEPOSITREQ":
 								deposit(BA, message.getData());
 								sendMessage(
 				        				new Message(
 				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
-								continue;
+								break;
 							default: /*invalid command*/
-								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-								continue;
+								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid Request Sent", Message.Type.INVALID));
+								break;
 						}
 					}
 
