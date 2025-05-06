@@ -13,12 +13,20 @@ public class Teller {
 	private String id;
 	private static int count = 0;
 	private boolean loggedInTeller;
+
 	private String currentUsername;
 	private BankAccount currentBankAccount;
+	private boolean connected;	//is Teller connected to Server?
 
 	
 	public interface TellerListener {
         void receivedMessage(Message msg);
+	}
+	
+	//default constructor for unit testing
+	public Teller() {
+		count++;
+		id = "Teller" + count;
 	}
 	
 	// Teller - Constructor
@@ -101,6 +109,14 @@ public class Teller {
 	// method that returns whether or not a teller is logged in
 	public boolean isLoggedInTeller() {
 		return loggedInTeller;
+	}
+
+	public int getCount() {
+		return count;
+	}
+	
+	public String getID() {
+		return id;
 	}
 	
 	// TODO
@@ -209,6 +225,8 @@ public class Teller {
 	public void callManager() {
 		
 	}
+	
+
 
 	// test method for logging in
 	// (for use until the GUI is implemented)

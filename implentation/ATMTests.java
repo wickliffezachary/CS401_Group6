@@ -1,109 +1,40 @@
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeNoException;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
-
-// TODO - determine if server needs to be up before launching tests or if it can be launched through tests
-public class ATMTests {
-	private final String address = "localhost";
-	private final int port = 1234;
-	
-	private String firstName = "first";
-	private String lastName = "last";
-	private String phoneNumber = "555123456";
-	private String password = "password";
-	private String account = "account1";
-	
-	private class TestListener implements ATM.ATMListener{
-		@Override
-		public void receivedMessage(Message msg) {
-			// TODO - auto-generated method stub
-			
-		}
-	}
-	TestListener listener = new TestListener();
-	private ATM atm;
-	
-	@BeforeEach
-	public void init() {
-		try {
-			atm = new ATM(address, port, listener);
-		} 
-		catch (IOException error) {
-			error.printStackTrace();
-			assumeNoException(error);		// crash and burn test if ATM cannot be initialized
-		}
-	}
-	@AfterEach
-	public void close() {
-		try {
-			atm.logout();
-		} 
-		catch (IOException error) {
-			error.printStackTrace();
-		}
-		atm = null;
+class ATMTests {
+	@Test
+	public void testConstructorReserve() {
+		double amount = 10000.50;
+		ATM atm = new ATM(amount);
+		
+		assertEquals(atm.getCurrReserve(), amount);
 	}
 	
 	@Test
-	public void testLogin() {
-		// TODO - consider how to implement test users
-
-		assumeFalse(atm.isLoggedInUser());
-		try {
-			atm.login(firstName, lastName, phoneNumber, password);
-			assertTrue(atm.isLoggedInUser());
-		} 
-		catch (IOException error) {
-			error.printStackTrace();
-			assumeNoException(error);		// failed to login
-		}
+	public void testUpdateCurrReserve() {
+		ATM atm = new ATM(0);
+		double amount = 10000.50;
+		assertNotEquals(atm.getCurrReserve(), amount);
+		atm.updateCurrReserve(amount);
+		assertEquals(atm.getCurrReserve(), amount);
 	}
 	
 	@Test
-	public void testLogout() {
-		testLogin();
-		try {
-			atm.logout();
-			assertFalse(atm.isLoggedInUser());
+	public void testCount() {
+		int max = 10;
+		ATM atm = new ATM(0);
+		int start = atm.getCount();
+		for(int i = 0; i < max; ++i) {
+			new ATM(0);
 		}
-		catch (IOException error) {
-			error.printStackTrace();
-			assumeNoException(error);
-		}
-	}
-
-	@Test
-	public void testCurrReserve() {
-		int amount = 1000;
-		atm.updateCurrReserve(1000);
-		assertEquals(amount, atm.getCurrReserve());
+		assertEquals(atm.getCount(), max + start);
 	}
 	
 	@Test
-	public void testNotStartedLoggedIn() {
-		assertFalse(atm.isLoggedInUser());
+	public void testID() {
+		ATM atm = new ATM(0);
+		String expectedID = "ATM" + atm.getCount();
+		assertEquals(expectedID, atm.getID());
 	}
-	
-	@Test
-	public void testSelectAccount() {
-		testLogin();		// user must be logged-in before an account can be selected
-		try {
-			atm.selectAccount(account);
-		} 
-		catch (IOException error) {
-			error.printStackTrace();
-		}
-	}
-
 }

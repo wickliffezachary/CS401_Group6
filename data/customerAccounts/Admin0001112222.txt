@@ -1,6 +1,6 @@
-0
-Admin
-0001112222
-1234, Fake St., Test City, CA, 98765
-password
-012,013,014
+Access_status: 0
+Name: Admin
+Phone_number: 0001112222
+Address: 1234,Fake St.,Test_City,CA,98765
+Password: password
+Bank_accounts: 012,013,014

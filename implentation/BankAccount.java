@@ -20,7 +20,7 @@ public class BankAccount {
 	private Date dateCreated;
 	private double currBalance;
 	private boolean inAccess = false;
-	private String tranctionHist;
+	private String transactionHist;
 	private String currentAccessor = ""; // used to ensure currAccessor can modify data but others can not if file is in access
 	
 	// BankAccount - Constructor
@@ -32,7 +32,7 @@ public class BankAccount {
 			this.users = new ArrayList<String>();
 			users.add(user);
 			this.dateCreated = new Date();
-			this.tranctionHist = "";
+			this.transactionHist = "";
 	}
 
 	// BankAccount - Constructor
@@ -44,7 +44,7 @@ public class BankAccount {
 		this.accType = t;
 		this.dateCreated = d;
 		this.currBalance = cb;
-		this.tranctionHist = th;
+		this.transactionHist = th;
 		this.users = new ArrayList<String>();
 		for (int i = 0; i < usrs.size(); i++) {
 		      this.users.add(usrs.get(i));
@@ -119,7 +119,7 @@ public class BankAccount {
 	}
 	
 	public void updateHistory(String entry) {
-		this.tranctionHist = this.tranctionHist + entry;
+		this.transactionHist = this.transactionHist + entry;
 		save();
 	}
 	
@@ -214,4 +214,3 @@ public class BankAccount {
 	}
 
 }
-

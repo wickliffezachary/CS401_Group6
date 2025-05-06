@@ -1,3 +1,4 @@
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,22 +32,25 @@ public class CustomerAccount {
 	// this constructor is used when loading pre-existing customer account information from a file
 	// (parameters are sent by the server from a text file)
 	// accesssor is the ATM or Teller who sent the request to server
-	public CustomerAccount(String access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts, String accessor) {
+	public CustomerAccount(String access, String name, String phoneNumber, String address, String password, ArrayList<String> bankAccounts) {
 		this.inAccess = access;
 		this.fullName = name;
 		this.phoneNumber = phoneNumber;
 		this.address = address;
 		this.password = password;
-		this.bankAccounts = new ArrayList<String>();
-		for (int i = 0; i < bankAccounts.size(); i++) {
-		      this.bankAccounts.add(bankAccounts.get(i));
-		}
-		if (!this.inAccess) // no existing access when this object is created
-		{
-			switchAccess(); // change access status here and on file
-			this.currentAccessor = accessor; 
-		}
-	}
+    this.bankAccounts = bankAccounts;
+    
+    //we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
+// 		this.bankAccounts = new ArrayList<String>();
+// 		for (int i = 0; i < bankAccounts.size(); i++) {
+// 		      this.bankAccounts.add(bankAccounts.get(i));
+// 		}
+// 		if (!this.inAccess) // no existing access when this object is created
+// 		{
+// 			switchAccess(); // change access status here and on file
+// 			this.currentAccessor = accessor; 
+// 		}
+// 	}
 
 	// CustomerAccount - Default Constructor
 	// this constructor is here so that the code does not crash
@@ -64,7 +68,7 @@ public class CustomerAccount {
 			return true;
 		} 
 		else {
-			return true;
+			return false;
 		}
 	}
 
@@ -179,14 +183,16 @@ public class CustomerAccount {
 	
 	// save to file after update
 	public void save() {
-		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber;
+		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber + ".txt";
 		try{
 			FileWriter writer = new FileWriter(sourceName);
-			w.write("Access_status " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
+			w.write("Access_status: " + this.inAccess" + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
 				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
 			w.close()
 		}
-		catch (IOException e){}
+		catch (IOException e){
+    error.printStackTrace();
+    }
 	}
 	}
 }
