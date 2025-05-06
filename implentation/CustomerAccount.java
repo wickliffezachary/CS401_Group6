@@ -39,7 +39,7 @@ public class CustomerAccount {
 		this.address = address;
 		this.password = password;
 		this.bankAccounts = bankAccounts;
-	
+	}
 
     
 		//we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra

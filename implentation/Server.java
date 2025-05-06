@@ -380,121 +380,114 @@ public class Server {
 						}
 					}
 
-					// --------------commands allowed for Tellers--------------------------
-					if (isTeller) {
-						switch(message.getType().name()) {
-							case "WITHDRAWREQ": break;
-							case "DEPOSITREQ": break;
-							default: /*invalid command*/
-								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
-								continue;
-						}
-					}
-//					--------------------------------------------------TELLER COMMANDS ABOVE---------------------------------------------------------
+
+					// when logged in first process if a message is a logout request
+					if(message.getType() == Message.Type.EXITBAREQ) {
+						// TODO - log-out of financial account
+						AccessingBankAccount = false;
+						BA = "";
+						sendMessage(
+		        				new Message(
+		        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
+						
+						continue;
+					}						
 					
+					// ATM will only be able to select a bank account to make transactions from or logout
+					if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
+						//attempt login
+						AccessingBankAccount = loginBank(message);
+		        		//if login was successful
+		        		if(AccessingBankAccount == true) {
+		        			String[] args = message.getData().split(",");
+		        			File[] list = bankAccounts.listFiles();
+		        			
+		        			// determine if the customer account is valid
+		        			String build = "";
+		        			// compare each file in the list
+		        			for (File file : list) {
+		        				// do not include folders
+		        				if (file.isFile()) {
+		        					// if the file is found in the list
+		        					if(file.getName().equals(args[0] + ".txt")) {
+		        						// create a scanner to move through the file
+		        						Scanner scanner = new Scanner(file);
+		        						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
+		        						while(scanner.hasNextLine()) {
+		        							build += scanner.nextLine() + "\n";
+		        						}
+		        						scanner.close();
+		        					}
+		        				}
+		        			} 
+		        			//set the current user to the username of the account
+		        			BA = message.getData();
+			        		AccessingBankAccount = true;
+		        			//respond that the login was successful
+			        		sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), build, Message.Type.ACCESSBAREQGRANTED));
+			        		continue;
+		        		}
+		        		//if login failed
+		        		else{
+		        			sendMessage(
+			        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSBAREQDENIED));
+		        			continue;
+		        		}
+		        		
+					}
+					// ATM should only be able to log out of customer account (handled before) or log in to financial account
+					// otherwise invalid
+					if(!AccessingBankAccount) {
+						// tell them its not valid
+						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Log in to bank account to access money transfers", Message.Type.INVALID));
+						// go back to waiting for new message
+						continue;
+					}		        		
 
-					// ----------------commands allowed for ATMs------------------------------
-					else {
-						
-						// when logged in first process if a message is a logout request
-						if(message.getType() == Message.Type.EXITBAREQ) {
-							// TODO - log-out of financial account
-							AccessingBankAccount = false;
-							BA = "";
+					if(AccessingBankAccount && message.getType() == Message.Type.WITHDRAWREQ) {
+						Boolean success = withdraw(BA, message.getData());
+						if(success) {
 							sendMessage(
 			        				new Message(
-			        						"Server", clientSocket.getInetAddress().toString(), "Login successful", Message.Type.EXITBAREQGRANTED));
-							
+			        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
 							continue;
-						}						
-						
-						// ATM will only be able to select a bank account to make transactions from or logout
-						if(!AccessingBankAccount && message.getType() == Message.Type.ACCESSBAREQ) {
-							//attempt login
-							AccessingBankAccount = loginBank(message);
-			        		//if login was successful
-			        		if(AccessingBankAccount == true) {
-			        			String[] args = message.getData().split(",");
-			        			File[] list = bankAccounts.listFiles();
-			        			
-			        			// determine if the customer account is valid
-			        			String build = "";
-			        			// compare each file in the list
-			        			for (File file : list) {
-			        				// do not include folders
-			        				if (file.isFile()) {
-			        					// if the file is found in the list
-			        					if(file.getName().equals(args[0] + ".txt")) {
-			        						// create a scanner to move through the file
-			        						Scanner scanner = new Scanner(file);
-			        						// if the access indicator on Line 1 is "1", then the file is currently in use and log-in is not allowed
-			        						while(scanner.hasNextLine()) {
-			        							build += scanner.nextLine() + "\n";
-			        						}
-			        						scanner.close();
-			        					}
-			        				}
-			        			} 
-			        			//set the current user to the username of the account
-			        			BA = message.getData();
-				        		AccessingBankAccount = true;
-			        			//respond that the login was successful
-				        		sendMessage(
-				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), build, Message.Type.ACCESSBAREQGRANTED));
-				        		continue;
-			        		}
-			        		//if login failed
-			        		else{
-			        			sendMessage(
-				        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSBAREQDENIED));
-			        			continue;
-			        		}
-			        		
 						}
-						// ATM should only be able to log out of customer account (handled before) or log in to financial account
-						// otherwise invalid
-						if(!AccessingBankAccount) {
-							// tell them its not valid
-							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Log in to bank account to access money transfers", Message.Type.INVALID));
-							// go back to waiting for new message
-							continue;
-						}		        		
-
-						if(AccessingBankAccount && message.getType() == Message.Type.WITHDRAWREQ) {
-							Boolean success = withdraw(BA, message.getData());
-							if(success) {
-								sendMessage(
-				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
-								continue;
-							}
-							else {
-								sendMessage(
-				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
-								continue;
-							}
-						}
-						
-						if(AccessingBankAccount && message.getType() == Message.Type.DEPOSITREQ) {
-							deposit(BA, message.getData());
+						else {
 							sendMessage(
 			        				new Message(
-			        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
+			        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
 							continue;
-						}
-						else { /*invalid command*/
-								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid Request Sent", Message.Type.INVALID));
-								continue;
 						}
 					}
+					
+					if(AccessingBankAccount && message.getType() == Message.Type.DEPOSITREQ) {
+						deposit(BA, message.getData());
+						sendMessage(
+		        				new Message(
+		        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
+						continue;
+					}
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					else { /*invalid command*/
+							sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid Request Sent", Message.Type.INVALID));
+							continue;
+					}
 
-//						--------------------------------------------------ATM COMMANDS ABOVE---------------------------------------------------------------
 					
 					// this will be below all other request types and should only be reachable
 					// if a message with an incorrect or invalid type is sent
-					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Final Error Boss", Message.Type.INVALID));
+//					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Final Error Boss", Message.Type.INVALID));
 					
 				} // end 'while'
 			} // end 'try'
