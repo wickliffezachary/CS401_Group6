@@ -5,7 +5,9 @@ import org.junit.runners.Suite;
 
 @Suite.SuiteClasses({
 	ATMTests.class,
-	TellerTests.class
+	TellerTests.class,
+	CustomerAccountTests.class,
+	BankAccountTests.class
 })
 
 public class BankingSystemTestSuite {}
