@@ -731,30 +731,26 @@ public class Server {
 						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 							String line;
 							reader.readLine();
-							Boolean skipSecond = false;
+
 							while ((line = reader.readLine()) != null) {
 			                    String[] temp = line.split(" ");
 			                    String frst = temp[0];
-			                    String second = "";
-			                    //this is to prevent crashing just in case
-			                    if (frst.equalsIgnoreCase("Transaction_history:")){
-			                    	skipSecond = true;
+			                    if(temp.length > 1) {
+				                    String second = temp[1];
+				                    if (frst.equalsIgnoreCase("Current_balance:")) {
+				                        double bal = Double.parseDouble(second);
+				                        //if the current balance is greater than the withdraw amount
+				                        if(bal > Double.parseDouble(amount)) {
+				                        	lines.add(frst + " " + String.valueOf(bal - Double.parseDouble(amount)));
+				                        }
+				                        else {
+				                        	lines.add(line);	// add line as is
+				                        	Valid = false;		//if amount is greater than bal then money cannot be withdrawn
+				                        }
+				                        continue; // skip to next line in case of "SAVINGS" account
+				                    }//if current balance line
 			                    }
-			                    if(!skipSecond) {
-			                    	second = temp[1];
-			                    }
-			                    if (frst.equalsIgnoreCase("Current_balance:")) {
-			                        double bal = Double.parseDouble(second);
-			                        //if the current balance is greater than the withdraw amount
-			                        if(bal > Double.parseDouble(amount)) {
-			                        	lines.add(frst + " " + String.valueOf(bal - Double.parseDouble(amount)));
-			                        }
-			                        else {
-			                        	lines.add(line);	// add line as is
-			                        	Valid = false;		//if amount is greater than bal then money cannot be withdrawn
-			                        }
-			                        continue; // skip to next line in case of "SAVINGS" account
-			                    }//if current balance line
+
 			                    lines.add(line);  // add line as is
 							}//while going through file
 							reader.close();
@@ -788,24 +784,17 @@ public class Server {
 							String line;
 							reader.readLine();
 							//skip looking for the second variable in the line after some lines to prevent crashing
-							Boolean skipSecond = false;
 							while ((line = reader.readLine()) != null) {
 			                    String[] temp = line.split(" ");
 			                    String frst = temp[0];
-			                    String second = "";
-			                    //this is to prevent crashing just in case
-			                    if (frst.equalsIgnoreCase("Transaction_history:")){
-			                    	skipSecond = true;
+			                    if(temp.length > 1) {
+				                    String second = temp[1];
+				                    if (frst.equalsIgnoreCase("Current_balance:")) {
+				                        double bal = Double.parseDouble(second);
+				                        lines.add(frst + " " + String.valueOf(bal + Double.parseDouble(amount)));
+				                        continue; // skip to next line in case of "SAVINGS" account
+				                    }//if current balance line
 			                    }
-			                    if(!skipSecond) {
-			                    	second = temp[1];
-			                    }
-			                    
-			                    if (frst.equalsIgnoreCase("Current_balance:")) {
-			                        double bal = Double.parseDouble(second);
-			                        lines.add(frst + " " + String.valueOf(bal + Double.parseDouble(amount)));
-			                        continue; // skip to next line in case of "SAVINGS" account
-			                    }//if current balance line
 			                    lines.add(line);  // add line as is
 							}//while going through file
 							reader.close();
