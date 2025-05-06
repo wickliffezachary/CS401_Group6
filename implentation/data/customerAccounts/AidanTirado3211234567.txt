@@ -1,0 +1,6 @@
+Access_status: 0
+Name: AidanTirado
+Phone_number: 3211234567
+Address: here
+Password: username
+Bank_accounts: 
