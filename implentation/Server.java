@@ -119,7 +119,7 @@ public class Server {
 		}
 
 		public void run() {
-
+			System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
 			// local variables to hold the data that changes
 			Message message;
 			Boolean AccessingBankAccount = false;
@@ -134,7 +134,6 @@ public class Server {
 	        try {
 				//while the connection is still receiving messages
 		        while((message = (Message) objectInputStream.readObject()) != null) {
-		        	System.out.println("New ClientHandler started: " + Thread.currentThread().getName());
 					//print the action requested by the client
 		        	System.out.println(
 		        			//display ip of client
@@ -443,15 +442,15 @@ public class Server {
 				        		sendMessage(
 				        				new Message(
 				        						"Server", clientSocket.getInetAddress().toString(), build, Message.Type.ACCESSBAREQGRANTED));
+				        		continue;
 			        		}
 			        		//if login failed
 			        		else{
 			        			sendMessage(
 				        				new Message("Server", clientSocket.getInetAddress().toString(), "Login Failed", Message.Type.ACCESSBAREQDENIED));
+			        			continue;
 			        		}
 			        		
-			        		//go back to waiting for new message
-			        		continue;
 						}
 						// ATM should only be able to log out of customer account (handled before) or log in to financial account
 						// otherwise invalid
@@ -462,29 +461,31 @@ public class Server {
 							continue;
 						}		        		
 
-						
-						switch(message.getType().name()) {
-							case "WITHDRAWREQ":
-								Boolean success = withdraw(BA, message.getData());
-								if(success) {
-									sendMessage(
-					        				new Message(
-					        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
-								}
-								else {
-									sendMessage(
-					        				new Message(
-					        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
-								}
-								continue;
-							case "DEPOSITREQ":
-								deposit(BA, message.getData());
+						if(AccessingBankAccount && message.getType() == Message.Type.WITHDRAWREQ) {
+							Boolean success = withdraw(BA, message.getData());
+							if(success) {
 								sendMessage(
 				        				new Message(
-				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
+				        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.WITHDRAWREQACCEPTED));
 								continue;
-							default: /*invalid command*/
-								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+							}
+							else {
+								sendMessage(
+				        				new Message(
+				        						"Server", clientSocket.getInetAddress().toString(), "Money Failed to Withdraw", Message.Type.WITHDRAWDONE));
+								continue;
+							}
+						}
+						
+						if(AccessingBankAccount && message.getType() == Message.Type.DEPOSITREQ) {
+							deposit(BA, message.getData());
+							sendMessage(
+			        				new Message(
+			        						"Server", clientSocket.getInetAddress().toString(), message.getData(), Message.Type.DEPOSITREQACCEPTED));
+							continue;
+						}
+						else { /*invalid command*/
+								sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Invalid Request Sent", Message.Type.INVALID));
 								continue;
 						}
 					}
@@ -493,7 +494,7 @@ public class Server {
 					
 					// this will be below all other request types and should only be reachable
 					// if a message with an incorrect or invalid type is sent
-					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Login First", Message.Type.INVALID));
+					sendMessage(new Message("Server", clientSocket.getInetAddress().toString(), "Final Error Boss", Message.Type.INVALID));
 					
 				} // end 'while'
 			} // end 'try'
@@ -516,6 +517,10 @@ public class Server {
 				}
 				if(BankAcc != null) {
 					//TODO: free account based on class
+					if(BankAcc.checkInActiveAccess()) {
+						//free up access to the account
+						BankAcc.switchAccess();
+					}
 				}
 	        }
 		}
@@ -725,6 +730,8 @@ public class Server {
 						List<String> lines = new ArrayList<>();
 						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 							String line;
+							reader.readLine();
+
 							while ((line = reader.readLine()) != null) {
 			                    String[] temp = line.split(" ");
 			                    String frst = temp[0];
@@ -743,7 +750,7 @@ public class Server {
 				                        continue; // skip to next line in case of "SAVINGS" account
 				                    }//if current balance line
 			                    }
-	
+
 			                    lines.add(line);  // add line as is
 							}//while going through file
 							reader.close();
@@ -775,6 +782,8 @@ public class Server {
 						List<String> lines = new ArrayList<>();
 						try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 							String line;
+							reader.readLine();
+							//skip looking for the second variable in the line after some lines to prevent crashing
 							while ((line = reader.readLine()) != null) {
 			                    String[] temp = line.split(" ");
 			                    String frst = temp[0];
@@ -786,7 +795,6 @@ public class Server {
 				                        continue; // skip to next line in case of "SAVINGS" account
 				                    }//if current balance line
 			                    }
-	
 			                    lines.add(line);  // add line as is
 							}//while going through file
 							reader.close();

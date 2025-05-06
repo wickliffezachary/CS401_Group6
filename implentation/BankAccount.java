@@ -1,13 +1,7 @@
-import java.util.ArrayList;
+import java.io.*;
 import java.util.*;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
-import java.time.*;
 
 public class BankAccount {
 	
@@ -38,7 +32,7 @@ public class BankAccount {
 	// BankAccount - Constructor
 	// this constructor is used when loading from file
 	// accessor is customerAccount which we're in when we create this object
-	public BankAccount(Boolean access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
+	public BankAccount(boolean access, String accid, AccType t, Date d, double cb, String th, ArrayList<String> usrs, String accessor) {
 		this.inAccess = access;
 		this.accountID = accid;
 		this.accType = t;
@@ -173,10 +167,6 @@ public class BankAccount {
 	    return ba;
 	}
 
-
-
-
-
 	public void deposit(double amount) {
 	    this.currBalance += amount;
 	    this.transactionHist += "Deposited: " + amount + "\n";
@@ -201,6 +191,7 @@ public class BankAccount {
 	    //TODO: this changes date created to date last modified
 	    SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	    List<String> lines = Arrays.asList(
+	    	"Access_status: " + ((this.inAccess) ? "1" : "0"),
 	        "Account_type: " + this.accType,
 	        "Date_created: " + fmt.format(this.dateCreated),
 	        "Users: " + this.users.toString(),

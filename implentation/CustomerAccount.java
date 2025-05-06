@@ -39,6 +39,8 @@ public class CustomerAccount {
 		this.address = address;
 		this.password = password;
 		this.bankAccounts = bankAccounts;
+	
+
     
 		//we can just assign bankAccounts with the sent bankAccounts array, this is a bit extra
 
@@ -51,7 +53,6 @@ public class CustomerAccount {
 // 			switchAccess(); // change access status here and on file
 // 			this.currentAccessor = accessor; 
 // 		}
- 	}
 
 	// CustomerAccount - Default Constructor
 	// this constructor is here so that the code does not crash
@@ -204,8 +205,8 @@ public class CustomerAccount {
 	
 	// save to file after update
 	public void save() {
-		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber + ".txt";
-		try{
+		String sourceName = System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName + this.phoneNumber + ".txt";
+		try {
 			FileWriter writer = new FileWriter(sourceName);
 
 			String access = "0";
