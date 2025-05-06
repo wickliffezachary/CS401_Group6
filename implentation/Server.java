@@ -329,21 +329,21 @@ public class Server {
 
 		        			String caData = user.getName() + '\n' + user.getPhoneNumber() + '\n' + user.getAddress() + '\n';
 		        			//for every bank account attached to the customer account
-		        			for(int i = 1; i <= user.getAssociatedBA().size(); i++) {
+		        			for(int i = 0; i < user.getAssociatedBA().size(); i++) {
 		        				//append the account number to the string
 		        				caData += user.getAssociatedBA().get(i);
 		        				//if the current account is not the final one
-		        				if(i != user.getAssociatedBA().size()) {
+		        				if(i != user.getAssociatedBA().size() - 1) {
 		        					//also append a comma
 		        					caData += ",";
 		        				}
-		        				
+		        			}
 			        		//respond that the login was successful
 			        		sendMessage(
 			        				new Message(
 			        						"Server", clientSocket.getInetAddress().toString(), caData, Message.Type.ACCESSCAREQGRANTED));
 
-		        		}
+		        		
 		        		}
 		        		else{
 		        			sendMessage(
@@ -521,22 +521,25 @@ public class Server {
 		// schedules ATM refill to run once daily at midnight, starting from next midnight 
 		// reference: stackoverflow
 		// correctness not verified
-		private void dailyUpkeep() {
-			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-			long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
-			try{
-				scheduler.scheduleAtFixedRate(
-					//this inner try catch is required according to eclipse
-					()->{try {
-						sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}},
-					midnight, 1440, TimeUnit.MINUTES);
-			}catch(NullPointerException e) {
+		// only uncomment when ATM code to handle it is incorporated to prevent mismatch of messages in ATM-Server comms
+		// TODO: ensure this doresn't send messages to Teller
+		// private void dailyUpkeep() {
+		// 	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+		// 	long midnight = LocalDateTime.now().until(LocalDate.now().plusDays(1).atStartOfDay(), ChronoUnit.MINUTES);
+		// 	try{
+		// 		scheduler.scheduleAtFixedRate(
+		// 			//this inner try catch is required according to eclipse
+		// 			()->{try {
+		// 				sendMessage(new Message("Server", clientSocket.getInetAddress().toString(),"50000", Message.Type.REFILLATM));
+		// 			} catch (IOException e) {
+		// 				e.printStackTrace();
+		// 			}},
+		// 			midnight, 1440, TimeUnit.MINUTES);
+		// 	}catch(NullPointerException e) {
 				
-			}
-		}
+		// 	}
+		// }
+
 		// method that sends messages cleanly
 		private void sendMessage(Message message) throws IOException {
 			objectOutputStream.writeObject(message);
@@ -566,7 +569,6 @@ public class Server {
 			String password = "";
 			ArrayList<String> bankAccounts = new ArrayList<String>();
 			
-
 			
 			// compare each file in the list
 			for (File file : list) {
@@ -588,7 +590,7 @@ public class Server {
 			                    String second = temp[1];
 			                    
 			                    if(frst.equalsIgnoreCase("Access_status:")) {
-			                    	if(second.equalsIgnoreCase("0")) {
+			                    	if(second.equalsIgnoreCase("0") || second.equalsIgnoreCase("false")) {
 			                    		access = false;
 			                    	}
 			                    	else {
@@ -596,19 +598,19 @@ public class Server {
 			                    	}
 			                    	
 			                    }
-			                    if(frst.equalsIgnoreCase("Name:")){
+			                    else if(frst.equalsIgnoreCase("Name:")){
 			                    	name = second;
 			                    }
-								if(frst.equalsIgnoreCase("Phone_number:")){
+			                    else if(frst.equalsIgnoreCase("Phone_number:")){
 									phoneNumber = second;
 								}
-								if(frst.equalsIgnoreCase("Address:")){
+			                    else if(frst.equalsIgnoreCase("Address:")){
 									address = second;
 								}
-								if(frst.equalsIgnoreCase("Password:")){
+			                    else if(frst.equalsIgnoreCase("Password:")){
 									password = second;
 								}
-								if(frst.equalsIgnoreCase("Bank_accounts:")){
+			                    else if(frst.equalsIgnoreCase("Bank_accounts:")){
 									String[] accs = second.split(",");
 									for(String item : accs) {
 										bankAccounts.add(item);

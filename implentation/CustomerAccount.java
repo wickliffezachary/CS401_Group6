@@ -268,12 +268,19 @@ public class CustomerAccount {
 		String sourceName=System.getProperty("user.dir") + "/data/customerAccounts/" + this.fullName+this.phoneNumber + ".txt";
 		try{
 			FileWriter writer = new FileWriter(sourceName);
+
 			String access = "0";
 			if(this.inAccess) {
 				access = "1";
 			}
 			writer.write("Access_status: " + access + "\nName: " + this.fullName + "\nPhone_number: " + this.phoneNumber + 
-				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: " + bankAccounts.toString()); 
+				"\nAddress: " + this.address + "\nPassword: " + this.password + "\nBank_accounts: "); 
+			if(bankAccounts.size() > 0) {
+				writer.write(bankAccounts.get(0));
+				for(int i = 1; i < bankAccounts.size(); ++i) {
+					writer.write("," + bankAccounts.get(i));
+				}
+			}
 			writer.close();
 		}
 		catch (IOException e){
